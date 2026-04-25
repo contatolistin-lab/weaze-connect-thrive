@@ -41,7 +41,7 @@ export default function Onboarding() {
       if (error) { toast.error(`Erro ao upload: ${error.message}`); return null; }
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
       return urlData.publicUrl;
-    } catch (e: any) { toast.error(e.message); return null; }
+    } catch (e: unknown) { toast.error(String(e)); return null; }
   };
 
   const slugify = (s: string) =>
@@ -71,51 +71,6 @@ export default function Onboarding() {
       }
     }
 
-    const { data: free } = await supabase.from("plans").select("id").eq("name", "Free").maybeSingle();
-    if (free) await supabase.from("tenant_plans").insert({ tenant_id: data.id, plan_id: free.id });
-
-    await refresh();
-    selectTenant(data.id);
-    toast.success("Marca criada");
-    nav("/feed");
-    setLoading(false);
-  };
-
-  const uploadLogo = async (tenantId: string): Promise<string | null> => {
-    if (!logoFile) return null;
-    try {
-      const ext = logoFile.name.split(".").pop();
-      const path = `logos/${tenantId}.${ext}`;
-      const { data, error } = await supabase.storage.from("public").upload(path, logoFile, { upsert: true });
-      if (error) { toast.error(`Erro ao upload: ${error.message}`); return null; }
-      const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
-      return urlData.publicUrl;
-    } catch (e: any) { toast.error(e.message); return null; }
-  };
-
-  const slugify = (s: string) =>
-    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) + "-" + Math.random().toString(36).slice(2, 6);
-
-  const create = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim().length < 2) { toast.error("Nome muito curto"); return; }
-    if (!user) return;
-    setLoading(true);
-    const { data, error } = await supabase.from("tenants").insert({
-      name: name.trim(), slug: slugify(name), primary_color: color, created_by: user.id,
-    }).select().single();
-    if (error) { toast.error(error.message); setLoading(false); return; }
-
-    // Upload logo se existir
-    if (logoFile) {
-      const logoUrl = await uploadLogo(data.id);
-      if (logoUrl) {
-        await supabase.from("tenants").update({ logo_url: logoUrl }).eq("id", data.id);
-      }
-    }
-
-    // membership owner é criada por trigger handle_new_tenant
     const { data: free } = await supabase.from("plans").select("id").eq("name", "Free").maybeSingle();
     if (free) await supabase.from("tenant_plans").insert({ tenant_id: data.id, plan_id: free.id });
 
