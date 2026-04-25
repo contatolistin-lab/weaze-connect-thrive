@@ -34,6 +34,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!s?.user) {
         setAppRole(null);
       }
+      // Forçar recomputação do role quando fazer login
+      if (s?.user) {
+        setTimeout(() => setUser(s?.user ?? null), 100);
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
@@ -48,19 +52,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) { setAppRole(null); return; }
     let cancelled = false;
     (async () => {
+      // Buscar roles do usuário
       const { data } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
+      
       if (cancelled) return;
+      
       const roles = (data ?? []).map((r) => r.role as AppRole);
-      // prioridade: admin > b2b > b2c
-      const role: AppRole = roles.includes("admin")
-        ? "admin"
-        : roles.includes("b2b")
-          ? "b2b"
-          : "b2c";
-      setAppRole(role);
+      
+      // Se não tem role, verificar memberships para determinar
+      if (roles.length === 0) {
+        const { data: memberships } = await supabase
+          .from("memberships")
+          .select("role")
+          .eq("user_id", user.id)
+          .limit(1);
+        
+        if (memberships && memberships.length > 0) {
+          const memberRole = memberships[0].role;
+          if (memberRole === 'owner') {
+            setAppRole('b2c'); // Assume B2C se é owner de comunidade
+          } else {
+            setAppRole('b2c');
+          }
+        } else {
+          setAppRole('b2c');
+        }
+      } else {
+        // prioridade: admin > b2b > b2c
+        const role: AppRole = roles.includes("admin")
+          ? "admin"
+          : roles.includes("b2b")
+            ? "b2b"
+            : "b2c";
+        setAppRole(role);
+      }
     })();
     return () => { cancelled = true; };
   }, [user]);
