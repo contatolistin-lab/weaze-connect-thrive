@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Weaze — white-label, mobile-first, vídeo-first.
+   Paleta: branco + gradiente magenta (#630091 → #d81e62) */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    /* Primary = magenta da brand (#d81e62) */
+    --primary: 336 75% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 42%;
+
+    /* Accent = roxo da brand (#630091) */
+    --accent: 282 100% 28%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 75% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 60% 40%;
+
+    --border: 0 0% 92%;
+    --input: 0 0% 92%;
+    --ring: 336 75% 48%;
+
+    --radius: 1rem;
+
+    --display: 'Sora', system-ui, sans-serif;
+    --sans: 'Inter', system-ui, sans-serif;
+
+    /* Brand gradient — pode ser sobreescrito por tenant */
+    --brand-from: 282 100% 28%;  /* #630091 */
+    --brand-to: 336 75% 48%;     /* #d81e62 */
+
+    --gradient-brand: linear-gradient(135deg, hsl(var(--brand-from)) 0%, hsl(var(--brand-to)) 100%);
+    --gradient-brand-soft: linear-gradient(135deg, hsl(var(--brand-from) / 0.08) 0%, hsl(var(--brand-to) / 0.08) 100%);
+    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(0 0% 0% / 0.55) 70%, hsl(0 0% 0% / 0.85) 100%);
+    --gradient-overlay-top: linear-gradient(180deg, hsl(0 0% 0% / 0.45) 0%, transparent 40%);
+
+    --shadow-soft: 0 1px 3px hsl(0 0% 0% / 0.04), 0 8px 24px hsl(0 0% 0% / 0.06);
+    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08), 0 24px 48px hsl(0 0% 0% / 0.12);
+    --shadow-brand: 0 8px 32px hsl(var(--brand-to) / 0.35);
+
+    --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --sidebar-background: 0 0% 99%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 336 75% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 336 75% 48%;
+  }
+
+  .dark {
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 336 80% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 282 80% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 336 80% 58%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html, body, #root { @apply h-full; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--display);
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .font-display { font-family: var(--display); }
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .bg-brand { background: var(--gradient-brand); }
+  .bg-brand-soft { background: var(--gradient-brand-soft); }
+  .bg-overlay { background: var(--gradient-overlay); }
+  .bg-overlay-top { background: var(--gradient-overlay-top); }
+
+  .text-brand {
+    background: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .ring-brand { box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--brand-to)); }
+
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .shadow-brand { box-shadow: var(--shadow-brand); }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { scrollbar-width: none; }
+
+  .feed-snap {
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  .feed-snap > * {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  .safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+}
