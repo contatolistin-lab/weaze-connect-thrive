@@ -32,7 +32,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [memRoles, setMemRoles] = useState<Record<string, "owner" | "member">>({});
+  const [memRoles, setMemRoles] = useState<Record<string, "owner" | "member">({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -47,9 +47,12 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       .from("memberships")
       .select("tenant_id, role, tenants(*)")
       .eq("user_id", user.id);
-    const list = (mems ?? []).map((m: any) => m.tenants).filter(Boolean) as Tenant[];
+    const list = (mems ?? []).map((m: unknown) => (m as { tenants: Tenant })?.tenants).filter(Boolean) as Tenant[];
     const roles: Record<string, "owner" | "member"> = {};
-    (mems ?? []).forEach((m: any) => { roles[m.tenant_id] = m.role; });
+    (mems ?? []).forEach((m: unknown) => {
+      const membership = m as { tenant_id: string; role: "owner" | "member" };
+      roles[membership.tenant_id] = membership.role;
+    });
     setMemRoles(roles);
     setTenants(list);
     
@@ -59,7 +62,6 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       setTenant(list.find(t => t.id === savedId)!);
       setIsOwner(roles[savedId] === "owner");
     } else if (list.length > 0) {
-      // Se só tem 1, seleciona automaticamente
       setTenant(list[0]);
       setIsOwner(roles[list[0].id] === "owner");
       localStorage.setItem("wenity:active_tenant", list[0].id);

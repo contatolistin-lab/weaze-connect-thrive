@@ -27,7 +27,7 @@ const REGISTER_FIELDS = [
 
 const MAX_VIDEO_DURATION = 120; // 2 minutes in seconds
 const VIDEO_ASPECT_RATIO = "9:16";
-const VIDEO Resolution = "1080x1920";
+const VIDEO_RESOLUTION = "1080x1920";
 const IMAGE_ASPECT_RATIO = "1:1";
 
 export default function CreatePost() {
