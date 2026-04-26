@@ -36,7 +36,7 @@ const Protected = ({ children }: { children: JSX.Element }) => {
 const NeedsTenant = ({ children }: { children: JSX.Element }) => {
   const { tenant, loading } = useTenant();
   if (loading) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
-  if (!tenant) return <Navigate to="/communities" replace />;
+  // Se não tem tenant, показва only feed without tenant content
   return children;
 };
 
