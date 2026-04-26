@@ -23,6 +23,7 @@ const Community = lazy(() => import("./pages/Community"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Content = lazy(() => import("./pages/Content"));
 const CreatePost = lazy(() => import("./pages/CreatePost"));
+const AdminContent = lazy(() => import("./pages/admin/Content"));
 const Profile = lazy(() => import("./pages/Profile"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
@@ -57,6 +58,8 @@ const App = () => (
                 <Route path="/community" element={<Protected><NeedsTenant><Community /></NeedsTenant></Protected>} />
                 <Route path="/messages" element={<Protected><NeedsTenant><Messages /></NeedsTenant></Protected>} />
                 <Route path="/content" element={<Protected><NeedsTenant><Content /></NeedsTenant></Protected>} />
+                <Route path="/content/services" element={<Protected><NeedsTenant><AdminContent /></NeedsTenant></Protected>} />
+                <Route path="/content/events" element={<Protected><NeedsTenant><AdminContent /></NeedsTenant></Protected>} />
                 <Route path="/create" element={<Protected><NeedsTenant><CreatePost /></NeedsTenant></Protected>} />
                 <Route path="/profile" element={<Protected><NeedsTenant><Profile /></NeedsTenant></Protected>} />
               </Routes>
