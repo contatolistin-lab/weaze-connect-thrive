@@ -88,11 +88,10 @@ export default function Profile() {
   const save = async () => {
     if (!user) return;
     setLoading(true);
-    let avatarUrl = avatar;
     if (avatarFile) {
       const ok = await uploadAvatar();
       if (!ok) { setLoading(false); return; }
-      avatarUrl = null;
+      setAvatarFile(null);
     }
     const { error } = await supabase.from("profiles").update({
       name: name.trim(), phone: phone.trim() || null,
