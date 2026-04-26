@@ -8,13 +8,13 @@ import FeedItem, { Post } from "@/components/feed/FeedItem";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import CreateBrandDialog from "@/components/CreateBrandDialog";
-import { Sparkles, Plus, Play } from "lucide-react";
+import { Sparkles, Plus, Play, Video } from "lucide-react";
 
 const PAGE = 8;
 
 export default function Feed() {
-  const { tenant, tenants, loading: tLoading } = useTenant();
-  const { user, isB2B, isB2C } = useAuth();
+  const { tenant, loading: tLoading } = useTenant();
+  const { user, isB2B } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -38,6 +38,17 @@ export default function Feed() {
     setPosts((p) => offset === 0 ? (data as any[]) : [...p, ...(data as any[])]);
   }, [tenant, loading, done]);
 
+  // Track view when post becomes active
+  const trackView = useCallback(async (postId: string) => {
+    if (!user || !tenant) return;
+    await supabase.from("interactions").upsert({
+      tenant_id: tenant.id,
+      user_id: user.id,
+      post_id: postId,
+      action_type: "view",
+    }, { onConflict: "tenant_id,user_id,post_id,action_type" });
+  }, [user, tenant]);
+
   useEffect(() => {
     setPosts([]); setDone(false); setActiveIdx(0);
     if (tenant) {
@@ -49,8 +60,9 @@ export default function Feed() {
         ).then(() => {});
       }
     }
-  }, [tenant?.id, user?.id]); // eslint-disable-line
+  }, [tenant?.id, user?.id]);
 
+  // Intersection Observer for active post and infinite scroll
   useEffect(() => {
     const c = containerRef.current;
     if (!c) return;
@@ -59,34 +71,39 @@ export default function Feed() {
         if (e.isIntersecting && e.intersectionRatio > 0.6) {
           const idx = Number((e.target as HTMLElement).dataset.idx);
           setActiveIdx(idx);
+          // Track view after 2 seconds
+          const post = posts[idx];
+          if (post) {
+            setTimeout(() => trackView(post.id), 2000);
+          }
           if (idx >= posts.length - 2) load(posts.length);
         }
       });
-    }, { root: c, threshold: [0.6] });
+    }, { root: c, threshold: 0.6 });
     itemRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
-  }, [posts.length, load]);
+  }, [posts.length, load, trackView]);
 
   if (tLoading) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
 
-  // B2B sem nenhum tenant → mostra prompt para criar marca
+  // B2B sem tenant → criar marca
   if (!tenant && isB2B) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-background">
         <TopBar />
-        <main className="flex-1 grid place-items-center px-6 py-10">
+        <main className="flex-1 grid place-items-center px-6">
           <div className="max-w-sm w-full text-center">
-            <div className="h-16 w-16 mx-auto rounded-2xl bg-brand grid place-items-center mb-5 shadow-elevated">
-              <Sparkles className="h-7 w-7 text-primary-foreground" />
+            <div className="h-20 w-20 mx-auto rounded-full bg-brand grid place-items-center mb-6 shadow-elevated">
+              <Video className="h-10 w-10 text-primary-foreground" />
             </div>
-            <h1 className="font-display text-3xl mb-2">Crie sua marca</h1>
-            <p className="text-muted-foreground mb-6 text-pretty">
-              Publique vídeos, construa comunidade e converta.
+            <h1 className="font-display text-4xl mb-3">Crie sua marca</h1>
+            <p className="text-muted-foreground mb-8 text-lg">
+              Publique vídeos, construa comunidade e converta em resultados.
             </p>
             <Button
               size="lg"
               onClick={() => setShowCreate(true)}
-              className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full"
+              className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full h-14 text-lg"
             >
               <Plus className="h-5 w-5 mr-2" />
               Criar marca
@@ -98,22 +115,22 @@ export default function Feed() {
     );
   }
 
-  // B2C sem tenant selecionado → explorar comunidades
+  // B2C sem tenant → explorar
   if (!tenant) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-background">
         <TopBar />
-        <main className="flex-1 grid place-items-center px-6 py-10">
+        <main className="flex-1 grid place-items-center px-6">
           <div className="max-w-sm w-full text-center">
-            <div className="h-16 w-16 mx-auto rounded-2xl bg-brand-soft grid place-items-center mb-5">
-              <Play className="h-7 w-7 text-primary" />
+            <div className="h-20 w-20 mx-auto rounded-full bg-brand-soft grid place-items-center mb-6">
+              <Play className="h-10 w-10 text-primary" />
             </div>
-            <h1 className="font-display text-3xl mb-2">Descubra conteúdo</h1>
-            <p className="text-muted-foreground mb-6 text-pretty">
-              Entre em uma comunidade para ver vídeos.
+            <h1 className="font-display text-4xl mb-3">Descubra conteúdo</h1>
+            <p className="text-muted-foreground mb-8 text-lg">
+              Entre em uma comunidade para ver vídeos imersivos.
             </p>
-            <Button asChild size="lg" className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full">
-              <Link to="/communities">Explorar</Link>
+            <Button asChild size="lg" className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full h-14 text-lg">
+              <Link to="/communities">Explorar comunidades</Link>
             </Button>
           </div>
         </main>
@@ -129,8 +146,9 @@ export default function Feed() {
         {posts.length === 0 && !loading && (
           <div className="h-[calc(100dvh-3.5rem)] grid place-items-center px-6 text-center">
             <div>
+              <Video className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
               <h2 className="font-display text-3xl mb-2">Feed vazio</h2>
-              <p className="text-muted-foreground mb-4">Nenhum post disponível ainda.</p>
+              <p className="text-muted-foreground">Nenhum vídeo disponível ainda.</p>
             </div>
           </div>
         )}
