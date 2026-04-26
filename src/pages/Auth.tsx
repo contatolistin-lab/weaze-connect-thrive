@@ -60,43 +60,8 @@ export default function Auth() {
     if (error) { toast.error(error.message); return; }
     toast.success("Bem-vindo");
     
-    // Verificar role para redirecionar corretamente
-    // Usar as memberships como source principal (não depende de RLS complexa)
-    if (data?.user) {
-      console.log("User ID apos login:", data.user.id);
-      
-      const { data: memberships, error: memError } = await supabase
-        .from("memberships")
-        .select("role")
-        .eq("user_id", data.user.id);
-      
-      console.log("Memberships error:", memError, "data:", memberships);
-      
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id);
-      
-      console.log("Roles error:", rolesError, "data:", roles);
-      
-      const roleList = (roles ?? []).map((r) => r.role);
-      const memberRoles = (memberships ?? []).map((m) => m.role);
-      
-      // Se tem role b2b explícita ou é owner de comunidade, não vai para communities
-      const isB2B = roleList.includes("b2b") || roleList.includes("admin");
-      const isOwner = memberRoles.includes("owner");
-      
-      console.log("Debug - roles:", roleList, "memberships:", memberRoles, "isB2B:", isB2B, "isOwner:", isOwner);
-      
-      // B2B/Admin vai para feed; owner vai para feed; B2C vai para comunidades
-      if (isB2B || isOwner) {
-        nav("/feed");
-      } else {
-        nav("/communities");
-      }
-    } else {
-      nav("/feed");
-    }
+    // Todos vão para feed após login
+    nav("/feed");
   };
 
   return (

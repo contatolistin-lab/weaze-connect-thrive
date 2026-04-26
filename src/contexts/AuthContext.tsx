@@ -26,15 +26,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [appRole, setAppRole] = useState<AppRole | null>(null);
-  const [roleLoading, setRoleLoading] = useState(true);
-
-  console.log("AuthContext render:", { user: user?.id, loading, roleLoading, appRole });
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      setRoleLoading(!s?.user);
       if (!s?.user) {
         setAppRole(null);
       }
@@ -52,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Buscar papel do usuário (b2b / b2c / admin)
   useEffect(() => {
-    if (!user) { setAppRole(null); setRoleLoading(false); return; }
+    if (!user) { setAppRole(null); return; }
     let cancelled = false;
     (async () => {
       const { data } = await supabase
@@ -73,11 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .eq("user_id", user.id)
           .limit(1);
         
-        if (memberships && memberships.length > 0) {
-          newRole = memberships[0].role === 'owner' ? 'b2c' : 'b2c';
-        } else {
-          newRole = 'b2c';
-        }
+        newRole = (memberships && memberships.length > 0 && memberships[0].role === 'owner') ? 'b2c' : 'b2c';
       } else {
         newRole = roles.includes("admin")
           ? "admin"
@@ -87,9 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (!cancelled) {
-        console.log("AuthContext - roles buscados:", roles);
         setAppRole(newRole);
-        setRoleLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -97,13 +87,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => { await supabase.auth.signOut(); };
 
-  // Não considerar como "pronto" até role estar carregado
-  const isReady = !loading && !roleLoading;
-
   return (
     <Ctx.Provider
       value={{
-        user, session, loading: !isReady,
+        user, session, loading,
         appRole,
         isB2B: appRole === "b2b" || appRole === "admin",
         isB2C: appRole === "b2c",

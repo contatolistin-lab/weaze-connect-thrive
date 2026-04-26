@@ -2,9 +2,8 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Index() {
-  const { user, loading, isB2B, appRole } = useAuth();
-  console.log("Index:", { user: user?.id, loading, isB2B, appRole });
+  const { user, loading } = useAuth();
   if (loading) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
-  // B2B vai para feed; B2C vai para comunidades
-  return <Navigate to={user ? (isB2B ? "/feed" : "/communities") : "/"} replace />;
+  // Todos vão para feed
+  return <Navigate to={user ? "/feed" : "/"} replace />;
 }
