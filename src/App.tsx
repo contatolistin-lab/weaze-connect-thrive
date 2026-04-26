@@ -56,10 +56,18 @@ const AdminOnly = ({ children }: { children: JSX.Element }) => {
 };
 
 const B2BOnly = ({ children }: { children: JSX.Element }) => {
-  const { isB2B, loading, user } = useAuth();
-  if (loading) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  const { isB2B, loading, user, appRole } = useAuth();
+  if (loading || (user && !appRole)) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
   if (!user) return <Navigate to="/auth" replace />;
   if (!isB2B) return <Navigate to="/feed" replace />;
+  return children;
+};
+
+const B2COnly = ({ children }: { children: JSX.Element }) => {
+  const { isB2C, loading, user, appRole } = useAuth();
+  if (loading || (user && !appRole)) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isB2C) return <Navigate to="/feed" replace />;
   return children;
 };
 
@@ -74,7 +82,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/communities" element={<Protected><Communities /></Protected>} />
+              <Route path="/communities" element={<Protected><B2COnly><Communities /></B2COnly></Protected>} />
               <Route path="/onboarding" element={<Protected><B2BOnly><Onboarding /></B2BOnly></Protected>} />
               <Route path="/feed" element={<Protected><NeedsTenant><Feed /></NeedsTenant></Protected>} />
               <Route path="/community" element={<Protected><NeedsTenant><Community /></NeedsTenant></Protected>} />
