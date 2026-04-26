@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, MessageCircle, Share2, Volume2, VolumeX } from "lucide-react";
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, Trash2 } from "lucide-react";
 import { track } from "@/lib/tracking";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/contexts/TenantContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import CTAButton from "./CTAButton";
@@ -23,6 +24,7 @@ export type Post = {
 export default function FeedItem({ post, active }: { post: Post; active: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { user } = useAuth();
+  const { tenant, isOwner } = useTenant();
   const [liked, setLiked] = useState(false);
   const [popHeart, setPopHeart] = useState(false);
   const [counts, setCounts] = useState({ likes: 0, comments: 0 });
@@ -30,6 +32,8 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const [muted, setMuted] = useState(true);
   const tappedRef = useRef<number>(0);
   const trackedView = useRef(false);
+
+  const isPostOwner = isOwner && post.author_id === user?.id;
 
   useEffect(() => {
     // counts
@@ -67,6 +71,14 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
     e.stopPropagation();
     setMuted(m => !m);
     if (videoRef.current) videoRef.current.muted = !muted;
+  };
+
+  const deletePost = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja excluir esta postagem?")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", post.id);
+    if (error) { toast.error("Erro ao excluir"); return; }
+    toast.success("Postagem excluída");
   };
 
   // Video progress
@@ -153,6 +165,12 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
           <Share2 className="h-7 w-7 drop-shadow-md text-background" />
           <span className="text-xs font-semibold drop-shadow-md">Enviar</span>
         </button>
+        {isPostOwner && (
+          <button onClick={deletePost} className="flex flex-col items-center gap-1" aria-label="Excluir">
+            <Trash2 className="h-7 w-7 drop-shadow-md text-background" />
+            <span className="text-xs font-semibold drop-shadow-md">Excluir</span>
+          </button>
+        )}
       </div>
 
       {/* bottom info */}
