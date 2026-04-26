@@ -106,6 +106,7 @@ export default function Profile() {
       <TopBar />
       <div className="flex-1 max-w-xl mx-auto w-full px-4 py-6 pb-28 space-y-6">
         <div className="flex items-center gap-4">
+          <button type="button" onClick={() => fileRef.current?.click()} className="relative group">
             <div className="h-16 w-16 rounded-2xl bg-brand grid place-items-center text-primary-foreground text-2xl font-bold overflow-hidden">
               {avatar ? (
                 <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
