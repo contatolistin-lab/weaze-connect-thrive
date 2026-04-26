@@ -132,7 +132,7 @@ export default function CreateBrandDialog({ open, onOpenChange, onCreated }: Pro
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="t-name">Nome da marca</Label>
-            <Input id="t-name" placeholder="Ex: Estúdio Wenity" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
+            <Input id="t-name" placeholder="Ex: Minha Marca" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="t-city">Cidade</Label>

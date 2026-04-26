@@ -2,6 +2,7 @@ import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import Logo from "@/components/Logo";
 
 export default function TopBar() {
   const { tenant } = useTenant();
@@ -17,13 +18,13 @@ export default function TopBar() {
         </Link>
         <div className="flex items-center gap-2">
           {tenant?.logo_url ? (
-            <img src={tenant.logo_url} alt={tenant.name} className="h-7 w-7 rounded-lg object-cover" />
+            <>
+              <img src={tenant.logo_url} alt={tenant.name} className="h-7 w-7 rounded-lg object-cover" />
+              <span className="font-display text-lg leading-none">{tenant.name}</span>
+            </>
           ) : (
-            <div className="h-7 w-7 rounded-lg bg-brand grid place-items-center text-primary-foreground text-xs font-bold">
-              {tenant?.name?.[0]?.toUpperCase() ?? "W"}
-            </div>
+            <Logo size={28} />
           )}
-          <span className="font-display text-lg leading-none">{tenant?.name ?? "Wenity"}</span>
         </div>
         <div className="w-9" />
       </div>

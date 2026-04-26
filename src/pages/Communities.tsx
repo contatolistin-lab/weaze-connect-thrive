@@ -6,6 +6,7 @@ import { useTenant } from "@/contexts/TenantContext";
 import { Button } from "@/components/ui/button";
 import { Plus, LogOut, Search, Users, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import Logo from "@/components/Logo";
 
 type TenantCard = {
   id: string;
@@ -57,12 +58,9 @@ export default function Communities() {
     <main className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-md border-b border-border">
         <div className="max-w-xl mx-auto flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-brand grid place-items-center text-primary-foreground font-bold">
-              W
-            </div>
-            <span className="font-display text-xl">Weaze</span>
-          </div>
+          <Link to="/" className="flex items-center gap-2">
+            <Logo size={32} />
+          </Link>
           {user ? (
             <Button size="icon" variant="ghost" onClick={async () => { await signOut(); nav("/"); }}>
               <LogOut className="h-4 w-4" />

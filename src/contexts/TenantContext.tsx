@@ -61,7 +61,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     if (!t) return;
     setTenant(t);
     setIsOwner(memRoles[id] === "owner");
-    localStorage.setItem("weaze:active_tenant", id);
+    localStorage.setItem("wenity:active_tenant", id);
   };
 
   return (

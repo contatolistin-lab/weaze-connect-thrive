@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, Users, BarChart3, Calendar, ShoppingBag, MessageCircle } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const features = [
   { icon: Sparkles, title: "Feed imersivo", desc: "Vídeo-first, autoplay, swipe vertical, like com toque duplo." },
@@ -15,10 +16,9 @@ export default function Landing() {
   return (
     <main className="min-h-screen bg-background">
       <header className="mx-auto max-w-6xl flex items-center justify-between px-6 py-5">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-xl bg-brand" />
-          <span className="font-display text-2xl tracking-tight">Weaze</span>
-        </div>
+        <Link to="/" className="flex items-center gap-2">
+          <Logo size={40} />
+        </Link>
         <Button asChild variant="ghost" size="sm"><Link to="/auth">Entrar</Link></Button>
       </header>
 
@@ -35,7 +35,7 @@ export default function Landing() {
               para marcas com comunidade.
             </h1>
             <p className="text-lg text-muted-foreground text-pretty max-w-xl mb-8">
-              Feed imersivo, conversas, mensagens, agenda e dashboard analítico — em um único sistema multi-tenant. Weaze transforma audiência em receita recorrente.
+              Feed imersivo, conversas, mensagens, agenda e dashboard analítico — em um único sistema multi-tenant. Wenity transforma audiência em receita recorrente.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-brand text-primary-foreground hover:opacity-90 shadow-brand">
@@ -83,7 +83,7 @@ export default function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto max-w-6xl px-6 py-8 flex justify-between text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} Weaze</span>
+          <span>© {new Date().getFullYear()} Wenity</span>
           <span>Construído como infraestrutura.</span>
         </div>
       </footer>

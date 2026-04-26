@@ -79,7 +79,7 @@ export default function Feed() {
             <div className="h-16 w-16 mx-auto rounded-2xl bg-brand grid place-items-center mb-5 shadow-elevated">
               <Sparkles className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h1 className="font-display text-3xl mb-2">Bem-vindo à Wenity</h1>
+            <h1 className="font-display text-3xl mb-2">Bem-vindo</h1>
             <p className="text-muted-foreground mb-6 text-pretty">
               Para começar, crie sua marca. Em segundos você terá um ambiente próprio com feed, comunidade e métricas.
             </p>

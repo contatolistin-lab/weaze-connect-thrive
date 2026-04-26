@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Users, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Logo from "@/components/Logo";
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Nome muito curto").max(80),
@@ -69,8 +70,7 @@ export default function Auth() {
       <div className="absolute inset-0 bg-brand-soft pointer-events-none" />
       <div className="w-full max-w-sm relative">
         <Link to="/" className="flex items-center gap-2 mb-8 justify-center">
-          <div className="h-8 w-8 rounded-xl bg-brand" />
-          <span className="font-display text-2xl">Weaze</span>
+          <Logo size={44} />
         </Link>
 
         <div className="bg-card rounded-2xl shadow-elevated p-6 border border-border">
