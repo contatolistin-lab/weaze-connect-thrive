@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/contexts/TenantContext";
 import { useDeviceType } from "@/hooks/use-device-type";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 
 export default function Content() {
   const { tenant } = useTenant();
@@ -105,9 +105,14 @@ export default function Content() {
 
   return (
     <div className={device === "mobile" ? "max-w-md mx-auto space-y-4 px-2 py-4" : device === "tablet" ? "max-w-3xl mx-auto space-y-6 px-4 py-6" : "max-w-5xl space-y-6"}>
-      <div>
-        <h1 className={device === "mobile" ? "font-display text-2xl" : "font-display text-4xl"}>Conteúdo</h1>
-        <p className="text-muted-foreground text-sm mt-1">Configure serviços (agenda) e eventos (inscrições) usados nos CTAs.</p>
+      <div className="flex items-center gap-2">
+        <Link to="/feed" className={device === "mobile" ? "p-2 -ml-2" : "hidden md:flex"}>
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <div>
+          <h1 className={device === "mobile" ? "font-display text-2xl" : "font-display text-4xl"}>Conteúdo</h1>
+          <p className="text-muted-foreground text-sm mt-1">Configure serviços (agenda) e eventos (inscrições) usados nos CTAs.</p>
+        </div>
       </div>
 
       {device === "mobile" ? (
