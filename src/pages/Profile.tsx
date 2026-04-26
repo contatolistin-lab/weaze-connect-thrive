@@ -12,7 +12,7 @@ import { LogOut, BarChart3, Building2, ArrowLeftRight, Upload } from "lucide-rea
 import { toast } from "sonner";
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isB2C } = useAuth();
   const { tenant, isOwner, tenants } = useTenant();
   const nav = useNavigate();
   const [name, setName] = useState("");
@@ -167,9 +167,11 @@ export default function Profile() {
         <section className="bg-card rounded-2xl border border-border p-5 space-y-2 shadow-soft">
           <h2 className="font-semibold mb-2">Comunidade</h2>
           <p className="text-sm text-muted-foreground mb-3">Você está em <strong>{tenant?.name ?? "—"}</strong></p>
-          <Button variant="outline" className="w-full justify-start rounded-xl" asChild>
-            <Link to="/communities"><ArrowLeftRight className="h-4 w-4 mr-2" />Trocar de comunidade ({tenants.length})</Link>
-          </Button>
+          {isB2C && (
+            <Button variant="outline" className="w-full justify-start rounded-xl" asChild>
+              <Link to="/communities"><ArrowLeftRight className="h-4 w-4 mr-2" />Trocar de comunidade ({tenants.length})</Link>
+            </Button>
+          )}
           {isOwner && (
             <>
               <Button variant="outline" className="w-full justify-start rounded-xl" asChild>
