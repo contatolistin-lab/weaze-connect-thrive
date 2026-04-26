@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Share2 } from "lucide-react";
 import { track } from "@/lib/tracking";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import CTAButton from "./CTAButton";
+import CommentsSheet from "./CommentsSheet";
 import { cn } from "@/lib/utils";
 
 export type Post = {
@@ -24,6 +26,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const [liked, setLiked] = useState(false);
   const [popHeart, setPopHeart] = useState(false);
   const [counts, setCounts] = useState({ likes: 0, comments: 0 });
+  const [showComments, setShowComments] = useState(false);
   const tappedRef = useRef<number>(0);
   const trackedView = useRef(false);
 
@@ -79,6 +82,24 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
   const cta = post.post_cta?.[0];
 
+  const onShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/feed?post=${post.id}`;
+    const title = post.profiles?.name ? `@${post.profiles.name} no Wenity` : "Wenity";
+    const shareData: ShareData = { title, text: post.description ?? "", url };
+    try {
+      if (navigator.share && navigator.canShare?.(shareData) !== false) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiado");
+      }
+      track({ tenantId: post.tenant_id, postId: post.id, action: "click_cta", metadata: { kind: "share" } });
+    } catch {
+      /* user cancelled */
+    }
+  };
+
   return (
     <article className="relative h-[100dvh] w-full snap-start bg-foreground text-background overflow-hidden" onClick={onTap}>
       {post.type === "video" && post.media_url ? (
@@ -101,14 +122,18 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
       {/* right rail */}
       <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5 z-10">
-        <button onClick={(e) => { e.stopPropagation(); like(); }} className="flex flex-col items-center gap-1">
+        <button onClick={(e) => { e.stopPropagation(); like(); }} className="flex flex-col items-center gap-1" aria-label="Curtir">
           <Heart className={cn("h-7 w-7 transition-all drop-shadow-md", liked ? "fill-primary-custom text-primary-custom" : "text-background")} />
           <span className="text-xs font-semibold drop-shadow-md">{counts.likes}</span>
         </button>
-        <div className="flex flex-col items-center gap-1 opacity-90">
-          <MessageCircle className="h-7 w-7 drop-shadow-md" />
+        <button onClick={(e) => { e.stopPropagation(); setShowComments(true); }} className="flex flex-col items-center gap-1" aria-label="Comentar">
+          <MessageCircle className="h-7 w-7 drop-shadow-md text-background" />
           <span className="text-xs font-semibold drop-shadow-md">{counts.comments}</span>
-        </div>
+        </button>
+        <button onClick={onShare} className="flex flex-col items-center gap-1" aria-label="Compartilhar">
+          <Share2 className="h-7 w-7 drop-shadow-md text-background" />
+          <span className="text-xs font-semibold drop-shadow-md">Enviar</span>
+        </button>
       </div>
 
       {/* bottom info */}
@@ -125,6 +150,14 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
           </div>
         )}
       </div>
+
+      <CommentsSheet
+        open={showComments}
+        onOpenChange={setShowComments}
+        postId={post.id}
+        tenantId={post.tenant_id}
+        onCountChange={(d) => setCounts((c) => ({ ...c, comments: c.comments + d }))}
+      />
     </article>
   );
 }
