@@ -90,7 +90,7 @@ const App = () => (
               <Route path="/content" element={<Protected><B2BOnly><NeedsTenant><Content /></NeedsTenant></B2BOnly></Protected>} />
               <Route path="/content/services" element={<Protected><B2BOnly><NeedsTenant><AdminContent /></NeedsTenant></B2BOnly></Protected>} />
               <Route path="/content/events" element={<Protected><B2BOnly><NeedsTenant><AdminContent /></NeedsTenant></B2BOnly></Protected>} />
-              <Route path="/create" element={<Protected><B2BOnly><NeedsTenant><OwnerOnly><CreatePost /></OwnerOnly></NeedsTenant></B2BOnly></Protected>} />
+              <Route path="/create" element={<Protected><B2BOnly><NeedsTenant><CreatePost /></NeedsTenant></B2BOnly></Protected>} />
               <Route path="/profile" element={<Protected><NeedsTenant><Profile /></NeedsTenant></Protected>} />
               <Route path="/admin" element={<Protected><AdminOnly><AdminLayout /></AdminOnly></Protected>} />
               <Route path="/metrics" element={<Protected><B2BOnly><NeedsTenant><AdminLayout /></NeedsTenant></B2BOnly></Protected>}>
