@@ -98,8 +98,36 @@ export default function Feed() {
     );
   }
 
-  // B2C ou B2B com tenants mas nenhum selecionado → manda escolher comunidade
+  // B2B com tenants mas nenhum selecionado → seleciona o primeiro automaticamente (TenantContext já faz isso, mas fallback)
+  // B2C sem tenant → manda explorar comunidades
   if (!tenant) {
+    // B2B nunca deve ver "Explorar comunidades" — força criar/selecionar marca
+    if (isB2B) {
+      return (
+        <div className="min-h-[100dvh] flex flex-col bg-background">
+          <TopBar />
+          <main className="flex-1 grid place-items-center px-6 py-10">
+            <div className="max-w-sm w-full text-center">
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-brand-soft grid place-items-center mb-5">
+                <Sparkles className="h-7 w-7 text-primary" />
+              </div>
+              <h1 className="font-display text-3xl mb-2">Selecione sua marca</h1>
+              <p className="text-muted-foreground mb-6 text-pretty">
+                Você é dono de uma marca. Acesse o painel para gerenciar conteúdo e métricas.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => setShowCreate(true)}
+                className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full"
+              >
+                <Plus className="h-5 w-5 mr-2" />Nova marca
+              </Button>
+            </div>
+          </main>
+          <CreateBrandDialog open={showCreate} onOpenChange={setShowCreate} />
+        </div>
+      );
+    }
     return (
       <div className="min-h-[100dvh] flex flex-col bg-background">
         <TopBar />
@@ -108,13 +136,9 @@ export default function Feed() {
             <div className="h-16 w-16 mx-auto rounded-2xl bg-brand-soft grid place-items-center mb-5">
               <Compass className="h-7 w-7 text-primary" />
             </div>
-            <h1 className="font-display text-3xl mb-2">
-              {isB2C ? "Descubra comunidades" : "Selecione uma marca"}
-            </h1>
+            <h1 className="font-display text-3xl mb-2">Descubra comunidades</h1>
             <p className="text-muted-foreground mb-6 text-pretty">
-              {isB2C
-                ? "Entre em uma comunidade para ver o feed."
-                : "Escolha uma marca ativa para ver o feed."}
+              Entre em uma comunidade para ver o feed.
             </p>
             <Button asChild size="lg" className="w-full bg-brand text-primary-foreground hover:opacity-90 rounded-full">
               <Link to="/communities">Explorar comunidades</Link>
