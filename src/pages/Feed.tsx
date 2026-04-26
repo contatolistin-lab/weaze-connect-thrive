@@ -15,18 +15,17 @@ const PAGE = 8;
 export default function Feed() {
   const { tenant, loading: tLoading } = useTenant();
   const { user, isB2B } = useAuth();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const initialized = useRef(false);
 
-  const load = useCallback(async (offset = 0) => {
+  const loadPosts = useCallback(async (offset = 0) => {
     if (!tenant || loading || done) return;
     setLoading(true);
     const { data, error } = await supabase
@@ -53,16 +52,24 @@ export default function Feed() {
     }, { onConflict: "tenant_id,user_id,post_id,action_type" });
   }, [user, tenant]);
 
+  // Initial load only
   useEffect(() => {
-    console.log("Feed effect running, tenant:", tenant?.id);
+    if (initialized.current || !tenant) return;
+    initialized.current = true;
+    console.log("Feed initial load, tenant:", tenant.id);
     setPosts([]); setDone(false); setActiveIdx(0);
+    loadPosts(0);
+  }, [tenant?.id]); // Only run once when tenant changes
+
+  // Refresh on query param
+  useEffect(() => {
     const t = searchParams.get("t");
-    if (t) setRefreshKey(Number(t));
-    if (tenant) {
-      console.log("Loading posts for tenant:", tenant.id);
-      load(0);
+    if (t && tenant) {
+      console.log("Force refresh triggered by t param");
+      setPosts([]); setDone(false);
+      loadPosts(0);
     }
-  }, [tenant?.id, searchParams.toString(), refreshKey, load]);
+  }, [searchParams.get("t"), tenant?.id]);
 
   // Intersection Observer for active post and infinite scroll
   useEffect(() => {
@@ -78,13 +85,13 @@ export default function Feed() {
           if (post) {
             setTimeout(() => trackView(post.id), 2000);
           }
-          if (idx >= posts.length - 2) load(posts.length);
+          if (idx >= posts.length - 2) loadPosts(posts.length);
         }
       });
     }, { root: c, threshold: 0.6 });
     itemRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
-  }, [posts.length, load, trackView]);
+  }, [posts.length]);
 
   if (tLoading) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
 
