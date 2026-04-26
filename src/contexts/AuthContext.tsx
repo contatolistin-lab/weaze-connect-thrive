@@ -26,15 +26,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [appRole, setAppRole] = useState<AppRole | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      setRoleLoading(!s?.user);
       if (!s?.user) {
         setAppRole(null);
       }
-      // Forçar recomputação do role quando fazer login
       if (s?.user) {
         setTimeout(() => setUser(s?.user ?? null), 100);
       }
@@ -49,10 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Buscar papel do usuário (b2b / b2c / admin)
   useEffect(() => {
-    if (!user) { setAppRole(null); return; }
+    if (!user) { setAppRole(null); setRoleLoading(false); return; }
     let cancelled = false;
     (async () => {
-      // Buscar roles do usuário
       const { data } = await supabase
         .from("user_roles")
         .select("role")
@@ -62,7 +62,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const roles = (data ?? []).map((r) => r.role as AppRole);
       
-      // Se não tem role, verificar memberships para determinar
+      let newRole: AppRole | null = null;
+      
       if (roles.length === 0) {
         const { data: memberships } = await supabase
           .from("memberships")
@@ -71,23 +72,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .limit(1);
         
         if (memberships && memberships.length > 0) {
-          const memberRole = memberships[0].role;
-          if (memberRole === 'owner') {
-            setAppRole('b2c'); // Assume B2C se é owner de comunidade
-          } else {
-            setAppRole('b2c');
-          }
+          newRole = memberships[0].role === 'owner' ? 'b2c' : 'b2c';
         } else {
-          setAppRole('b2c');
+          newRole = 'b2c';
         }
       } else {
-        // prioridade: admin > b2b > b2c
-        const role: AppRole = roles.includes("admin")
+        newRole = roles.includes("admin")
           ? "admin"
           : roles.includes("b2b")
             ? "b2b"
             : "b2c";
-        setAppRole(role);
+      }
+      
+      if (!cancelled) {
+        setAppRole(newRole);
+        setRoleLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -95,10 +94,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => { await supabase.auth.signOut(); };
 
+  // Não considerar como "pronto" até role estar carregado
+  const isReady = !loading && !roleLoading;
+
   return (
     <Ctx.Provider
       value={{
-        user, session, loading,
+        user, session, loading: !isReady,
         appRole,
         isB2B: appRole === "b2b" || appRole === "admin",
         isB2C: appRole === "b2c",
