@@ -9,12 +9,18 @@ import { TenantProvider, useTenant } from "@/contexts/TenantContext";
 
 const queryClient = new QueryClient();
 
-const Landing = lazy(() => import("./pages/Landing"));
-const Auth = lazy(() => import("./pages/Auth"));
-
 const Loading = () => (
   <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>
 );
+
+const Landing = lazy(() => import("./pages/Landing"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Communities = lazy(() => import("./pages/Communities"));
+const Feed = lazy(() => import("./pages/Feed"));
+const Community = lazy(() => import("./pages/Community"));
+const Messages = lazy(() => import("./pages/Messages"));
+const Content = lazy(() => import("./pages/Content"));
+const Profile = lazy(() => import("./pages/Profile"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
@@ -24,7 +30,7 @@ const Protected = ({ children }: { children: JSX.Element }) => {
 };
 
 const NeedsTenant = ({ children }: { children: JSX.Element }) => {
-  const { tenant, loading } = useTenant();
+  const { loading } = useTenant();
   if (loading) return <Loading />;
   return children;
 };
@@ -41,6 +47,12 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/communities" element={<Protected><Communities /></Protected>} />
+                <Route path="/feed" element={<Protected><NeedsTenant><Feed /></NeedsTenant></Protected>} />
+                <Route path="/community" element={<Protected><NeedsTenant><Community /></NeedsTenant></Protected>} />
+                <Route path="/messages" element={<Protected><NeedsTenant><Messages /></NeedsTenant></Protected>} />
+                <Route path="/content" element={<Protected><NeedsTenant><Content /></NeedsTenant></Protected>} />
+                <Route path="/profile" element={<Protected><NeedsTenant><Profile /></NeedsTenant></Protected>} />
               </Routes>
             </TenantProvider>
           </AuthProvider>
