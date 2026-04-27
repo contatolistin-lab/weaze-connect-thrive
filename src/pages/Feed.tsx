@@ -32,42 +32,17 @@ export default function Feed() {
     
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      .select("*, post_cta(*)")
       .eq("tenant_id", tenant.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + PAGE - 1);
     
-    if (error) { console.error("Feed load error:", error); setLoading(false); return; }
-    console.log("Loaded posts raw:", data);
-    
-    // Load CTAs for posts
-    if (data && data.length > 0) {
-      const postIds = data.map(p => p.id);
-      console.log("Fetching CTAs for posts:", postIds);
-      const { data: ctas, error: ctaError } = await supabase
-        .from("post_cta")
-        .select("*")
-        .in("post_id", postIds);
-      
-      console.log("CTAs result:", ctas, "error:", ctaError);
-      
-      const ctasMap: Record<string, any[]> = {};
-      (ctas || []).forEach((c: any) => {
-        if (!ctasMap[c.post_id]) ctasMap[c.post_id] = [];
-        ctasMap[c.post_id].push(c);
-      });
-      
-      const postsWithCtas = data.map(p => ({ ...p, post_cta: ctasMap[p.id] || [] }));
-      console.log("Posts with CTAs:", postsWithCtas);
-      if (!data || data.length < PAGE) setDone(true);
-      setPosts((p) => offset === 0 ? postsWithCtas : [...p, ...postsWithCtas]);
-      setLoading(false);
-      return;
-    }
+    setLoading(false);
+    if (error) { console.error("Feed load error:", error); return; }
+    console.log("Loaded posts with CTAs:", data);
     
     if (!data || data.length < PAGE) setDone(true);
     setPosts((p) => offset === 0 ? (data as any[]) : [...p, ...(data as any[])]);
-    setLoading(false);
   }, [tenant?.id, loading, done]);
 
   // Track view when post becomes active
