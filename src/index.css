@@ -172,7 +172,7 @@
     position: absolute;
     left: 1rem;
     right: 1rem;
-    bottom: calc(11rem + env(safe-area-inset-bottom, 0px));
+    bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 2rem);
     min-height: 3rem;
     display: flex;
