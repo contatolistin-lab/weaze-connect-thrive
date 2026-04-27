@@ -145,7 +145,10 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
     if (!user || !tenant) { toast.error("Usuário não autenticado"); return; }
     if (!chatComment.trim()) { toast.error("Escreva um comentário"); return; }
     
-    console.log("Sending comment:", { postId: post.id, content: chatComment, metadata: { post_id: post.id, post_type: post.type, post_media: post.media_url, post_thumbnail: post.thumbnail_url, post_description: post.description }});
+    const thumbnailUrl = post.thumbnail_url || post.media_url;
+    const postInfo = `[Post ${post.type === 'image' ? '🖼️' : post.type === 'video' ? '🎬' : '📝'}](${thumbnailUrl || 'sem imagem'})`;
+    
+    console.log("Sending comment:", { postId: post.id, content: chatComment });
     
     const { data: mem } = await supabase.from("memberships").select("id")
       .eq("tenant_id", tenant.id).eq("user_id", user.id).maybeSingle();
@@ -156,8 +159,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
     const { error } = await supabase.from("community_messages").insert({
       tenant_id: tenant.id,
       user_id: user.id,
-      content: `[Post] ${chatComment.trim()}`,
-      metadata_json: { post_id: post.id, post_type: post.type, post_media: post.media_url, post_thumbnail: post.thumbnail_url, post_description: post.description }
+      content: `[Post] ${chatComment.trim()}\n\n${postInfo}\n\n${post.description?.slice(0, 100) || ''}`
     });
 
     if (error) {

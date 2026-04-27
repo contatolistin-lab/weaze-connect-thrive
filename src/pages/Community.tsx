@@ -56,8 +56,14 @@ export default function Community() {
     if (error) toast.error(error.message);
   };
 
-  const isPostComment = (content: string, metadata?: Record<string, unknown> | null) => {
-    return content?.startsWith("[Post]") || metadata?.post_id;
+  const isPostComment = (content: string) => {
+    return content?.startsWith("[Post]");
+  };
+
+  const extractPostInfo = (content: string) => {
+    if (!content?.startsWith("[Post]")) return null;
+    const match = content.match(/\[Post 🖼️\]\(([^)]+)\)|\[Post 🎬\]\(([^)]+)\)|\[Post 📝]\(([^)]+)\)/);
+    return match ? (match[1] || match[2] || match[3]) : null;
   };
 
   return (
@@ -67,7 +73,8 @@ export default function Community() {
         <h1 className="font-display text-3xl mb-4">Comunidade</h1>
         {messages.length === 0 && <p className="text-muted-foreground text-sm">Seja o primeiro a escrever.</p>}
         {messages.map((m) => {
-          const isPost = isPostComment(m.content, m.metadata_json);
+          const isPost = isPostComment(m.content);
+          const postThumbnail = extractPostInfo(m.content);
           return (
             <div key={m.id} className={`flex gap-2 ${m.user_id === user?.id ? "flex-row-reverse" : ""}`}>
               <div className="h-8 w-8 rounded-full bg-secondary grid place-items-center text-xs font-medium shrink-0">
@@ -75,22 +82,17 @@ export default function Community() {
               </div>
               <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${m.user_id === user?.id ? "bg-foreground text-background" : "bg-secondary"}`}>
                 <p className="text-xs opacity-70 mb-0.5">{m.profiles?.name ?? "Anônimo"}</p>
-                {isPost && m.metadata_json && (
+                {isPost && postThumbnail && postThumbnail !== 'sem imagem' && (
                   <div className="mb-2 rounded-lg overflow-hidden border border-border">
                     <img 
-                      src={(m.metadata_json.post_thumbnail || m.metadata_json.post_media) as string} 
+                      src={postThumbnail} 
                       alt="Post" 
                       className="w-full h-32 object-cover"
                     />
-                    {m.metadata_json.post_description && (
-                      <p className="text-xs p-2 bg-muted truncate">
-                        {String(m.metadata_json.post_description).slice(0, 80)}
-                      </p>
-                    )}
                   </div>
                 )}
                 <p className="text-sm whitespace-pre-wrap break-words">
-                  {isPost ? m.content.slice(6).trim() : m.content}
+                  {isPost ? m.content.replace(/\[Post 🖼️\]\([^)]+\)/g, '').replace(/\[Post 🎬\]\([^)]+\)/g, '').replace(/\[Post �¶\]\([^)]+\)/g, '').replace(/\n\n.+$/s, '').slice(6).trim() : m.content}
                 </p>
               </div>
             </div>
