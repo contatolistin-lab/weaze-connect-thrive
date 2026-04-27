@@ -153,7 +153,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
       {/* right rail - posicionado ACIMA do CTA */}
       <div
         className="absolute right-3 flex flex-col items-center gap-5 z-10"
-        style={{ bottom: "calc(9.5rem + 3.5rem + env(safe-area-inset-bottom, 0px))" }}
+        style={{ bottom: "calc(9.5rem + 5.5rem + env(safe-area-inset-bottom, 0px))" }}
       >
         <button onClick={toggleMute} className="flex flex-col items-center gap-1" aria-label={muted ? "Ativar som" : "Silenciar"}>
           {muted ? <VolumeX className="h-6 w-6 drop-shadow-md text-background" /> : <Volume2 className="h-6 w-6 drop-shadow-md text-background" />}
@@ -185,7 +185,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
       <div
         className="absolute left-0 right-0 px-5 z-10 max-w-md"
-        style={{ bottom: "calc(9.5rem + 3.5rem + env(safe-area-inset-bottom, 0px))" }}
+        style={{ bottom: "calc(9.5rem + 5.5rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {post.profiles?.name && (
           <p className="font-semibold text-sm mb-2 drop-shadow-md">@{post.profiles.name}</p>
