@@ -1,6 +1,7 @@
 import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 
+/** Weaze logo component */
 type Props = {
   className?: string;
   /** altura em pixels (largura ajusta proporcionalmente) */
