@@ -43,10 +43,13 @@ export default function Feed() {
     // Load CTAs for posts
     if (data && data.length > 0) {
       const postIds = data.map(p => p.id);
-      const { data: ctas } = await supabase
+      console.log("Fetching CTAs for posts:", postIds);
+      const { data: ctas, error: ctaError } = await supabase
         .from("post_cta")
         .select("*")
         .in("post_id", postIds);
+      
+      console.log("CTAs result:", ctas, "error:", ctaError);
       
       const ctasMap: Record<string, any[]> = {};
       (ctas || []).forEach((c: any) => {
@@ -55,6 +58,7 @@ export default function Feed() {
       });
       
       const postsWithCtas = data.map(p => ({ ...p, post_cta: ctasMap[p.id] || [] }));
+      console.log("Posts with CTAs:", postsWithCtas);
       if (!data || data.length < PAGE) setDone(true);
       setPosts((p) => offset === 0 ? postsWithCtas : [...p, ...postsWithCtas]);
       setLoading(false);
