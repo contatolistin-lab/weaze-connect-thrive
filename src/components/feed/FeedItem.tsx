@@ -131,17 +131,12 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const startConversation = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user || !tenant) { nav("/auth"); return; }
-    const { data: t } = await supabase.from("message_threads").select("id")
+    const { data: mem } = await supabase.from("memberships").select("id")
       .eq("tenant_id", tenant.id).eq("user_id", user.id).maybeSingle();
-    const threadId = t?.id;
-    if (threadId) {
-      nav("/messages");
-    } else {
-      const { data: newThread } = await supabase.from("message_threads")
-        .insert({ tenant_id: tenant.id, user_id: user.id })
-        .select("id").single();
-      if (newThread) nav("/messages");
+    if (!mem) {
+      await supabase.from("memberships").insert({ tenant_id: tenant.id, user_id: user.id, role: "member" });
     }
+    nav("/community");
     track({ tenantId: post.tenant_id, postId: post.id, action: "click_cta", metadata: { kind: "message_brand" } });
   };
 
