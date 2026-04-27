@@ -187,12 +187,6 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
         className="absolute left-0 right-0 px-5 z-10 max-w-md"
         style={{ bottom: "calc(11rem + 3.5rem + env(safe-area-inset-bottom, 0px))" }}
       >
-        {/* progress bar for video */}
-        {post.type === "video" && (
-          <div className="h-1 bg-white/30 rounded-full mb-3 overflow-hidden">
-            <div className="h-full bg-brand rounded-full transition-all" style={{ width: `${progress}%` }} />
-          </div>
-        )}
         {post.profiles?.name && (
           <p className="font-semibold text-sm mb-2 drop-shadow-md">@{post.profiles.name}</p>
         )}
@@ -200,6 +194,16 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
           <p className="text-sm leading-relaxed mb-4 line-clamp-3 text-pretty">{post.description}</p>
         )}
       </div>
+
+      {/* progress bar for video - below CTA, non-interactive */}
+      {post.type === "video" && (
+        <div
+          className="absolute left-0 right-0 h-1 bg-white/20 overflow-hidden pointer-events-none"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 2px)", zIndex: 5 }}
+        >
+          <div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} />
+        </div>
+      )}
 
       <CommentsSheet
         open={showComments}
