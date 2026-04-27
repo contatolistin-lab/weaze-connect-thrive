@@ -48,20 +48,24 @@ export default function Feed() {
       return;
     }
     
-    // Fetch CTAs separately
+    // Fetch CTAs for all posts (including pagination)
     const postIds = data.map(p => p.id);
     console.log("Post IDs:", postIds);
     
-    const { data: ctas } = await supabase
-      .from("post_cta")
-      .select("*")
-      .in("post_id", postIds);
+    let ctas: any[] = [];
+    if (postIds.length > 0) {
+      const { data: ctasData } = await supabase
+        .from("post_cta")
+        .select("*")
+        .in("post_id", postIds);
+      ctas = ctasData || [];
+    }
     
     console.log("Loaded CTAs:", ctas);
     
     // Map CTAs to posts
     const ctaMap: Record<string, any> = {};
-    (ctas || []).forEach((c: any) => {
+    ctas.forEach((c: any) => {
       ctaMap[c.post_id] = c;
     });
     
