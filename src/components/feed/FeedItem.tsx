@@ -195,16 +195,6 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
         )}
       </div>
 
-      {/* progress bar for video - below CTA, non-interactive */}
-      {post.type === "video" && (
-        <div
-          className="absolute left-0 right-0 h-1 bg-white/20 overflow-hidden pointer-events-none"
-          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 2px)", zIndex: 5 }}
-        >
-          <div className="h-full bg-brand transition-all" style={{ width: `${progress}%` }} />
-        </div>
-      )}
-
       <CommentsSheet
         open={showComments}
         onOpenChange={setShowComments}
