@@ -42,6 +42,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [chatComment, setChatComment] = useState("");
+  const [sending, setSending] = useState(false);
 
   const isPostOwner = isOwner && post.author_id === user?.id;
 
@@ -148,6 +149,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
     const thumbnailUrl = post.thumbnail_url || post.media_url || null;
 
+    setSending(true);
     try {
       // Garante membership (idempotente)
       const { data: existingMem } = await supabase
@@ -192,6 +194,8 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
     } catch (err) {
       console.error("sendChatComment error", err);
       toast.error("Erro ao enviar");
+    } finally {
+      setSending(false);
     }
   };
 
