@@ -143,35 +143,53 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
 
   const sendChatComment = async () => {
     if (!user || !tenant) { toast.error("Usuário não autenticado"); return; }
-    if (!chatComment.trim()) { toast.error("Escreva um comentário"); return; }
-    
-    const thumbnailUrl = post.thumbnail_url || post.media_url;
-    
+    const trimmed = chatComment.trim();
+    if (!trimmed) { toast.error("Escreva um comentário"); return; }
+
+    const thumbnailUrl = post.thumbnail_url || post.media_url || null;
+
     try {
-      await supabase.from("memberships").upsert({
-        tenant_id: tenant.id,
-        user_id: user.id,
-        role: "member"
-      });
-      
-      const messageContent = `[Post] ${chatComment.trim()}\n\n${thumbnailUrl || ''}\n\n${post.description?.slice(0, 100) || ''}`;
-      
+      // Garante membership (idempotente)
+      const { data: existingMem } = await supabase
+        .from("memberships")
+        .select("id")
+        .eq("tenant_id", tenant.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existingMem) {
+        const { error: memErr } = await supabase.from("memberships").insert({
+          tenant_id: tenant.id,
+          user_id: user.id,
+          role: "member",
+        });
+        if (memErr) {
+          toast.error(`Erro ao entrar na comunidade: ${memErr.message}`);
+          return;
+        }
+      }
+
+      // Payload consistente: prefixo [Post], thumbnail (se houver) em linha própria, depois texto
+      const parts = ["[Post]", trimmed];
+      if (thumbnailUrl) parts.push(thumbnailUrl);
+      const messageContent = parts.join("\n");
+
       const { error } = await supabase.from("community_messages").insert({
         tenant_id: tenant.id,
         user_id: user.id,
-        content: messageContent
+        content: messageContent,
       });
 
       if (error) {
-        toast.error(`Erro: ${error.message}`);
+        toast.error(`Erro ao enviar: ${error.message}`);
         return;
       }
 
-      toast.success("Comentário enviado!");
+      toast.success("Comentário enviado para a comunidade!");
       setShowChatDialog(false);
       setChatComment("");
       nav("/community");
     } catch (err) {
+      console.error("sendChatComment error", err);
       toast.error("Erro ao enviar");
     }
   };
