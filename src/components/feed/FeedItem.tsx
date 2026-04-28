@@ -112,6 +112,12 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   };
 
   const like = async (forceLike = false) => {
+    if (liked && !forceLike) {
+      setLiked(false);
+      setCounts((c) => ({ ...c, likes: Math.max(0, c.likes - 1) }));
+      return;
+    }
+    
     setPopHeart(true);
     setTimeout(() => setPopHeart(false), 600);
     
@@ -235,18 +241,19 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
         <Heart className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 fill-primary text-primary animate-scale-pop pointer-events-none drop-shadow-[0_0_24px_hsl(var(--brand-to)/0.6)]" />
       )}
       {hearts.map((heart) => (
-        <div
+        <Heart
           key={heart.id}
-          className="absolute pointer-events-none"
+          className="absolute pointer-events-none animate-float-heart"
           style={{
             right: 16,
             bottom: 120,
-            animation: `float-heart 1s ease-out ${heart.delay}ms forwards`,
+            animationDelay: `${heart.delay}ms`,
             transform: `translateX(${heart.x}px) scale(${heart.size})`,
+            fill: "#d81e62",
+            color: "#d81e62",
+            filter: "drop-shadow(0 0 8px rgba(216, 30, 98, 0.6))",
           }}
-        >
-          <Heart className="h-6 w-6" style={{ fill: "#d81e62", color: "#d81e62", filter: "drop-shadow(0 0 8px rgba(216, 30, 98, 0.6))" }} />
-        </div>
+        />
       ))}
 
       {/* right rail - posicionado ACIMA do CTA */}
