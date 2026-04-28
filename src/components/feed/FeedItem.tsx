@@ -229,7 +229,9 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
           loop muted={muted} playsInline preload="metadata" poster={post.thumbnail_url ?? undefined}
           onTimeUpdate={onTimeUpdate} onClick={toggleMute} />
       ) : post.type === "image" && post.media_url ? (
-        <img src={post.media_url} alt={post.description ?? ""} className="feed-media absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+          <img src={post.media_url} alt={post.description ?? ""} className="max-h-[85vh] w-auto max-w-full object-contain aspect-[4/5]" />
+        </div>
       ) : (
         <div className="absolute inset-0 bg-brand grid place-items-center px-8">
           <p className="font-display text-3xl text-balance text-center text-primary-foreground">{post.description}</p>
@@ -341,7 +343,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
             <p className="text-sm text-muted-foreground font-normal mt-1">Seu comentário será visível na comunidade.</p>
           </DialogHeader>
           <div className="space-y-4 px-5 py-4">
-            <div className="aspect-video rounded-xl overflow-hidden bg-gray-100 shadow-inner">
+            <div className="aspect-[4/5] max-h-[50vh] mx-auto rounded-xl overflow-hidden bg-gray-100 shadow-inner">
               {post.type === "video" && post.media_url ? (
                 <video src={post.media_url} className="w-full h-full object-cover" muted loop playsInline autoPlay />
               ) : post.type === "image" && post.media_url ? (

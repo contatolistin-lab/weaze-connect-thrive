@@ -28,7 +28,8 @@ const REGISTER_FIELDS = [
 const MAX_VIDEO_DURATION = 120; // 2 minutes in seconds
 const VIDEO_ASPECT_RATIO = "9:16";
 const VIDEO_RESOLUTION = "1080x1920";
-const IMAGE_ASPECT_RATIO = "1:1";
+const IMAGE_ASPECT_RATIO = "4:5";
+const IMAGE_RESOLUTION = "1080x1350";
 
 export default function CreatePost() {
   const { tenant, isOwner } = useTenant();
@@ -104,7 +105,7 @@ export default function CreatePost() {
       img.onload = () => {
         const ratio = img.width / img.height;
         if (Math.abs(ratio - 1) > 0.1) { // Allow small tolerance
-          toast.warning("Imagem recomendada 1:1 (quadrado)");
+          toast.warning("Imagem recomendada 4:5 (vertical)");
         }
         setFile(f);
       };
@@ -317,7 +318,7 @@ export default function CreatePost() {
                   )}
                   {type === "image" && (
                     <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
-                      <p>• Proporção recomendada: 1:1 (quadrado)</p>
+                      <p>• Proporção recomendada: 4:5 (1080x1350px)</p>
                       <p>• Formatos aceitos: JPG, PNG, WebP</p>
                     </div>
                   )}
@@ -345,7 +346,7 @@ export default function CreatePost() {
                       {type === "video" ? (
                         <video src={URL.createObjectURL(file)} className="w-full aspect-[9/16]" controls />
                       ) : (
-                        <img src={URL.createObjectURL(file)} className="w-full aspect-square object-cover" alt="Preview" />
+                        <img src={URL.createObjectURL(file)} className="w-full aspect-[4/5] object-cover" alt="Preview" />
                       )}
                       <p className="p-2 text-xs text-muted-foreground bg-card">
                         {file.name}
