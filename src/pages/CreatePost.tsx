@@ -264,51 +264,62 @@ export default function CreatePost() {
           {type !== "text" && (
             <>
               {/* Media Mode Selector */}
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setMediaMode("url")}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all",
-                    mediaMode === "url" ? "bg-brand text-primary-foreground border-brand" : "bg-card border-border hover:bg-secondary/60"
+                    "flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all",
+                    mediaMode === "url" ? "bg-brand/10 border-brand" : "bg-card border-border hover:bg-secondary/50"
                   )}
                 >
-                  <Link className="h-4 w-4" />
-                  <span className="text-sm font-medium">URL</span>
+                  <Link className={cn("h-6 w-6", mediaMode === "url" ? "text-brand" : "text-muted-foreground")} />
+                  <span className={cn("text-sm font-semibold", mediaMode === "url" ? "text-brand" : "text-muted-foreground")}>URL</span>
+                  <span className="text-xs text-muted-foreground px-2 text-center">Vimeo, Cloudinary, etc</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMediaMode("upload")}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all",
-                    mediaMode === "upload" ? "bg-brand text-primary-foreground border-brand" : "bg-card border-border hover:bg-secondary/60"
+                    "flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all",
+                    mediaMode === "upload" ? "bg-brand/10 border-brand" : "bg-card border-border hover:bg-secondary/50"
                   )}
                 >
-                  <Upload className="h-4 w-4" />
-                  <span className="text-sm font-medium">Upload</span>
+                  <Upload className={cn("h-6 w-6", mediaMode === "upload" ? "text-brand" : "text-muted-foreground")} />
+                  <span className={cn("text-sm font-semibold", mediaMode === "upload" ? "text-brand" : "text-muted-foreground")}>Upload</span>
+                  <span className="text-xs text-muted-foreground px-2 text-center">Enviar arquivo</span>
                 </button>
               </div>
 
               {mediaMode === "url" ? (
-                <div>
-                  <Label>
-                    {type === "video" ? "URL do vídeo" : "URL da imagem"}
-                    {type === "video" && <span className="text-xs text-muted-foreground ml-2">(provém de Vimeo, Cloudinary, etc)</span>}
-                  </Label>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-base font-medium">
+                      {type === "video" ? "URL do vídeo" : "URL da imagem"}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {type === "video" ? "Cole a URL do seu vídeo (Vimeo, Cloudinary, etc)" : "Cole a URL da imagem"}
+                    </p>
+                  </div>
                   <Input 
                     value={mediaUrl} 
                     onChange={(e) => setMediaUrl(e.target.value)} 
-                    placeholder={type === "video" ? "https://player.vimeo.com/..." : "https://..."} 
+                    placeholder={type === "video" ? "https://player.vimeo.com/..." : "https://exemplo.com/imagem.jpg"}
+                    className="h-12"
                   />
                   {type === "video" && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Proporção 9:16 (vertical) • Máx 2 min • 1080x1920px recomendado
-                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
+                      <p className="font-medium text-foreground">Especificações técnicas:</p>
+                      <p>• Proporção: 9:16 (vertical)</p>
+                      <p>• Duração máxima: 2 minutos</p>
+                      <p>• Resolução recomendada: 1080x1920px</p>
+                    </div>
                   )}
                   {type === "image" && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Proporção 1:1 (quadrado)
-                    </p>
+                    <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
+                      <p>• Proporção recomendada: 1:1 (quadrado)</p>
+                      <p>• Formatos aceitos: JPG, PNG, WebP</p>
+                    </div>
                   )}
                 </div>
               ) : (
@@ -366,9 +377,10 @@ export default function CreatePost() {
 
               {/* Thumbnail for video URL mode */}
               {mediaMode === "url" && type === "video" && (
-                <div>
-                  <Label>Thumbnail (opcional)</Label>
-                  <Input value={thumb} onChange={(e) => setThumb(e.target.value)} placeholder="https://..." />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Thumbnail (opcional)</Label>
+                  <p className="text-xs text-muted-foreground">Imagem de capa do vídeo - será gerada automaticamente se vazio</p>
+                  <Input value={thumb} onChange={(e) => setThumb(e.target.value)} placeholder="https://exemplo.com/thumbnail.jpg" />
                 </div>
               )}
             </>
