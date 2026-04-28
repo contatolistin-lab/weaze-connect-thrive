@@ -43,6 +43,8 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [chatComment, setChatComment] = useState("");
   const [sending, setSending] = useState(false);
+  const [hearts, setHearts] = useState<{ id: number; x: number; delay: number; size: number }[]>([]);
+  const heartIdRef = useRef(0);
 
   const isPostOwner = isOwner && post.author_id === user?.id;
 
@@ -112,6 +114,16 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const like = async (forceLike = false) => {
     setPopHeart(true);
     setTimeout(() => setPopHeart(false), 600);
+    
+    const newHearts = Array.from({ length: 5 }, (_, i) => ({
+      id: heartIdRef.current++,
+      x: (Math.random() - 0.5) * 40,
+      delay: i * 80 + Math.random() * 60,
+      size: 0.8 + Math.random() * 0.4,
+    }));
+    setHearts(newHearts);
+    setTimeout(() => setHearts([]), 1000);
+    
     if (liked && !forceLike) return;
     setLiked(true);
     setCounts((c) => ({ ...c, likes: c.likes + 1 }));
@@ -222,6 +234,20 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
       {popHeart && (
         <Heart className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 fill-primary text-primary animate-scale-pop pointer-events-none drop-shadow-[0_0_24px_hsl(var(--brand-to)/0.6)]" />
       )}
+      {hearts.map((heart) => (
+        <div
+          key={heart.id}
+          className="absolute pointer-events-none"
+          style={{
+            right: 16,
+            bottom: 120,
+            animation: `float-heart 1s ease-out ${heart.delay}ms forwards`,
+            transform: `translateX(${heart.x}px) scale(${heart.size})`,
+          }}
+        >
+          <Heart className="h-6 w-6" style={{ fill: "#d81e62", color: "#d81e62", filter: "drop-shadow(0 0 8px rgba(216, 30, 98, 0.6))" }} />
+        </div>
+      ))}
 
       {/* right rail - posicionado ACIMA do CTA */}
       <div
