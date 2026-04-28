@@ -3,35 +3,35 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TenantProvider, useTenant } from "@/contexts/TenantContext";
 import OnboardingTour from "@/components/OnboardingTour";
+
+import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
+import Communities from "./pages/Communities";
+import Feed from "./pages/Feed";
+import Community from "./pages/Community";
+import Messages from "./pages/Messages";
+import Content from "./pages/Content";
+import CreatePost from "./pages/CreatePost";
+import AdminContent from "./pages/admin/Content";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOverview from "./pages/admin/Overview";
+import AdminRevenue from "./pages/admin/Revenue";
+import AdminFunnel from "./pages/admin/Funnel";
+import AdminUsers from "./pages/admin/Users";
+import AdminTenants from "./pages/admin/Tenants";
+import AdminGlobal from "./pages/admin/AdminGlobal";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
 const Loading = () => (
   <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>
 );
-
-const Landing = lazy(() => import("./pages/Landing"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Onboarding = lazy(() => import("./pages/Onboarding"));
-const Communities = lazy(() => import("./pages/Communities"));
-const Feed = lazy(() => import("./pages/Feed"));
-const Community = lazy(() => import("./pages/Community"));
-const Messages = lazy(() => import("./pages/Messages"));
-const Content = lazy(() => import("./pages/Content"));
-const CreatePost = lazy(() => import("./pages/CreatePost"));
-const AdminContent = lazy(() => import("./pages/admin/Content"));
-const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
-const AdminOverview = lazy(() => import("./pages/admin/Overview"));
-const AdminRevenue = lazy(() => import("./pages/admin/Revenue"));
-const AdminFunnel = lazy(() => import("./pages/admin/Funnel"));
-const AdminUsers = lazy(() => import("./pages/admin/Users"));
-const AdminTenants = lazy(() => import("./pages/admin/Tenants"));
-const AdminGlobal = lazy(() => import("./pages/admin/AdminGlobal"));
-const Profile = lazy(() => import("./pages/Profile"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
