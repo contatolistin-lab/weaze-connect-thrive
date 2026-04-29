@@ -25,8 +25,7 @@ type Live = {
 };
 
 export default function Lives() {
-  const { tenant } = useTenant();
-  const { isOwner } = useAuth();
+  const { tenant, canManage } = useTenant();
   const [lives, setLives] = useState<Live[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -100,13 +99,13 @@ export default function Lives() {
     loadLives();
   };
 
-  if (!tenant || !isOwner) {
+  if (!tenant || !canManage) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-background">
         <TopBar />
         <main className="flex-1 grid place-items-center px-4">
           <p className="text-muted-foreground text-center">
-            Apenas o dono da marca pode gerenciar lives.
+            Você não tem permissão para gerenciar lives.
           </p>
         </main>
         <BottomNav />

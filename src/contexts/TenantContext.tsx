@@ -12,19 +12,20 @@ export type Tenant = {
   bio: string | null;
 };
 
-type TenantRoles = Record<string, "owner" | "member">;
+type TenantRoles = Record<string, "owner" | "admin" | "member">;
 
 type TenantCtx = {
   tenant: Tenant | null;
   tenants: Tenant[];
   isOwner: boolean;
+  canManage: boolean;
   loading: boolean;
   selectTenant: (id: string) => void;
   refresh: () => Promise<void>;
 };
 
 const Ctx = createContext<TenantCtx>({
-  tenant: null, tenants: [], isOwner: false, loading: true,
+  tenant: null, tenants: [], isOwner: false, canManage: false, loading: true,
   selectTenant: () => {}, refresh: async () => {},
 });
 
@@ -33,6 +34,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [memRoles, setMemRoles] = useState<TenantRoles>({} as TenantRoles);
 
@@ -42,6 +44,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       setTenants([]);
       setTenant(null);
       setIsOwner(false);
+      setCanManage(false);
       setLoading(false);
       return;
     }
@@ -52,7 +55,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     const list = (mems ?? []).map((m: unknown) => (m as { tenants: Tenant })?.tenants).filter(Boolean) as Tenant[];
     const roles: TenantRoles = {} as TenantRoles;
     (mems ?? []).forEach((m: unknown) => {
-      const membership = m as { tenant_id: string; role: "owner" | "member" };
+      const membership = m as { tenant_id: string; role: "owner" | "admin" | "member" };
       roles[membership.tenant_id] = membership.role;
     });
     setMemRoles(roles);
@@ -60,16 +63,17 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     
     // Auto-selecionar tenant
     const savedId = localStorage.getItem("wenity:active_tenant");
-    if (savedId && list.find(t => t.id === savedId)) {
-      setTenant(list.find(t => t.id === savedId)!);
-      setIsOwner(roles[savedId] === "owner");
-    } else if (list.length > 0) {
-      setTenant(list[0]);
-      setIsOwner(roles[list[0].id] === "owner");
-      localStorage.setItem("wenity:active_tenant", list[0].id);
+    const targetId = savedId && list.find(t => t.id === savedId) ? savedId : list[0]?.id;
+    const targetRole = targetId ? roles[targetId] : null;
+    if (targetId && targetRole) {
+      setTenant(list.find(t => t.id === targetId)!);
+      setIsOwner(targetRole === "owner");
+      setCanManage(targetRole === "owner" || targetRole === "admin");
+      if (savedId) localStorage.setItem("wenity:active_tenant", targetId);
     } else {
       setTenant(null);
       setIsOwner(false);
+      setCanManage(false);
     }
     setLoading(false);
   }, [user]);
@@ -79,13 +83,15 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
   const selectTenant = (id: string) => {
     const t = tenants.find((x) => x.id === id);
     if (!t) return;
+    const role = memRoles[id];
     setTenant(t);
-    setIsOwner(memRoles[id] === "owner");
+    setIsOwner(role === "owner");
+    setCanManage(role === "owner" || role === "admin");
     localStorage.setItem("wenity:active_tenant", id);
   };
 
   return (
-    <Ctx.Provider value={{ tenant, tenants, isOwner, loading, selectTenant, refresh: load }}>
+    <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, loading, selectTenant, refresh: load }}>
       {children}
     </Ctx.Provider>
   );
