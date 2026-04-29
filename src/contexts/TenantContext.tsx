@@ -61,14 +61,15 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     setMemRoles(roles);
     setTenants(list);
     
-    // Auto-selecionar tenant
+    // Auto-selecionar tenant - qualquer membro pode gerenciar
     const savedId = localStorage.getItem("wenity:active_tenant");
     const targetId = savedId && list.find(t => t.id === savedId) ? savedId : list[0]?.id;
     const targetRole = targetId ? roles[targetId] : null;
     if (targetId && targetRole) {
       setTenant(list.find(t => t.id === targetId)!);
       setIsOwner(targetRole === "owner");
-      setCanManage(targetRole === "owner" || targetRole === "admin");
+      // Qualquer membro (owner/admin/member) com vínculo pode gerenciar lives
+      setCanManage(true);
       if (savedId) localStorage.setItem("wenity:active_tenant", targetId);
     } else {
       setTenant(null);
@@ -86,7 +87,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     const role = memRoles[id];
     setTenant(t);
     setIsOwner(role === "owner");
-    setCanManage(role === "owner" || role === "admin");
+    setCanManage(true); // Qualquer membro pode gerenciar lives
     localStorage.setItem("wenity:active_tenant", id);
   };
 
