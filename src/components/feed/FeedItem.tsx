@@ -263,6 +263,16 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
       <div className="absolute inset-0 bg-overlay-top pointer-events-none" />
       <div className="absolute inset-0 bg-overlay pointer-events-none" />
 
+      {/* Live Badge */}
+      {post.is_live && (
+        <div className="absolute top-20 left-4 z-20">
+          <span className="flex items-center gap-1.5 bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-bold animate-pulse shadow-lg">
+            <span className="w-2 h-2 bg-white rounded-full animate-ping" />
+            AO VIVO
+          </span>
+        </div>
+      )}
+
       {popHeart && (
         <Heart className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 fill-primary text-primary animate-scale-pop pointer-events-none drop-shadow-[0_0_24px_hsl(var(--brand-to)/0.6)]" />
       )}

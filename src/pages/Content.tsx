@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
-import { PlusSquare, Calendar, CalendarDays, BarChart3, Lock } from "lucide-react";
+import { PlusSquare, Calendar, CalendarDays, BarChart3, Lock, Video } from "lucide-react";
 
 /**
  * Tab "Conteúdo" — área do B2B para gerenciar posts, agenda e eventos.
@@ -30,6 +30,7 @@ export default function Content() {
             <ContentCard to="/create" icon={PlusSquare} title="Novo post" desc="Vídeo, imagem ou texto com CTA." />
             <ContentCard to="/content/services" icon={Calendar} title="Serviços" desc="Cadastre serviços para agendamento." />
             <ContentCard to="/content/events" icon={CalendarDays} title="Eventos" desc="Crie eventos com vagas limitadas." />
+            <ContentCard to="/content/lives" icon={Video} title="Lives" desc="Gerencie transmissões ao vivo." />
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-8 text-center">
