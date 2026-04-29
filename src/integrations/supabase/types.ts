@@ -770,6 +770,10 @@ export type Database = {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
       }
+      compute_topic_score: {
+        Args: { topic_id: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "b2b" | "b2c"

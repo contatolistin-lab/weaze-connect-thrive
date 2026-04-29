@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Video, Image as ImageIcon, Link, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type CtaType = "none" | "buy" | "schedule" | "quote" | "register" | "info";
+type CtaType = "none" | "buy" | "schedule" | "quote" | "register" | "info" | "live";
 
 const REGISTER_FIELDS = [
   { key: "name", label: "Nome", required: true },
@@ -73,6 +73,12 @@ export default function CreatePost() {
   const [infoMode, setInfoMode] = useState<"internal" | "external">("internal");
   const [infoContent, setInfoContent] = useState("");
   const [infoUrl, setInfoUrl] = useState("");
+
+  // LIVE
+  const [liveTitle, setLiveTitle] = useState("");
+  const [liveDesc, setLiveDesc] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
+  const [liveScheduledAt, setLiveScheduledAt] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [usage, setUsage] = useState<{ posts: number; max: number } | null>(null);
@@ -188,6 +194,21 @@ export default function CreatePost() {
       if (!infoContent.trim()) return { ok: false, error: "Conteúdo obrigatório" };
       return { ok: true, config: { type: "internal", content: infoContent.trim() } };
     }
+    if (ctaType === "live") {
+      if (!liveTitle.trim()) return { ok: false, error: "Título da LIVE obrigatório" };
+      if (!liveUrl.trim()) return { ok: false, error: "Link da transmissão obrigatório" };
+      try { new URL(liveUrl); } catch { return { ok: false, error: "Link inválido" }; }
+      return {
+        ok: true,
+        config: {
+          title: liveTitle.trim(),
+          description: liveDesc.trim() || undefined,
+          external_url: liveUrl.trim(),
+          scheduled_at: liveScheduledAt || null,
+          is_live: false,
+        },
+      };
+    }
     return { ok: true, config: {} };
   };
 
@@ -231,11 +252,24 @@ export default function CreatePost() {
     if (error) { console.error("Post insert error:", error); toast.error(error.message); setLoading(false); return; }
     console.log("Post created:", post);
 
-    if (ctaType !== "none") {
+if (ctaType !== "none") {
       const { error: ctaErr } = await supabase.from("post_cta").insert({
         post_id: post.id, type: ctaType, label: ctaLabels[ctaType], config_json: ctaConfig,
       });
       if (ctaErr) { toast.error(`CTA: ${ctaErr.message}`); setLoading(false); return; }
+
+      // Create live if CTA is "live"
+      if (ctaType === "live") {
+        const { error: liveErr } = await supabase.from("lives").insert({
+          tenant_id: tenant.id,
+          title: liveTitle,
+          description: liveDesc,
+          external_url: liveUrl,
+          scheduled_at: liveScheduledAt ? new Date(liveScheduledAt).toISOString() : null,
+          created_by: user.id,
+        });
+        if (liveErr) { toast.error(`Live: ${liveErr.message}`); setLoading(false); return; }
+      }
     }
 
     toast.success("Post publicado");
@@ -399,6 +433,7 @@ export default function CreatePost() {
                 <SelectItem value="quote">Orçamento</SelectItem>
                 <SelectItem value="register">Inscrição em evento</SelectItem>
                 <SelectItem value="info">Saiba mais</SelectItem>
+                <SelectItem value="live">Ao Vivo (LIVE)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -482,6 +517,16 @@ export default function CreatePost() {
               )}
 
               {ctaType === "quote" && <p className="text-xs text-muted-foreground">Sem configuração adicional. O usuário envia um pedido de orçamento.</p>}
+
+              {ctaType === "live" && (
+                <>
+                  <div><Label>Título da LIVE</Label><Input value={liveTitle} onChange={(e) => setLiveTitle(e.target.value)} maxLength={120} placeholder="Ex: Ao vivo com o especialista" /></div>
+                  <div><Label>Descrição</Label><Textarea value={liveDesc} onChange={(e) => setLiveDesc(e.target.value)} maxLength={500} rows={2} placeholder="Sobre o que será a live..." /></div>
+                  <div><Label>Link da transmissão</Label><Input value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} placeholder="https://meet.google.com/..., https://youtube.com/..." /></div>
+                  <div><Label>Agendar (opcional)</Label><Input value={liveScheduledAt} onChange={(e) => setLiveScheduledAt(e.target.value)} type="datetime-local" /></div>
+                  <p className="text-xs text-muted-foreground">Agende ou publique imediatamente. Voce controlara o status "AO VIVO" manualmente.</p>
+                </>
+              )}
             </div>
           )}
 

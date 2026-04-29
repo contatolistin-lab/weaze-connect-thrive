@@ -11,10 +11,11 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { Play } from "lucide-react";
 
 type CTA = {
   id: string;
-  type: "buy" | "schedule" | "quote" | "register" | "info";
+  type: "buy" | "schedule" | "quote" | "register" | "info" | "live";
   label: string;
   config_json: any;
 };
@@ -49,6 +50,7 @@ function CTADialog({ cta, postId, tenantId, open, onClose }: { cta: CTA; postId:
     case "quote": return <QuoteDialog cta={cta} postId={postId} tenantId={tenantId} open={open} onClose={onClose} />;
     case "register": return <RegisterDialog cta={cta} postId={postId} tenantId={tenantId} open={open} onClose={onClose} />;
     case "info": return <InfoDialog cta={cta} postId={postId} tenantId={tenantId} open={open} onClose={onClose} />;
+    case "live": return <LiveDialog cta={cta} postId={postId} tenantId={tenantId} open={open} onClose={onClose} />;
   }
 }
 
@@ -147,8 +149,8 @@ function ScheduleDialog({ cta, postId, tenantId, open, onClose }: any) {
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Indisponível</DialogTitle>
-            <DialogDescription>Esta agenda ainda não foi configurada.</DialogDescription>
+            <DialogTitle>Indisponivel</DialogTitle>
+            <DialogDescription>Esta agenda ainda nao foi configurada.</DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -170,9 +172,9 @@ function ScheduleDialog({ cta, postId, tenantId, open, onClose }: any) {
 
           {date && (
             <div>
-              <p className="text-sm font-medium mb-2">Horários disponíveis</p>
+              <p className="text-sm font-medium mb-2">Horarios disponiveis</p>
               {slots.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Sem horários nesse dia.</p>
+                <p className="text-sm text-muted-foreground">Sem horarios nesse dia.</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {slots.map((s) => (
@@ -194,7 +196,7 @@ function ScheduleDialog({ cta, postId, tenantId, open, onClose }: any) {
             <div className="space-y-3 border-t border-border pt-4">
               <div><Label htmlFor="ap-name">Nome</Label><Input id="ap-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></div>
               <div><Label htmlFor="ap-phone">Telefone</Label><Input id="ap-phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} /></div>
-              <div><Label htmlFor="ap-notes">Observação</Label><Textarea id="ap-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} /></div>
+              <div><Label htmlFor="ap-notes">Observacao</Label><Textarea id="ap-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} /></div>
               <Button className="w-full bg-brand text-primary-foreground hover:opacity-90" onClick={confirm} disabled={loading}>
                 {loading ? "Confirmando…" : "Confirmar agendamento"}
               </Button>
@@ -229,7 +231,7 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "quote" } });
-    toast.success("Solicitação enviada");
+    toast.success("Solicitacao enviada");
     onClose();
   };
   return (
@@ -237,7 +239,7 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">{cta.label}</DialogTitle>
-          <DialogDescription>Conte o que você precisa. Retornamos em breve.</DialogDescription>
+          <DialogDescription>Conte o que voce precisa. Retornamos em breve.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div><Label htmlFor="q-name">Nome</Label><Input id="q-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></div>
@@ -252,7 +254,7 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
   );
 }
 
-/* ===================== REGISTER (event) — campos dinâmicos ===================== */
+/* ===================== REGISTER (event) ===================== */
 function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
   const { user } = useAuth();
   const c = cta.config_json ?? {};
@@ -268,10 +270,10 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
   const setVal = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }));
 
   const send = async () => {
-    if (!eventId) { toast.error("Evento não configurado"); return; }
+    if (!eventId) { toast.error("Evento nao configurado"); return; }
     for (const f of fields) {
       if (f.required && !(values[f.key] ?? "").trim()) {
-        toast.error(`Campo obrigatório: ${f.label}`); return;
+        toast.error(`Campo obrigatorio: ${f.label}`); return;
       }
     }
     setLoading(true);
@@ -280,7 +282,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", eventId),
     ]);
     if (ev?.capacity_limit && (count ?? 0) >= ev.capacity_limit) {
-      toast.error("Inscrições esgotadas"); setLoading(false); return;
+      toast.error("Inscricoes esgotadas"); setLoading(false); return;
     }
     const payload: Record<string, string> = {};
     fields.forEach((f) => { payload[f.label] = (values[f.key] ?? "").trim(); });
@@ -291,7 +293,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "register", event_id: eventId } });
-    toast.success("Inscrição confirmada");
+    toast.success("Inscricao confirmada");
     onClose();
   };
 
@@ -317,7 +319,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
             </div>
           ))}
           <Button className="w-full bg-brand text-primary-foreground hover:opacity-90" onClick={send} disabled={loading}>
-            {loading ? "Inscrevendo…" : "Confirmar inscrição"}
+            {loading ? "Inscrevendo…" : "Confirmar inscricao"}
           </Button>
         </div>
       </DialogContent>
@@ -341,7 +343,7 @@ function InfoDialog({ cta, postId, tenantId, open, onClose }: any) {
       <Dialog open={open} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader><DialogTitle className="font-display text-2xl">{cta.label}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground mb-4">Você será redirecionado para um link externo.</p>
+          <p className="text-sm text-muted-foreground mb-4">Voce sera redirecionado para um link externo.</p>
           <Button onClick={goExternal} className="w-full bg-brand text-primary-foreground hover:opacity-90">Ir para link</Button>
         </DialogContent>
       </Dialog>
@@ -352,7 +354,61 @@ function InfoDialog({ cta, postId, tenantId, open, onClose }: any) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader><DialogTitle className="font-display text-2xl">{cta.label}</DialogTitle></DialogHeader>
-        <p className="text-pretty whitespace-pre-wrap text-sm">{c.content ?? "Sem conteúdo."}</p>
+        <p className="text-pretty whitespace-pre-wrap text-sm">{c.content ?? "Sem conteudo."}</p>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ===================== LIVE ===================== */
+function LiveDialog({ cta, postId, tenantId, open, onClose }: any) {
+  const c = cta.config_json ?? {};
+  const goLive = async () => {
+    if (c.external_url) {
+      await track({ tenantId, postId, ctaId: cta.id, action: "click_cta", metadata: { intent: "live" } });
+      window.open(c.external_url, "_blank", "noopener,noreferrer");
+    }
+    onClose();
+  };
+
+  const isScheduled = c.scheduled_at && new Date(c.scheduled_at) > new Date();
+  const isLive = c.is_live;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <div className="flex items-center gap-2">
+            {isLive ? (
+              <span className="flex items-center gap-1.5 bg-red-500 text-white px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">
+                <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                AO VIVO
+              </span>
+            ) : isScheduled ? (
+              <span className="bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs font-bold">AGENDADA</span>
+            ) : null}
+          </div>
+          <DialogTitle className="font-display text-2xl">{c.title ?? cta.label}</DialogTitle>
+          {c.description && <DialogDescription className="text-pretty">{c.description}</DialogDescription>}
+        </DialogHeader>
+        {isScheduled && (
+          <p className="text-sm text-muted-foreground">
+            Agendada para: {new Date(c.scheduled_at).toLocaleString("pt-BR")}
+          </p>
+        )}
+        <DialogFooter>
+          <Button
+            onClick={goLive}
+            size="lg"
+            className={cn(
+              "w-full min-h-12 text-base font-bold gap-2",
+              isLive ? "bg-red-500 hover:bg-red-600 animate-pulse" : "bg-brand hover:opacity-90"
+            )}
+          >
+            <Play className="w-5 h-5" />
+            {isLive ? "Entrar agora" : isScheduled ? "Verificar horario" : "Ver detalhes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, MessageCircle, Share2, Volume2, VolumeX, Trash2, MessageSquare } from "lucide-react";
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, Trash2, MessageSquare, MessageSquareText } from "lucide-react";
 import { track } from "@/lib/tracking";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 export type Post = {
   id: string;
@@ -22,9 +23,13 @@ export type Post = {
   media_url: string | null;
   thumbnail_url: string | null;
   description: string | null;
+  discussion_enabled?: boolean;
+  interaction_prompt?: string | null;
+  is_live?: boolean;
   created_at: string;
   post_cta?: any[];
   profiles?: { name: string; avatar_url: string | null } | null;
+  topics?: { id: string; title: string; replies_count: number; last_activity_at: string }[];
 };
 
 export default function FeedItem({ post, active }: { post: Post; active: boolean }) {
@@ -45,6 +50,9 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   const [sending, setSending] = useState(false);
   const [hearts, setHearts] = useState<{ id: number; x: number; delay: number; size: number }[]>([]);
   const heartIdRef = useRef(0);
+  const [topicReplies, setTopicReplies] = useState<any[]>([]);
+  const [topicCount, setTopicCount] = useState(0);
+  const [showTopicPreview, setShowTopicPreview] = useState(false);
 
   const isPostOwner = isOwner && post.author_id === user?.id;
   
@@ -64,7 +72,21 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
       supabase.from("interactions").select("id").eq("post_id", post.id).eq("action_type", "like").eq("user_id", user.id).maybeSingle()
         .then(({ data }) => setLiked(!!data));
     }
-  }, [post.id, user]);
+    // Fetch topics for this post
+    if (post.discussion_enabled) {
+      supabase.from("topics")
+        .select("id, title, replies_count, last_activity_at")
+        .eq("related_post_id", post.id)
+        .order("last_activity_at", { ascending: false })
+        .limit(2)
+        .then(({ data }) => {
+          if (data) {
+            setTopicReplies(data);
+            setTopicCount(data.reduce((acc, t) => acc + (t.replies_count || 0), 0));
+          }
+        });
+    }
+  }, [post.id, user, post.discussion_enabled]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -291,6 +313,17 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
           <MessageCircle className="h-7 w-7 drop-shadow-md text-background" />
           <span className="text-xs font-semibold drop-shadow-md">{counts.comments}</span>
         </button>
+        {/* Discussion button - appears if discussion_enabled */}
+        {post.discussion_enabled && (
+          <button 
+            onClick={(e) => { e.stopPropagation(); nav(`/topics?post=${post.id}`); }} 
+            className="flex flex-col items-center gap-1" 
+            aria-label="Discutir"
+          >
+            <MessageSquareText className="h-7 w-7 drop-shadow-md text-background" />
+            <span className="text-xs font-semibold drop-shadow-md">{topicCount > 0 ? `${topicCount} respostas` : 'Discutir'}</span>
+          </button>
+        )}
         {showSocialActions && (
           <>
             <button onClick={onShare} className="flex flex-col items-center gap-1" aria-label="Compartilhar">
@@ -322,6 +355,12 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
       >
         {post.profiles?.name && (
           <p className="font-semibold text-sm mb-2 drop-shadow-md">@{post.profiles.name}</p>
+        )}
+        {/* Interaction prompt - highlighted question to encourage interaction */}
+        {post.interaction_prompt && (
+          <p className="text-sm font-medium text-primary-custom bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg mb-3 drop-shadow-md">
+            💬 {post.interaction_prompt}
+          </p>
         )}
         {post.description && (
           <p className="text-sm leading-relaxed mb-4 line-clamp-3 text-pretty">{post.description}</p>
