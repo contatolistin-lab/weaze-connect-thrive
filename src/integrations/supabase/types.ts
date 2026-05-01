@@ -236,6 +236,7 @@ export type Database = {
           action_type: Database["public"]["Enums"]["interaction_type"]
           created_at: string
           cta_id: string | null
+          cta_type: string | null
           id: string
           metadata: Json | null
           post_id: string | null
@@ -246,6 +247,7 @@ export type Database = {
           action_type: Database["public"]["Enums"]["interaction_type"]
           created_at?: string
           cta_id?: string | null
+          cta_type?: string | null
           id?: string
           metadata?: Json | null
           post_id?: string | null
@@ -256,6 +258,7 @@ export type Database = {
           action_type?: Database["public"]["Enums"]["interaction_type"]
           created_at?: string
           cta_id?: string | null
+          cta_type?: string | null
           id?: string
           metadata?: Json | null
           post_id?: string | null
@@ -278,6 +281,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "interactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "interactions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -285,6 +295,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lives: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          external_url: string
+          id: string
+          is_live: boolean
+          post_id: string | null
+          scheduled_at: string | null
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_url: string
+          id?: string
+          is_live?: boolean
+          post_id?: string | null
+          scheduled_at?: string | null
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          external_url?: string
+          id?: string
+          is_live?: boolean
+          post_id?: string | null
+          scheduled_at?: string | null
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: []
       }
       memberships: {
         Row: {
@@ -382,6 +431,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json
+          id: string
+          priority: string
+          read_at: string | null
+          tenant_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          priority?: string
+          read_at?: string | null
+          tenant_id: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json
+          id?: string
+          priority?: string
+          read_at?: string | null
+          tenant_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       plans: {
         Row: {
           created_at: string
@@ -443,6 +531,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_cta_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
             referencedColumns: ["id"]
           },
         ]
@@ -564,6 +659,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quotes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quotes_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -651,12 +753,14 @@ export type Database = {
       }
       tenants: {
         Row: {
+          active: boolean
           bio: string | null
           city: string | null
           created_at: string
           created_by: string | null
           id: string
           logo_url: string | null
+          mrr: number
           name: string
           phone: string | null
           primary_color: string | null
@@ -665,12 +769,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           bio?: string | null
           city?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           logo_url?: string | null
+          mrr?: number
           name: string
           phone?: string | null
           primary_color?: string | null
@@ -679,12 +785,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           bio?: string | null
           city?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           logo_url?: string | null
+          mrr?: number
           name?: string
           phone?: string | null
           primary_color?: string | null
@@ -794,6 +902,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "topics_related_post_id_fkey"
+            columns: ["related_post_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "topics_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -860,7 +975,47 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tenant_stats: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
@@ -882,7 +1037,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "b2b" | "b2c"
       appointment_status: "pending" | "confirmed" | "cancelled" | "completed"
-      cta_type: "buy" | "schedule" | "quote" | "register" | "info"
+      cta_type: "buy" | "schedule" | "quote" | "register" | "info" | "live"
       interaction_type: "view" | "like" | "comment" | "click_cta" | "conversion"
       post_type: "video" | "image" | "text"
       tenant_role: "owner" | "member" | "admin"
@@ -1015,7 +1170,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "b2b", "b2c"],
       appointment_status: ["pending", "confirmed", "cancelled", "completed"],
-      cta_type: ["buy", "schedule", "quote", "register", "info"],
+      cta_type: ["buy", "schedule", "quote", "register", "info", "live"],
       interaction_type: ["view", "like", "comment", "click_cta", "conversion"],
       post_type: ["video", "image", "text"],
       tenant_role: ["owner", "member", "admin"],
