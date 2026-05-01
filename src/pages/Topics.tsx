@@ -109,6 +109,95 @@ export default function Topics() {
   const [newReply, setNewReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const replyInputRef = useRef<HTMLInputElement>(null);
+
+  const [tenantUsers, setTenantUsers] = useState<MentionUser[]>([]);
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionStart, setMentionStart] = useState<number>(-1);
+
+  useEffect(() => {
+    if (!tenant) return;
+    (async () => {
+      const { data: mbs } = await supabase
+        .from("memberships")
+        .select("user_id")
+        .eq("tenant_id", tenant.id);
+      const ids = Array.from(new Set((mbs || []).map((m: any) => m.user_id)));
+      if (ids.length === 0) { setTenantUsers([]); return; }
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, name, avatar_url")
+        .in("user_id", ids);
+      setTenantUsers((profs || []) as MentionUser[]);
+    })();
+  }, [tenant?.id]);
+
+  const filteredMentionUsers = tenantUsers
+    .filter((u) => u.name && (mentionQuery === "" || u.name.toLowerCase().includes(mentionQuery.toLowerCase())))
+    .slice(0, 6);
+
+  const handleReplyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewReply(value);
+    const caret = e.target.selectionStart ?? value.length;
+    const upToCaret = value.slice(0, caret);
+    const match = upToCaret.match(/(?:^|\s)@([\p{L}0-9_]*)$/u);
+    if (match) {
+      setMentionOpen(true);
+      setMentionQuery(match[1]);
+      setMentionStart(caret - match[1].length - 1);
+    } else {
+      setMentionOpen(false);
+      setMentionQuery("");
+      setMentionStart(-1);
+    }
+  };
+
+  const selectMention = (u: MentionUser) => {
+    if (mentionStart < 0) return;
+    const handle = slugifyMention(u.name);
+    const before = newReply.slice(0, mentionStart);
+    const after = newReply.slice(mentionStart + 1 + mentionQuery.length);
+    const inserted = `@${handle} `;
+    const next = before + inserted + after;
+    setNewReply(next);
+    setMentionOpen(false);
+    setMentionQuery("");
+    setMentionStart(-1);
+    requestAnimationFrame(() => {
+      const el = replyInputRef.current;
+      if (el) {
+        const pos = (before + inserted).length;
+        el.focus();
+        el.setSelectionRange(pos, pos);
+      }
+    });
+  };
+
+  const extractMentions = (text: string): Mention[] => {
+    const handles = Array.from(text.matchAll(/@([\p{L}0-9_]+)/gu)).map((m) => m[1].toLowerCase());
+    const seen = new Set<string>();
+    const result: Mention[] = [];
+    for (const h of handles) {
+      if (seen.has(h)) continue;
+      const u = tenantUsers.find((x) => slugifyMention(x.name) === h);
+      if (u) { seen.add(h); result.push({ user_id: u.user_id, name: u.name }); }
+    }
+    return result;
+  };
+
+  const startReplyTo = (name: string | null | undefined) => {
+    if (!name) return;
+    const handle = slugifyMention(name);
+    if (!handle) return;
+    const prefix = `@${handle} `;
+    setNewReply((cur) => (cur.startsWith(prefix) ? cur : prefix + cur));
+    requestAnimationFrame(() => {
+      const el = replyInputRef.current;
+      if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+    });
+  };
 
   const loadTopics = async () => {
     if (!tenant) return;
