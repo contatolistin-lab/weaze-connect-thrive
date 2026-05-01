@@ -51,6 +51,7 @@ export default function CreatePost() {
     quote: "Solicitar Orçamento",
     register: "Inscrever-se",
     info: "Saiba mais",
+    live: "Assistir Live",
   };
 
   // BUY

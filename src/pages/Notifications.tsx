@@ -50,7 +50,7 @@ export default function Notifications() {
     const { data, error } = await query;
     setLoading(false);
     if (error) { console.error("Load notifications error:", error); return; }
-    setNotifications(data || []);
+    setNotifications((data || []) as unknown as Notification[]);
   };
 
   useEffect(() => {
