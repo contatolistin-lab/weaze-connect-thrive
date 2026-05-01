@@ -133,18 +133,34 @@ export default function Topics() {
       
       const { data: msgs, error: msgError } = await supabase
         .from("topic_messages")
-        .select("*, profiles:profiles!topic_messages_user_id_fkey(name, avatar_url)")
+        .select("*")
         .eq("topic_id", topicIdFromParams)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: true });
       
-      console.log("Messages loaded:", msgs, "error:", msgError);
+      console.log("MESSAGES:", msgs, "error:", msgError);
       
-      setLoadingMessages(false);
       if (msgError) { 
         console.error("Load messages error:", msgError);
+        setLoadingMessages(false);
         return; 
       }
-      setMessages(msgs || []);
+
+      const rows = msgs || [];
+      const userIds = Array.from(new Set(rows.map((m: any) => m.user_id).filter(Boolean)));
+      let profilesMap = new Map<string, { name: string; avatar_url: string | null }>();
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, name, avatar_url")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => profilesMap.set(p.user_id, { name: p.name, avatar_url: p.avatar_url }));
+      }
+
+      setMessages(rows.map((m: any) => ({
+        ...m,
+        profiles: m.user_id ? profilesMap.get(m.user_id) ?? null : null,
+      })));
+      setLoadingMessages(false);
     }
   };
 
