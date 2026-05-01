@@ -385,24 +385,41 @@ export default function Topics() {
     setSendingReply(true);
     
     const content = newReply.trim();
-    
+    const mentions = extractMentions(content);
+
     const { error: insertError } = await supabase.from("topic_messages").insert({
       topic_id: selectedTopic.id,
       user_id: user.id,
       content: content,
-    });
-    
+      mentions: mentions as any,
+    } as any);
+
     if (insertError) {
       console.error("Insert error:", insertError);
       setSendingReply(false);
       toast.error("Erro ao enviar");
       return;
     }
-    
+
     await supabase.from("topics").update({
       last_activity_at: new Date().toISOString(),
     }).eq("id", selectedTopic.id);
-    
+
+    if (mentions.length && tenant) {
+      const rows = mentions
+        .filter((m) => m.user_id !== user.id)
+        .map((m) => ({
+          tenant_id: tenant.id,
+          user_id: m.user_id,
+          type: "mention",
+          title: "Você foi mencionado",
+          body: content.slice(0, 140),
+          priority: "medium",
+          data: { topic_id: selectedTopic.id, from_user: user.id },
+        }));
+      if (rows.length) await supabase.from("notifications").insert(rows as any);
+    }
+
     setSendingReply(false);
     setNewReply("");
     await loadTopicMessages(selectedTopic);
