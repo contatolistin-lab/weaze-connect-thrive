@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { MessageCircle, Plus, Send } from "lucide-react";
+import { MessageCircle, Plus, Send, MoreVertical, Pencil, Trash2 } from "lucide-react";
 
 type Topic = {
   id: string;
@@ -37,6 +39,8 @@ type TopicMessage = {
   parent_id: string | null;
   likes_count: number;
   created_at: string;
+  edited_at?: string | null;
+  deleted_at?: string | null;
   mentions?: Mention[];
   profiles?: { name: string; avatar_url: string | null } | null;
 };
@@ -90,8 +94,9 @@ function formatTime(dateStr: string): string {
 }
 
 export default function Topics() {
-  const { tenant } = useTenant();
+  const { tenant, isOwner } = useTenant();
   const { user, isB2B } = useAuth();
+  const canModerate = isB2B && isOwner;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const params = useParams();
@@ -115,6 +120,12 @@ export default function Topics() {
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionStart, setMentionStart] = useState<number>(-1);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TopicMessage | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!tenant) return;
@@ -218,6 +229,7 @@ export default function Topics() {
         .from("topic_messages")
         .select("content")
         .eq("topic_id", topic.id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1)
         .single();
@@ -260,6 +272,7 @@ export default function Topics() {
         .from("topic_messages")
         .select("*")
         .eq("topic_id", topicIdFromParams)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true });
       
       console.log("MESSAGES:", msgs, "error:", msgError);
@@ -352,6 +365,7 @@ export default function Topics() {
       .from("topic_messages")
       .select("*")
       .eq("topic_id", topic.id)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true });
     
     console.log("MESSAGES:", data, "error:", error);
@@ -424,6 +438,56 @@ export default function Topics() {
     setNewReply("");
     await loadTopicMessages(selectedTopic);
     loadTopics();
+  };
+
+  const startEdit = (msg: TopicMessage) => {
+    setEditingId(msg.id);
+    setEditingContent(msg.content);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingContent("");
+  };
+
+  const saveEdit = async () => {
+    if (!editingId || !user) return;
+    const trimmed = editingContent.trim();
+    if (!trimmed) { toast.error("Mensagem vazia"); return; }
+    setSavingEdit(true);
+    const mentions = extractMentions(trimmed);
+    const { error } = await supabase
+      .from("topic_messages")
+      .update({ content: trimmed, mentions: mentions as any, edited_at: new Date().toISOString() } as any)
+      .eq("id", editingId)
+      .eq("user_id", user.id);
+    setSavingEdit(false);
+    if (error) { toast.error("Não foi possível editar"); return; }
+    setMessages((prev) => prev.map((m) => m.id === editingId ? { ...m, content: trimmed, mentions, edited_at: new Date().toISOString() } : m));
+    cancelEdit();
+    toast.success("Mensagem editada");
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget || !user) return;
+    setDeleting(true);
+    const isOwn = deleteTarget.user_id === user.id;
+    if (!isOwn && !canModerate) {
+      setDeleting(false);
+      toast.error("Sem permissão");
+      return;
+    }
+    let q = supabase
+      .from("topic_messages")
+      .update({ deleted_at: new Date().toISOString() } as any)
+      .eq("id", deleteTarget.id);
+    if (!canModerate) q = q.eq("user_id", user.id);
+    const { error } = await q;
+    setDeleting(false);
+    if (error) { toast.error("Não foi possível excluir"); return; }
+    setMessages((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+    setDeleteTarget(null);
+    toast.success("Mensagem removida");
   };
 
   const closeTopic = () => {
@@ -565,7 +629,12 @@ export default function Topics() {
                 <p>Seja o primeiro a participar!</p>
               </div>
             ) : (
-              messages.map((msg) => (
+              messages.map((msg) => {
+                const isOwn = !!user && msg.user_id === user.id;
+                const canDelete = isOwn || canModerate;
+                const canEdit = isOwn;
+                const isEditing = editingId === msg.id;
+                return (
                 <div key={msg.id} className="flex gap-3">
                   <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarImage src={msg.profiles?.avatar_url || ""} />
@@ -580,20 +649,78 @@ export default function Topics() {
                       </span>
                       <span className="text-xs text-gray-400">
                         {formatTime(msg.created_at)}
+                        {msg.edited_at && <span className="ml-1 italic">(editado)</span>}
                       </span>
-                      <button
-                        onClick={() => startReplyTo(msg.profiles?.name)}
-                        className="text-xs text-blue-600 hover:underline ml-auto"
-                      >
-                        Responder
-                      </button>
+                      <div className="ml-auto flex items-center gap-2">
+                        {!isEditing && (
+                          <button
+                            onClick={() => startReplyTo(msg.profiles?.name)}
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            Responder
+                          </button>
+                        )}
+                        {(canEdit || canDelete) && !isEditing && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="text-gray-400 hover:text-gray-600 p-1" aria-label="Ações">
+                                <MoreVertical className="h-4 w-4" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-white">
+                              {canEdit && (
+                                <DropdownMenuItem onClick={() => startEdit(msg)}>
+                                  <Pencil className="h-4 w-4 mr-2" /> Editar
+                                </DropdownMenuItem>
+                              )}
+                              {canDelete && (
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteTarget(msg)}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" /> Excluir
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
                     </div>
-                    <div className="bg-gray-100 rounded-lg p-3">
-                      <MessageContent content={msg.content} mentions={msg.mentions} />
-                    </div>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg p-2 text-sm resize-none"
+                          rows={3}
+                          autoFocus
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={cancelEdit}
+                            disabled={savingEdit}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={saveEdit}
+                            disabled={savingEdit || !editingContent.trim()}
+                            className="text-xs px-3 py-1.5 rounded-lg bg-purple-700 text-white hover:bg-purple-800 disabled:opacity-50"
+                          >
+                            {savingEdit ? "Salvando..." : "Salvar"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-100 rounded-lg p-3">
+                        <MessageContent content={msg.content} mentions={msg.mentions} />
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))
+                );
+              })
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -656,6 +783,27 @@ export default function Topics() {
           )}
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir mensagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDelete(); }}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <BottomNav />
     </div>

@@ -806,6 +806,8 @@ export type Database = {
         Row: {
           content: string
           created_at: string | null
+          deleted_at: string | null
+          edited_at: string | null
           id: string
           likes_count: number | null
           mentions: Json
@@ -816,6 +818,8 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           likes_count?: number | null
           mentions?: Json
@@ -826,6 +830,8 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           likes_count?: number | null
           mentions?: Json
