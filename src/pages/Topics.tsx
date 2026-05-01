@@ -121,6 +121,12 @@ export default function Topics() {
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionStart, setMentionStart] = useState<number>(-1);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TopicMessage | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     if (!tenant) return;
     (async () => {
