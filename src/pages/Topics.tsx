@@ -272,6 +272,7 @@ export default function Topics() {
         .from("topic_messages")
         .select("*")
         .eq("topic_id", topicIdFromParams)
+        .is("deleted_at", null)
         .order("created_at", { ascending: true });
       
       console.log("MESSAGES:", msgs, "error:", msgError);
