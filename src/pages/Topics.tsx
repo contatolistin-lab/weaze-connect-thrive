@@ -314,6 +314,28 @@ export default function Topics() {
           <h1 className="text-xl font-semibold text-gray-900">Conversas</h1>
           <p className="text-sm text-gray-500 mt-1">Discussões da comunidade</p>
         </div>
+
+        {/* Em Alta - Top 5 por replies */}
+        {topics.length > 0 && (
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 border-b border-amber-100">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-lg">🔥</span>
+              <span className="text-sm font-semibold text-amber-800">Em alta</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {topics.slice(0, 5).map((topic, idx) => (
+                <button
+                  key={topic.id}
+                  onClick={() => navigate(`/conversas/${topic.id}`)}
+                  className="flex-shrink-0 bg-white border border-amber-200 rounded-lg px-3 py-2 text-left hover:bg-amber-50"
+                >
+                  <p className="text-xs font-medium text-gray-800 line-clamp-1 max-w-[150px]">{topic.title || "Conversa"}</p>
+                  <p className="text-xs text-amber-600 mt-1">{topic.replies_count} respostas</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Create Button - B2B Only */}
         {isB2B && (
@@ -364,7 +386,11 @@ export default function Topics() {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-xs text-gray-500">{topic.replies_count || 0} respostas</p>
-                    <p className="text-xs text-gray-400">{formatTime(topic.last_activity_at)}</p>
+                    <p className="text-xs text-green-600 font-medium">
+                      {topic.last_activity_at && new Date(topic.last_activity_at).getTime() > Date.now() - 60000 
+                        ? "● Ativo agora" 
+                        : `Última: ${formatTime(topic.last_activity_at)}`}
+                    </p>
                   </div>
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={topic.profiles?.avatar_url || ""} />

@@ -186,7 +186,7 @@ export default function CommentsSheet({
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={user ? "Escreva seu comentário…" : "Entre para comentar"}
+              placeholder={user ? "O que você acha? Responda aqui…" : "Entre para comentar"}
               disabled={!user || sending}
               maxLength={500}
               onKeyDown={(e) => { if (e.key === "Enter") send(); }}

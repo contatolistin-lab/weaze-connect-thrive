@@ -60,6 +60,35 @@ export default function BrandInsights() {
 
   if (!insights) return null;
 
+  // Gerar insights baseados em regras condicionais
+  const getInsights = () => {
+    const list = [];
+    
+    if (insights.conv_engagement > 30) {
+      list.push({ emoji: "💬", text: "Conversas estão gerando mais interação. Continue incentivando discussões!" });
+    } else if (insights.feed_engagement > 70) {
+      list.push({ emoji: "📱", text: "Seu feed está muito engajado. Tente criar conversas para diversificar." });
+    }
+    
+    if (insights.avg_cta_interaction > 20) {
+      list.push({ emoji: "🎯", text: "ótimo! Seus CTAs estão funcionando bem." });
+    } else if (insights.avg_cta_interaction < 5) {
+      list.push({ emoji: "⚠️", text: "CTA com baixa taxa de clique. Tente ofertas mais atrativas." });
+    }
+    
+    if (insights.active_users > 10 && insights.conv_engagement < 10) {
+      list.push({ emoji: "💡", text: "Membros ativos mas poucas conversas. Crie tópicos para engajar!" });
+    }
+    
+    if (insights.feed_engagement > 0 && insights.conv_engagement === 0) {
+      list.push({ emoji: "🔔", text: "Nenhuma conversa ainda. Inicie uma discussão para criar comunidade." });
+    }
+    
+    return list;
+  };
+
+  const conditionalInsights = getInsights();
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -72,6 +101,19 @@ export default function BrandInsights() {
         <InsightCard label="Engajamento Conversas" value={`${insights.conv_engagement}%`} sub="origem" icon={MessageCircle} color="purple" />
         <InsightCard label="Interação CTA" value={`${insights.avg_cta_interaction}%`} sub="dos cliques" icon={Zap} color="orange" />
       </div>
+      
+      {/* Insights Condicionais */}
+      {conditionalInsights.length > 0 && (
+        <div className="space-y-2">
+          {conditionalInsights.map((insight, idx) => (
+            <div key={idx} className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-sm flex items-start gap-2">
+              <span className="text-lg">{insight.emoji}</span>
+              <span className="text-amber-900">{insight.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      
       {insights.feed_engagement > insights.conv_engagement ? (
         <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm">
           💡 {insights.feed_engagement}% do engajamento vem do <strong>Feed</strong>
