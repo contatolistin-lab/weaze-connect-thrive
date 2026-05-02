@@ -89,11 +89,15 @@ export default function Topics() {
   
   // Resposta direta
   const [replyToMsg, setReplyToMsg] = useState<{id: string; name: string; content: string} | null>(null);
+  
+  // Tópicos em alta (com engajamento)
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
 
   const loadTopics = async () => {
     if (!tenant) return;
     setLoading(true);
     
+    // Buscar todos os tópicos
     const { data: topicsData, error } = await supabase
       .from("topics")
       .select("*")
@@ -104,6 +108,11 @@ export default function Topics() {
     
     if (error) { console.error("Load topics error:", error); setLoading(false); return; }
     
+    // Filtrar tópicos com engajamento (replies_count > 0) para "Em alta"
+    const trending = (topicsData || []).filter(t => t.replies_count > 0).slice(0, 5);
+    setTrendingTopics(trending);
+    
+    // Processar todos os tópicos com preview
     const topicsWithMessages = await Promise.all((topicsData || []).map(async (topic) => {
       const { data: firstMsg } = await supabase
         .from("topic_messages")
@@ -363,6 +372,7 @@ export default function Topics() {
     
     await supabase.from("topics").update({
       last_activity_at: new Date().toISOString(),
+      replies_count: (selectedTopic.replies_count || 0) + 1,
     }).eq("id", selectedTopic.id);
     
     setSendingReply(false);
@@ -537,22 +547,27 @@ export default function Topics() {
           <p className="text-sm text-gray-500 mt-1">Discussões da comunidade</p>
         </div>
 
-        {/* Em Alta - Top 5 por replies */}
-        {topics.length > 0 && (
+        {/* Em Alta - Apenas tópicos com engajamento real */}
+        {trendingTopics.length > 0 && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 border-b border-amber-100">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-lg">🔥</span>
               <span className="text-sm font-semibold text-amber-800">Em alta</span>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {topics.slice(0, 5).map((topic, idx) => (
+              {trendingTopics.map((topic) => (
                 <button
                   key={topic.id}
                   onClick={() => navigate(`/conversas/${topic.id}`)}
-                  className="flex-shrink-0 bg-white border border-amber-200 rounded-lg px-3 py-2 text-left hover:bg-amber-50"
+                  className="flex-shrink-0 bg-white border border-amber-200 rounded-lg px-3 py-2 text-left hover:bg-amber-50 min-w-[140px]"
                 >
-                  <p className="text-xs font-medium text-gray-800 line-clamp-1 max-w-[150px]">{topic.title || "Conversa"}</p>
-                  <p className="text-xs text-amber-600 mt-1">{topic.replies_count} respostas</p>
+                  <p className="text-xs font-medium text-gray-800 line-clamp-1">{topic.title || "Conversa"}</p>
+                  <p className="text-xs text-amber-600 mt-1">
+                    {topic.replies_count} {topic.replies_count === 1 ? "resposta" : "respostas"}
+                    {topic.last_activity_at && (
+                      <span className="text-gray-400 ml-1">• {formatTime(topic.last_activity_at)}</span>
+                    )}
+                  </p>
                 </button>
               ))}
             </div>
