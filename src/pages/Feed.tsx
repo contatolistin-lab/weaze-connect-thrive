@@ -96,11 +96,11 @@ export default function Feed() {
   useEffect(() => {
     if (!tenant) return;
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("posts")
         .select("*")
         .eq("tenant_id", tenant.id)
-        .eq("is_pinned" as any, true)
+        .eq("is_pinned", true)
         .limit(1)
         .maybeSingle();
       setPinnedPost((data as any) || null);
