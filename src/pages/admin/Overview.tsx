@@ -268,6 +268,17 @@ export default function Overview() {
             </CardContent>
           </Card>
         )}
+
+        {/* Gamificação: Ranking */}
+        <Card>
+          <CardHeader><CardTitle className="font-display">🏆 Ranking</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <RankingSection period="monthly" />
+          </CardContent>
+        </Card>
+
+        {/* Insights da Marca */}
+        <BrandInsights />
       </div>
     );
   }
@@ -379,26 +390,16 @@ export default function Overview() {
       )}
 
       {/* Gamificação: Ranking e Premiação */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <RankingSection period="monthly" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <RankingSection period="yearly" />
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader><CardTitle className="font-display">🏆 Ranking</CardTitle></CardHeader>
+        <CardContent className="space-y-6">
+          <RankingSection period="monthly" />
+          <RankingSection period="yearly" />
+        </CardContent>
+      </Card>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <BrandInsights />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Insights da Marca */}
+      <BrandInsights />
 
       {/* Insights Automáticos */}
       {data.insights && (
@@ -456,16 +457,6 @@ export default function Overview() {
           </CardContent>
         </Card>
       )}
-      {/* Ranking Section */}
-      <Card>
-        <CardHeader><CardTitle className="font-display">Ranking</CardTitle></CardHeader>
-        <CardContent className="space-y-6">
-          <RankingSection period="monthly" />
-          <RankingSection period="yearly" />
-        </CardContent>
-      </Card>
-      {/* Brand Insights */}
-      <BrandInsights />
     </div>
   );
 }
