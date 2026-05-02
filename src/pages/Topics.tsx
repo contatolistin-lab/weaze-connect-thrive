@@ -403,7 +403,7 @@ export default function Topics() {
         .from("memberships")
         .select("user_id, role")
         .in("user_id", userIds)
-        .eq("role", "b2b");
+        .eq("role", "owner");
       (memberships || []).forEach((m: any) => brandUserIds.add(m.user_id));
     }
 
