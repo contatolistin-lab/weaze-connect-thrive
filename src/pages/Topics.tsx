@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MessageCircle, Plus, Send, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Plus, Send, MoreVertical, Pencil, Trash2, X, Check, AtSign } from "lucide-react";
 import { awardPoints } from "@/lib/gamification";
 
 type Topic = {
@@ -74,6 +74,18 @@ export default function Topics() {
   const [newReply, setNewReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Editar mensagem
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  
+  // Excluir mensagem
+  const [deletingMsgId, setDeletingMsgId] = useState<string | null>(null);
+  
+  // Menção (@usuário)
+  const [showMentionList, setShowMentionList] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState("");
+  const [mentionUsers, setMentionUsers] = useState<{id: string; name: string}[]>([]);
 
   const loadTopics = async () => {
     if (!tenant) return;
@@ -291,6 +303,120 @@ export default function Topics() {
     navigate("/conversas");
   };
 
+  // Editar mensagem
+  const startEditMessage = (msg: any) => {
+    if (msg.user_id !== user?.id) {
+      toast.error("Você só pode editar suas próprias mensagens");
+      return;
+    }
+    setEditingMsgId(msg.id);
+    setEditContent(msg.content);
+  };
+
+  const saveEditMessage = async () => {
+    if (!editingMsgId || !editContent.trim()) return;
+    
+    const { error } = await supabase
+      .from("topic_messages")
+      .update({ content: editContent.trim(), updated_at: new Date().toISOString() })
+      .eq("id", editingMsgId);
+
+    if (error) {
+      toast.error("Erro ao editar mensagem");
+      return;
+    }
+
+    setEditingMsgId(null);
+    setEditContent("");
+    if (selectedTopic) loadTopicMessages(selectedTopic);
+    toast.success("Mensagem editada");
+  };
+
+  const cancelEditMessage = () => {
+    setEditingMsgId(null);
+    setEditContent("");
+  };
+
+  // Excluir mensagem
+  const confirmDeleteMessage = async (msg: any) => {
+    if (msg.user_id !== user?.id && user?.role !== "brand") {
+      toast.error("Você não pode excluir esta mensagem");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("topic_messages")
+      .delete()
+      .eq("id", msg.id);
+
+    if (error) {
+      toast.error("Erro ao excluir mensagem");
+      return;
+    }
+
+    setMessages(messages.filter(m => m.id !== msg.id));
+    toast.success("Mensagem excluída");
+  };
+
+  // Carregar usuários para menção
+  const loadMentionUsers = async () => {
+    if (!tenant) return;
+    
+    const { data } = await supabase
+      .from("topic_messages")
+      .select("user_id, profiles:profiles!topic_messages_user_id_fkey(id, name)")
+      .eq("topic_id", selectedTopic?.id)
+      .limit(50);
+
+    if (data) {
+      const uniqueUsers: any[] = [];
+      const seen = new Set();
+      data.forEach((msg: any) => {
+        if (msg.profiles && !seen.has(msg.profiles.id)) {
+          seen.add(msg.profiles.id);
+          uniqueUsers.push({ id: msg.profiles.id, name: msg.profiles.name });
+        }
+      });
+      // Adicionar autor do tópico
+      if (selectedTopic?.created_by && !seen.has(selectedTopic.created_by)) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, name")
+          .eq("user_id", selectedTopic.created_by)
+          .single();
+        if (profile) uniqueUsers.push({ id: profile.id, name: profile.name });
+      }
+      setMentionUsers(uniqueUsers);
+    }
+  };
+
+  const handleReplyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewReply(value);
+    
+    // Detectar @ para menção
+    const lastAt = value.lastIndexOf("@");
+    if (lastAt !== -1) {
+      const afterAt = value.slice(lastAt + 1);
+      if (!afterAt.includes(" ")) {
+        setMentionSearch(afterAt);
+        if (!showMentionList) loadMentionUsers();
+        setShowMentionList(true);
+      } else {
+        setShowMentionList(false);
+      }
+    } else {
+      setShowMentionList(false);
+    }
+  };
+
+  const insertMention = (userName: string) => {
+    const lastAt = newReply.lastIndexOf("@");
+    const newValue = newReply.slice(0, lastAt) + "@" + userName + " ";
+    setNewReply(newValue);
+    setShowMentionList(false);
+  };
+
   if (!tenant) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-gray-100">
@@ -466,12 +592,58 @@ export default function Topics() {
                       <span className="text-xs text-gray-400">
                         {formatTime(msg.created_at)}
                       </span>
+                      {msg.user_id === user?.id && (
+                        <div className="flex gap-1 ml-auto">
+                          <button 
+                            onClick={() => startEditMessage(msg)}
+                            className="text-xs text-gray-400 hover:text-purple-600 p-1"
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </button>
+                          <button 
+                            onClick={() => confirmDeleteMessage(msg)}
+                            className="text-xs text-gray-400 hover:text-red-600 p-1"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-gray-100 rounded-lg p-3">
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                        {msg.content}
-                      </p>
-                    </div>
+                    {editingMsgId === msg.id ? (
+                      <div className="bg-gray-100 rounded-lg p-3">
+                        <input
+                          type="text"
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") saveEditMessage();
+                            if (e.key === "Escape") cancelEditMessage();
+                          }}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button 
+                            onClick={saveEditMessage}
+                            className="text-xs bg-purple-600 text-white px-2 py-1 rounded"
+                          >
+                            <Check className="h-3 w-3" />
+                          </button>
+                          <button 
+                            onClick={cancelEditMessage}
+                            className="text-xs bg-gray-400 text-white px-2 py-1 rounded"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-100 rounded-lg p-3">
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {msg.content}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
@@ -482,15 +654,41 @@ export default function Topics() {
           {/* Reply Input */}
           {selectedTopic && !selectedTopic.is_locked && (
             <div className="p-4 border-t border-gray-200 bg-white">
+              {/* Mention dropdown */}
+              {showMentionList && mentionUsers.length > 0 && (
+                <div className="mb-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {mentionUsers
+                    .filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase()))
+                    .map(u => (
+                      <button
+                        key={u.id}
+                        onClick={() => insertMention(u.name)}
+                        className="w-full text-left px-3 py-2 hover:bg-purple-50 text-sm"
+                      >
+                        @{u.name}
+                      </button>
+                    ))
+                  }
+                </div>
+              )}
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newReply}
-                  onChange={(e) => setNewReply(e.target.value)}
-                  placeholder="Escreva sua resposta..."
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), sendReply())}
-                />
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={newReply}
+                    onChange={handleReplyChange}
+                    placeholder="Escreva sua resposta... (@ para mencionar)"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey && !showMentionList) {
+                        e.preventDefault();
+                        sendReply();
+                      }
+                      if (e.key === "Escape") setShowMentionList(false);
+                    }}
+                  />
+                  <AtSign className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                </div>
                 <button 
                   onClick={sendReply}
                   disabled={sendingReply || !newReply.trim()}
