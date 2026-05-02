@@ -283,7 +283,29 @@ if (ctaType !== "none") {
       <TopBar />
       <div className="flex-1 max-w-xl mx-auto w-full px-4 py-6 pb-28">
         <h1 className="font-display text-3xl mb-1">Novo post</h1>
-        {usage && <p className="text-xs text-muted-foreground mb-6">Uso: {usage.posts}/{usage.max} posts</p>}
+        {usage && <p className="text-xs text-muted-foreground mb-4">Uso: {usage.posts}/{usage.max} posts</p>}
+
+        {/* Sugestões de conteúdo */}
+        <div className="bg-brand-soft border border-brand/20 rounded-xl p-4 mb-5">
+          <p className="text-sm font-semibold text-brand mb-2">💡 Sugestões de conteúdo</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Faça uma pergunta",
+              "Crie uma enquete",
+              "Compartilhe bastidores",
+              "Inicie uma discussão",
+            ].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setDesc((cur) => cur ? cur : s + ": ")}
+                className="text-xs px-3 py-1.5 rounded-full bg-white border border-border hover:bg-brand/5 text-foreground"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <form onSubmit={submit} className="space-y-5 bg-card p-5 rounded-2xl shadow-soft border border-border">
           <div>
