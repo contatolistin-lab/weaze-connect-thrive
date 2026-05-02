@@ -245,13 +245,21 @@ export default function Topics() {
         .is("deleted_at", null)
         .order("created_at", { ascending: true })
         .limit(1)
-        .single();
-      const { data: profile } = await supabase
+        .maybeSingle();
+      const { data: lastMsg } = await supabase
+        .from("topic_messages")
+        .select("content, created_at")
+        .eq("topic_id", topic.id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const { data: profile } = topic.created_by ? await supabase
         .from("profiles")
         .select("name, avatar_url")
         .eq("user_id", topic.created_by)
-        .single();
-      return { ...topic, first_message: firstMsg, profiles: profile };
+        .maybeSingle() : { data: null };
+      return { ...topic, first_message: firstMsg, last_message: lastMsg, profiles: profile };
     }));
     
     setTopics(topicsWithMessages);
