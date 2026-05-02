@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS user_engagement_points (
   UNIQUE(user_id, tenant_id)
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_uep_ut ON user_engagement_points(user_id, tenant_id);
-CREATE INDEX IF NOT EXISTS idx_uep_monthly ON user_engagement_points(tenant_Id, monthly_points DESC);
+CREATE INDEX IF NOT EXISTS idx_uep_monthly ON user_engagement_points(tenant_id, monthly_points DESC);
 CREATE INDEX IF NOT EXISTS idx_uep_yearly ON user_engagement_points(tenant_id, yearly_points DESC);
 ALTER TABLE user_engagement_points ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "uep_select" ON user_engagement_points FOR SELECT USING (true);
@@ -19,7 +19,7 @@ CREATE POLICY "uep_all" ON user_engagement_points FOR ALL USING (true);
 CREATE TABLE IF NOT EXISTS engagement_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL,
-  tenant__id UUID NOT NULL,
+  tenant_id UUID NOT NULL,
   action_type TEXT NOT NULL,
   points INTEGER NOT NULL,
   reference_id UUID,
