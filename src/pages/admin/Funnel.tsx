@@ -62,8 +62,8 @@ export default function Funnel() {
       <Card>
         <CardHeader><CardTitle className="font-display">Conversão por CTA</CardTitle></CardHeader>
         <CardContent>
-          {rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Sem dados ainda.</p>
+          {rows.length === 0 || (rows.length === 1 && rows[0].clicks === 0 && rows[0].conversions === 0) ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Sem atividade de CTAs ainda. Adicione CTAs aos posts para medir conversões.</p>
           ) : (
             <Table>
               <TableHeader>

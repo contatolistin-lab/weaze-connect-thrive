@@ -60,28 +60,38 @@ export default function BrandInsights() {
 
   if (!insights) return null;
 
-  // Gerar insights baseados em regras condicionais
+  // Gerar insights baseados em dados REAIS (não genéricos)
   const getInsights = () => {
     const list = [];
+    const hasAnyInteraction = insights.total_users > 0 || insights.feed_engagement > 0 || insights.conv_engagement > 0;
+    
+    if (!hasAnyInteraction) {
+      list.push({ emoji: "🌱", text: "Sua comunidade está começando. Compartilhe conteúdo para gerar engajamento!" });
+      return list;
+    }
     
     if (insights.conv_engagement > 30) {
-      list.push({ emoji: "💬", text: "Conversas estão gerando mais interação. Continue incentivando discussões!" });
+      list.push({ emoji: "💬", text: "Conversas estão com boa interação. Continue estimulando discussões!" });
     } else if (insights.feed_engagement > 70) {
-      list.push({ emoji: "📱", text: "Seu feed está muito engajado. Tente criar conversas para diversificar." });
+      list.push({ emoji: "📱", text: "Engajamento está no feed. Crie conversas para diversificar." });
     }
     
     if (insights.avg_cta_interaction > 20) {
-      list.push({ emoji: "🎯", text: "ótimo! Seus CTAs estão funcionando bem." });
-    } else if (insights.avg_cta_interaction < 5) {
-      list.push({ emoji: "⚠️", text: "CTA com baixa taxa de clique. Tente ofertas mais atrativas." });
+      list.push({ emoji: "🎯", text: "Seus CTAs estão gerando resultados!" });
+    } else if (insights.avg_cta_interaction === 0 && insights.total_users > 0) {
+      list.push({ emoji: "⚠️", text: "Seus CTAs ainda não geraram cliques. Tente ofertas mais atrativas." });
     }
     
     if (insights.active_users > 10 && insights.conv_engagement < 10) {
-      list.push({ emoji: "💡", text: "Membros ativos mas poucas conversas. Crie tópicos para engajar!" });
+      list.push({ emoji: "💡", text: "Membros ativos mas poucas conversas. Crie tópicos!" });
     }
     
     if (insights.feed_engagement > 0 && insights.conv_engagement === 0) {
-      list.push({ emoji: "🔔", text: "Nenhuma conversa ainda. Inicie uma discussão para criar comunidade." });
+      list.push({ emoji: "🔔", text: "Nenhuma conversa ainda. Inicie uma discussão!" });
+    }
+    
+    if (insights.active_users > 0 && insights.avg_cta_interaction === 0) {
+      list.push({ emoji: "📣", text: "Adicione CTAs aos seus posts para medir conversões." });
     }
     
     return list;
@@ -114,15 +124,17 @@ export default function BrandInsights() {
         </div>
       )}
       
-      {insights.feed_engagement > insights.conv_engagement ? (
-        <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm">
-          💡 {insights.feed_engagement}% do engajamento vem do <strong>Feed</strong>
-        </div>
-      ) : insights.conv_engagement > 0 ? (
-        <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl text-sm">
-          💡 {insights.conv_engagement}% do engajamento vem das <strong>Conversas</strong>
-        </div>
-      ) : null}
+      {insights.total_users > 0 && (
+        insights.feed_engagement > insights.conv_engagement ? (
+          <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm">
+            💡 {insights.feed_engagement}% do engajamento vem do <strong>Feed</strong>
+          </div>
+        ) : insights.conv_engagement > 0 ? (
+          <div className="p-3 bg-purple-50 border border-purple-100 rounded-xl text-sm">
+            💡 {insights.conv_engagement}% do engajamento vem das <strong>Conversas</strong>
+          </div>
+        ) : null
+      )}
     </div>
   );
 }

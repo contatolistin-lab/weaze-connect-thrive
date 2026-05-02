@@ -17,7 +17,7 @@ const CTA_LABELS: Record<string, string> = {
   REGISTER: "Inscrição",
 };
 
-function KPI({ label, value, hint, delta, icon: Icon }: { label: string; value: string; hint?: string; delta?: number; icon?: React.ElementType }) {
+function KPI({ label, value, hint, delta, icon: Icon }: { label: string; value: string; hint?: string; delta?: number | null; icon?: React.ElementType }) {
   return (
     <Card>
       <CardContent className="p-5">
@@ -26,9 +26,9 @@ function KPI({ label, value, hint, delta, icon: Icon }: { label: string; value: 
           {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
           <p className="font-display text-3xl">{value}</p>
         </div>
-        {(hint || delta !== undefined) && (
+        {(hint || delta !== undefined && delta !== null) && (
           <div className="flex items-center gap-2 mt-2">
-            {delta !== undefined && (
+            {delta !== null && delta !== undefined && (
               <span className={cn("inline-flex items-center text-xs font-medium", delta >= 0 ? "text-success" : "text-destructive")}>
                 {delta >= 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
                 {delta >= 0 ? "+" : ""}{delta.toFixed(1)}%
@@ -66,7 +66,7 @@ export default function Overview() {
     mau: 0,
     activeUsers: 0,
     interactions30: [] as { date: string; count: number }[],
-    growth30: 0,
+    growth30: null as number | null,
     alerts: [] as string[],
     insights: null as { best_post: string; best_hour: number; active_users: number; best_cta: string } | null,
   });
@@ -91,7 +91,9 @@ export default function Overview() {
       const totalLikes = (interactions ?? []).filter((i) => i.action_type === "like").length;
       const totalComments = (interactions ?? []).filter((i) => i.action_type === "comment").length;
       const totalViews = (interactions ?? []).filter((i) => i.action_type === "view").length;
-      const engagementRate = totalViews > 0 ? ((totalLikes + totalComments) / totalViews) * 100 : 0;
+      
+      // Engagement rate correto: (likes + comments) / total members
+      const engagementRate = members && members > 0 ? ((totalLikes + totalComments) / members) * 100 : 0;
 
       const uniques = (rows: any[], since: string) => new Set(rows.filter((r) => r.user_id && r.created_at >= since).map((r) => r.user_id)).size;
       const dau = uniques(interactions ?? [], d1);
@@ -104,6 +106,7 @@ export default function Overview() {
           description: p.description?.slice(0, 50) ?? "Post",
           engagement: (p.likes_count ?? 0) + (p.comments_count ?? 0),
         }))
+        .filter(p => p.engagement > 0) // Apenas posts com engajamento real
         .sort((a, b) => b.engagement - a.engagement)
         .slice(0, 5);
 
@@ -112,13 +115,15 @@ export default function Overview() {
       const ctaStats: CtaStats[] = [];
       const ctaTypes = ["BUY", "SCHEDULE", "QUOTE", "REGISTER"];
       for (const type of ctaTypes) {
-        const clicks = (posts ?? []).reduce((a: number, p: any) => a + (p.cta_clicks ?? 0), 0);
-        const conversions = (posts ?? []).reduce((a: number, p: any) => a + (p.conversions ?? 0), 0);
+        const typePosts = (posts ?? []).filter((p: any) => p.cta_type === type);
+        const clicks = typePosts.reduce((a: number, p: any) => a + (p.cta_clicks ?? 0), 0);
+        const conversions = typePosts.reduce((a: number, p: any) => a + (p.conversions ?? 0), 0);
         ctaStats.push({ type, clicks, conversions });
       }
 
       const totalConversions = (posts ?? []).reduce((a: number, p: any) => a + (p.conversions ?? 0), 0);
-      const conversionRate = totalViews > 0 ? (totalConversions / totalViews) * 100 : 0;
+      const totalClicks = (posts ?? []).reduce((a: number, p: any) => a + (p.cta_clicks ?? 0), 0);
+      const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
 
       const buckets: Record<string, number> = {};
       for (let i = 0; i < periodDays; i++) {
@@ -131,14 +136,18 @@ export default function Overview() {
       });
       const interactions30 = Object.entries(buckets).reverse().map(([date, count]) => ({ date: date.slice(5), count }));
 
+      // Calcular crescimento real comparando com período anterior
+      const dPrevPeriod = new Date(now.getTime() - periodDays * 2 * 86400_000).toISOString();
+      const prevPeriodInteractions = (interactions ?? []).filter((i) => i.created_at >= dPrevPeriod && i.created_at < dCurrent);
       const currentCount = (interactions ?? []).length;
-      const prevCount = (interactions ?? []).length * 0.5;
-      const growth30 = prevCount === 0 ? (currentCount > 0 ? 100 : 0) : ((currentCount - prevCount) / prevCount) * 100;
+      const prevCount = prevPeriodInteractions.length;
+      // Só mostrar crescimento se houver dados históricos suficientes
+      const growth30 = prevCount > 0 ? ((currentCount - prevCount) / prevCount) * 100 : (currentCount > 0 ? 0 : null);
 
       const memberGrowth = (newMembers ?? 0) > 0 && members ? ((newMembers! / members) * 100) : 0;
 
       const alerts: string[] = [];
-      if (growth30 < -20) alerts.push(`Engajamento caiu ${Math.abs(growth30).toFixed(0)}% no período`);
+      if (growth30 !== null && growth30 < -20) alerts.push(`Engajamento caiu ${Math.abs(growth30).toFixed(0)}% no período`);
 
       setData({
         members: members ?? 0,
@@ -205,27 +214,33 @@ export default function Overview() {
           <KPI label="Posts" value={data.posts.toString()} icon={Target} />
           <KPI label="Engajamento" value={`${data.engagementRate.toFixed(1)}%`} icon={TrendingUp} />
           <KPI label="DAU" value={data.dau.toString()} hint="24h" />
-          <KPI label="MAU" value={data.mau.toString()} hint={period} delta={data.growth30} />
+          <KPI label="MAU" value={data.mau.toString()} hint={period} delta={data.growth30 ?? undefined} />
         </div>
 
         <Card>
           <CardHeader><CardTitle className="font-display">Engajamento</CardTitle></CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={data.interactions30}>
-                <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#g1)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {data.interactions30.some(d => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height={180}>
+                <AreaChart data={data.interactions30}>
+                  <defs>
+                    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} domain={[0, "auto"]} />
+                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                  <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#g1)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-[180px] flex items-center justify-center text-muted-foreground text-sm">
+                Dados insuficientes ainda. Interações aparecerão aqui.
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -243,7 +258,7 @@ export default function Overview() {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">Nenhum CTA encontrado</p>
+              <p className="text-sm text-muted-foreground">Sem atividade de CTAs ainda. Seus CTAs aparecerão aqui.</p>
             )}
             <div className="pt-2 border-t">
               <div className="flex justify-between">
@@ -254,7 +269,7 @@ export default function Overview() {
           </CardContent>
         </Card>
 
-        {data.topPosts.length > 0 && (
+        {data.topPosts.length > 0 ? (
           <Card>
             <CardHeader><CardTitle className="font-display">Posts Mais Engajados</CardTitle></CardHeader>
             <CardContent className="space-y-2">
@@ -265,6 +280,13 @@ export default function Overview() {
                   <span className="text-xs text-muted-foreground">{post.engagement}</span>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader><CardTitle className="font-display">Posts Mais Engajados</CardTitle></CardHeader>
+            <CardContent className="py-8 text-center text-muted-foreground text-sm">
+              Nenhum post com engajamento ainda. Incentive interações!
             </CardContent>
           </Card>
         )}
@@ -323,7 +345,7 @@ export default function Overview() {
         <KPI label="Posts" value={data.posts.toString()} icon={Target} />
         <KPI label="Engajamento" value={`${data.engagementRate.toFixed(1)}%`} icon={TrendingUp} />
         <KPI label="DAU" value={data.dau.toString()} hint="24h" />
-        <KPI label="MAU" value={data.mau.toString()} hint={period} delta={data.growth30} />
+        <KPI label="MAU" value={data.mau.toString()} hint={period} delta={data.growth30 ?? undefined} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -340,7 +362,7 @@ export default function Overview() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, "auto"]} />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                 <Area type="monotone" dataKey="count" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#g1)" />
               </AreaChart>
@@ -351,7 +373,7 @@ export default function Overview() {
         <Card>
           <CardHeader><CardTitle className="font-display">CTA Funil</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {data.ctaStats.length > 0 ? (
+            {data.ctaStats.some(c => c.clicks > 0) ? (
               data.ctaStats.map((cta) => (
                 <div key={cta.type} className="flex items-center justify-between">
                   <span className="text-sm font-medium">{CTA_LABELS[cta.type] || cta.type}</span>
@@ -362,7 +384,7 @@ export default function Overview() {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">Nenhum CTA encontrado</p>
+              <p className="text-sm text-muted-foreground">Sem atividade de CTAs ainda. Seus CTAs aparecerão aqui.</p>
             )}
             <div className="pt-2 border-t">
               <div className="flex justify-between">
@@ -374,7 +396,7 @@ export default function Overview() {
         </Card>
       </div>
 
-      {data.topPosts.length > 0 && (
+      {data.topPosts.length > 0 ? (
         <Card>
           <CardHeader><CardTitle className="font-display">Posts Mais Engajados</CardTitle></CardHeader>
           <CardContent className="space-y-2">
@@ -385,6 +407,13 @@ export default function Overview() {
                 <span className="text-xs text-muted-foreground">{post.engagement}</span>
               </div>
             ))}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader><CardTitle className="font-display">Posts Mais Engajados</CardTitle></CardHeader>
+          <CardContent className="py-8 text-center text-muted-foreground text-sm">
+            Nenhum post com engajamento ainda. Incentive interações!
           </CardContent>
         </Card>
       )}
