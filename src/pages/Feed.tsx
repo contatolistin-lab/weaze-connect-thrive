@@ -8,7 +8,7 @@ import FeedItem, { Post } from "@/components/feed/FeedItem";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import CreateBrandDialog from "@/components/CreateBrandDialog";
-import { Sparkles, Plus, Play, Video } from "lucide-react";
+import { Sparkles, Plus, Play, Video, MessageCircle, BarChart3 } from "lucide-react";
 
 const PAGE = 8;
 
@@ -22,6 +22,7 @@ export default function Feed() {
   const [done, setDone] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const initialized = useRef(false);
@@ -210,6 +211,53 @@ export default function Feed() {
     );
   }
 
+  function FloatingActionButton() {
+    const [open, setOpen] = useState(false);
+
+    return (
+      <>
+        {/* FAB */}
+        <button
+          onClick={() => setOpen(!open)}
+          className="fixed bottom-20 right-5 w-14 h-14 rounded-full bg-brand text-primary-foreground shadow-elevated hover:scale-105 transition-transform z-50 flex items-center justify-center"
+          style={{ bottom: 'calc(3.5rem + 16px)' }}
+        >
+          <Plus className={`h-6 w-6 transition-transform ${open ? 'rotate-45' : ''}`} />
+        </button>
+
+        {/* Menu */}
+        {open && (
+          <div className="fixed bottom-36 right-5 z-40 flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-200">
+            <Link
+              to="/create"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border rounded-full shadow-elevated hover:bg-accent transition-colors"
+            >
+              <MessageCircle className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium">Novo post</span>
+            </Link>
+            <Link
+              to="/conversas"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-background border border-border rounded-full shadow-elevated hover:bg-accent transition-colors"
+            >
+              <Sparkles className="h-4 w-4 text-purple-600" />
+              <span className="text-sm font-medium">Criar conversa</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Backdrop */}
+        {open && (
+          <div
+            className="fixed inset-0 z-30"
+            onClick={() => setOpen(false)}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="h-[100dvh] flex flex-col bg-background">
       <TopBar />
@@ -228,23 +276,6 @@ export default function Feed() {
           </p>
         </button>
       )}
-      {/* Dicas rápidas para B2B */}
-      {isB2B && posts.length > 0 && (
-        <div className="mx-3 mb-2 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <Link to="/create" className="flex-shrink-0 text-xs bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-blue-100">
-            <Plus className="h-3 w-3 text-blue-600" />
-            <span className="text-blue-700">Novo post</span>
-          </Link>
-          <Link to="/conversas" className="flex-shrink-0 text-xs bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-purple-100">
-            <Sparkles className="h-3 w-3 text-purple-600" />
-            <span className="text-purple-700">Criar conversa</span>
-          </Link>
-          <Link to="/metrics" className="flex-shrink-0 text-xs bg-green-50 border border-green-200 px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-green-100">
-            <Sparkles className="h-3 w-3 text-green-600" />
-            <span className="text-green-700">Ver métricas</span>
-          </Link>
-        </div>
-      )}
       <div ref={containerRef} className="flex-1 overflow-y-scroll feed-snap scrollbar-hide">
         {posts.length === 0 && !loading && (
           <div className="h-[calc(100dvh-3.5rem)] grid place-items-center px-6 text-center">
@@ -262,6 +293,10 @@ export default function Feed() {
         ))}
         {loading && <div className="py-6 text-center text-muted-foreground text-sm">Carregando…</div>}
       </div>
+      
+      {/* Floating Action Button - Only for B2B */}
+      {isB2B && <FloatingActionButton />}
+      
       <BottomNav />
     </div>
   );
