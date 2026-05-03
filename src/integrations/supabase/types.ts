@@ -1163,6 +1163,51 @@ export type Database = {
       }
     }
     Functions: {
+      award_engagement_points: {
+        Args: {
+          p_action_type: string
+          p_metadata?: Json
+          p_points: number
+          p_reference_id?: string
+          p_tenant_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      get_monthly_ranking: {
+        Args: { p_limit?: number; p_tenant_id: string }
+        Returns: {
+          avatar_url: string
+          city: string
+          monthly_points: number
+          name: string
+          rank: number
+          state: string
+          user_id: string
+        }[]
+      }
+      get_user_engagement_stats: {
+        Args: { p_tenant_id: string; p_user_id: string }
+        Returns: {
+          monthly_points: number
+          monthly_rank: number
+          total_points: number
+          yearly_points: number
+          yearly_rank: number
+        }[]
+      }
+      get_yearly_ranking: {
+        Args: { p_limit?: number; p_tenant_id: string }
+        Returns: {
+          avatar_url: string
+          city: string
+          name: string
+          rank: number
+          state: string
+          user_id: string
+          yearly_points: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
