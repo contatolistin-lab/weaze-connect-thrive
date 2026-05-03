@@ -408,7 +408,7 @@ export default function Topics() {
     
     const { error } = await supabase
       .from("topic_messages")
-      .update({ content: editContent.trim(), updated_at: new Date().toISOString() })
+      .update({ content: editContent.trim(), edited_at: new Date().toISOString() } as any)
       .eq("id", editingMsgId);
 
     if (error) {
