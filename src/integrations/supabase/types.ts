@@ -161,6 +161,39 @@ export type Database = {
           },
         ]
       }
+      engagement_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          points: number
+          reference_id: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points: number
+          reference_id?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points?: number
+          reference_id?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           created_at: string
@@ -592,31 +625,40 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string
           email: string | null
           id: string
           name: string
           phone: string | null
+          state: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
           id?: string
           name: string
           phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           email?: string | null
           id?: string
           name?: string
           phone?: string | null
+          state?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -754,6 +796,42 @@ export type Database = {
           },
         ]
       }
+      tenant_rewards: {
+        Row: {
+          award_type: string | null
+          award_value: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          min_position: number | null
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          award_type?: string | null
+          award_value?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_position?: number | null
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          award_type?: string | null
+          award_value?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_position?: number | null
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           active: boolean
@@ -763,6 +841,8 @@ export type Database = {
           community_name: string | null
           created_at: string
           created_by: string | null
+          cta_max_points: number | null
+          cta_min_points: number | null
           id: string
           logo_url: string | null
           mrr: number
@@ -781,6 +861,8 @@ export type Database = {
           community_name?: string | null
           created_at?: string
           created_by?: string | null
+          cta_max_points?: number | null
+          cta_min_points?: number | null
           id?: string
           logo_url?: string | null
           mrr?: number
@@ -799,6 +881,8 @@ export type Database = {
           community_name?: string | null
           created_at?: string
           created_by?: string | null
+          cta_max_points?: number | null
+          cta_min_points?: number | null
           id?: string
           logo_url?: string | null
           mrr?: number
@@ -819,8 +903,10 @@ export type Database = {
           edited_at: string | null
           id: string
           likes_count: number | null
+          mentioned_user_id: string | null
           mentions: Json
           parent_id: string | null
+          reply_to_message_id: string | null
           topic_id: string
           user_id: string
         }
@@ -831,8 +917,10 @@ export type Database = {
           edited_at?: string | null
           id?: string
           likes_count?: number | null
+          mentioned_user_id?: string | null
           mentions?: Json
           parent_id?: string | null
+          reply_to_message_id?: string | null
           topic_id: string
           user_id: string
         }
@@ -843,8 +931,10 @@ export type Database = {
           edited_at?: string | null
           id?: string
           likes_count?: number | null
+          mentioned_user_id?: string | null
           mentions?: Json
           parent_id?: string | null
+          reply_to_message_id?: string | null
           topic_id?: string
           user_id?: string
         }
@@ -852,6 +942,13 @@ export type Database = {
           {
             foreignKeyName: "topic_messages_parent_id_fkey"
             columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "topic_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
             isOneToOne: false
             referencedRelation: "topic_messages"
             referencedColumns: ["id"]
@@ -970,6 +1067,36 @@ export type Database = {
           },
         ]
       }
+      user_engagement_points: {
+        Row: {
+          id: string
+          last_updated_at: string
+          monthly_points: number
+          tenant_id: string
+          total_points: number
+          user_id: string
+          yearly_points: number
+        }
+        Insert: {
+          id?: string
+          last_updated_at?: string
+          monthly_points?: number
+          tenant_id: string
+          total_points?: number
+          user_id: string
+          yearly_points?: number
+        }
+        Update: {
+          id?: string
+          last_updated_at?: string
+          monthly_points?: number
+          tenant_id?: string
+          total_points?: number
+          user_id?: string
+          yearly_points?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1036,6 +1163,51 @@ export type Database = {
       }
     }
     Functions: {
+      award_engagement_points: {
+        Args: {
+          p_action_type: string
+          p_metadata?: Json
+          p_points: number
+          p_reference_id?: string
+          p_tenant_id: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      get_monthly_ranking: {
+        Args: { p_limit?: number; p_tenant_id: string }
+        Returns: {
+          avatar_url: string
+          city: string
+          monthly_points: number
+          name: string
+          rank: number
+          state: string
+          user_id: string
+        }[]
+      }
+      get_user_engagement_stats: {
+        Args: { p_tenant_id: string; p_user_id: string }
+        Returns: {
+          monthly_points: number
+          monthly_rank: number
+          total_points: number
+          yearly_points: number
+          yearly_rank: number
+        }[]
+      }
+      get_yearly_ranking: {
+        Args: { p_limit?: number; p_tenant_id: string }
+        Returns: {
+          avatar_url: string
+          city: string
+          name: string
+          rank: number
+          state: string
+          user_id: string
+          yearly_points: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

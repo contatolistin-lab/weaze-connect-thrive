@@ -21,7 +21,7 @@ function InsightCard({ label, value, sub, icon: Icon, color }: { label: string; 
   );
 }
 
-export default function BrandInsights() {
+export default function BrandInsights(_props: { conversationsCount?: number; ctaClicks?: number } = {}) {
   const { tenant } = useTenant();
   const [insights, setInsights] = useState<InsightStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,7 +36,7 @@ export default function BrandInsights() {
         const [{ data: interactions }, { data: comments }, { data: topics }, { data: ctas }] = await Promise.all([
           supabase.from("interactions").select("action_type").eq("tenant_id", tenant.id).gte("created_at", d30),
           supabase.from("interactions").select("user_id").eq("tenant_id", tenant.id).eq("action_type", "comment").gte("created_at", d30),
-          supabase.from("topic_messages").select("user_id").eq("tenant_id", tenant.id).gte("created_at", d30),
+          supabase.from("topic_messages").select("user_id, topics!inner(tenant_id)").eq("topics.tenant_id", tenant.id).gte("created_at", d30) as any,
           supabase.from("interactions").select("action_type").eq("tenant_id", tenant.id).eq("action_type", "click_cta").gte("created_at", d30),
         ]);
         const allInteractions = interactions ?? [];

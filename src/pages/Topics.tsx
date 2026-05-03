@@ -36,6 +36,7 @@ type TopicMessage = {
   parent_id: string | null;
   likes_count: number;
   created_at: string;
+  reply_to_message_id?: string | null;
   profiles?: { name: string; avatar_url: string | null } | null;
 };
 
@@ -279,7 +280,7 @@ export default function Topics() {
       console.error("Load messages error:", error);
       return; 
     }
-    setMessages(data || []);
+    setMessages((data as any) || []);
   };
 
   const sendReply = async () => {
@@ -341,20 +342,21 @@ export default function Topics() {
       return;
     }
     
+    const userName = (user as any).user_metadata?.name || (user as any).email || "Alguém";
     // Notificar usuário mencionado
-    if (mentionedUserId && mentionedUserId !== user.id) {
+    if (mentionedUserId && mentionedUserId !== user.id && tenant) {
       await supabase.from("notifications").insert({
         user_id: mentionedUserId,
+        tenant_id: tenant.id,
         type: "mention",
-        title: `${user.name || "Alguém"} te mencionou em uma conversa`,
-        content: content,
-        related_id: insertedMsg.id,
-        related_type: "topic_message"
-      });
+        title: `${userName} te mencionou em uma conversa`,
+        body: content,
+        data: { message_id: insertedMsg.id, related_type: "topic_message" },
+      } as any);
     }
     
     // Notificar autor da mensagem respondida
-    if (replyToMsg) {
+    if (replyToMsg && tenant) {
       const { data: originalMsg } = await supabase
         .from("topic_messages")
         .select("user_id")
@@ -364,12 +366,12 @@ export default function Topics() {
       if (originalMsg && originalMsg.user_id !== user.id) {
         await supabase.from("notifications").insert({
           user_id: originalMsg.user_id,
+          tenant_id: tenant.id,
           type: "reply",
-          title: `${user.name || "Alguém"} respondeu sua mensagem`,
-          content: content,
-          related_id: insertedMsg.id,
-          related_type: "topic_message"
-        });
+          title: `${userName} respondeu sua mensagem`,
+          body: content,
+          data: { message_id: insertedMsg.id, related_type: "topic_message" },
+        } as any);
       }
     }
     
@@ -407,7 +409,7 @@ export default function Topics() {
     
     const { error } = await supabase
       .from("topic_messages")
-      .update({ content: editContent.trim(), updated_at: new Date().toISOString() })
+      .update({ content: editContent.trim(), edited_at: new Date().toISOString() } as any)
       .eq("id", editingMsgId);
 
     if (error) {
@@ -488,7 +490,7 @@ export default function Topics() {
       }
       // Adicionar usuário atual
       if (user && !seen.has(user.id)) {
-        uniqueUsers.push({ id: user.id, name: user.name || "Você", avatar_url: user.avatar_url });
+        uniqueUsers.push({ id: user.id, name: (user as any).user_metadata?.name || "Você", avatar_url: (user as any).user_metadata?.avatar_url });
       }
       setMentionUsers(uniqueUsers);
     }
@@ -679,7 +681,7 @@ export default function Topics() {
       {/* Topic Detail View - Always render if we have a selectedTopic or messages */}
       {(selectedTopic || messages.length > 0) && (
         <div className="fixed inset-0 bg-white z-50 flex flex-col">
-          {console.log("RENDER: selectedTopic=", selectedTopic, "messages=", messages.length)}
+          {void console.log("RENDER: selectedTopic=", selectedTopic, "messages=", messages.length)}
           {/* Topic Header */}
           <div className="bg-white px-4 py-3 border-b border-gray-200 flex items-center gap-3">
             <button onClick={closeTopic} className="text-gray-500 p-1">←</button>

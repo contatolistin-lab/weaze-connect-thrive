@@ -51,7 +51,7 @@ export async function updateLocation(userId: string, loc: { city?: string; state
     if (loc.state) updates.state = loc.state;
     if (loc.country) updates.country = loc.country;
     if (Object.keys(updates).length === 0) return true;
-    const { error } = await supabase.from("profiles").update(updates).eq("user_id", userId);
+    const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", userId);
     if (error) { console.error("updateLocation:", error); return false; }
     return true;
   } catch (e) { console.error("updateLocation:", e); return false; }
