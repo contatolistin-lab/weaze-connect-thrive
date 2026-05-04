@@ -1,38 +1,81 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+let cachedPromptEvent: BeforeInstallPromptEvent | null = null;
+
+const isStandalone = () => {
+  if (typeof window === "undefined") return false;
+
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+};
+
+const isIOSDevice = () => {
+  if (typeof window === "undefined") return false;
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+};
+
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [promptEvent, setPromptEvent] = useState<BeforeInstallPromptEvent | null>(cachedPromptEvent);
+  const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      console.log('PWA disponível para instalação');
+    setInstalled(isStandalone());
+
+    const handler = (event: Event) => {
+      const installEvent = event as BeforeInstallPromptEvent;
+      installEvent.preventDefault();
+      cachedPromptEvent = installEvent;
+      setPromptEvent(installEvent);
+      console.log("PWA pronto para instalação");
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    const onInstalled = () => {
+      cachedPromptEvent = null;
+      setPromptEvent(null);
+      setInstalled(true);
+      console.log("PWA instalado com sucesso");
+    };
 
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", onInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
   }, []);
 
+  const isIOS = useMemo(() => isIOSDevice(), []);
+  const canInstall = !installed && !!promptEvent;
+
   const install = async () => {
-    if (!deferredPrompt) return;
+    if (isIOS) {
+      window.alert("Para instalar: toque em compartilhar e depois ‘Adicionar à tela inicial’");
+      return;
+    }
 
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+    if (!promptEvent) {
+      window.alert("Use o menu do navegador para instalar o app");
+      return;
+    }
 
-    console.log('Resultado da instalação:', choice.outcome);
-
-    setDeferredPrompt(null);
+    await promptEvent.prompt();
+    await promptEvent.userChoice;
+    cachedPromptEvent = null;
+    setPromptEvent(null);
   };
 
   return {
-    canInstall: !!deferredPrompt,
-    install
+    canInstall,
+    install,
+    isIOS,
+    isInstalled: installed,
   };
 }

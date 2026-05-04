@@ -21,8 +21,8 @@ export default function Landing() {
           <Logo size={140} />
         </Link>
         <div className="flex items-center gap-2">
-          <PWAInstallButton />
           <Button asChild variant="ghost" size="sm"><Link to="/auth">Entrar</Link></Button>
+          <PWAInstallButton />
         </div>
       </header>
 
