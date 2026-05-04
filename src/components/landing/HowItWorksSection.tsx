@@ -38,7 +38,7 @@ export default function HowItWorksSection() {
 
   return (
     <section ref={ref} className="py-28 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-transparent to-muted/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#630091]/10 via-[#d81e62]/5 to-[#630091]/10" />
       
       <div className="relative mx-auto max-w-5xl px-6">
         <motion.div
@@ -47,11 +47,11 @@ export default function HowItWorksSection() {
           variants={fadeInUp}
           className="text-center mb-16"
         >
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#d81e62] font-semibold mb-4">
             Como funciona
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl text-balance">
-            Pronto em minutos. Resultados em semanas.
+          <h2 className="font-display text-3xl sm:text-4xl text-balance text-[#630091]">
+            Pronto em minutos. <span className="text-[#d81e62]">Resultados em semanas.</span>
           </h2>
         </motion.div>
 
@@ -62,16 +62,16 @@ export default function HowItWorksSection() {
               initial={{ opacity: 0, y: 15 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.1 * i, duration: 0.4 }}
-              className="relative p-6 rounded-xl bg-background border border-border hover:border-[#630091]/30 transition-all group"
+              className="relative p-6 rounded-xl bg-white border border-[#630091]/20 hover:border-[#d81e62]/50 transition-all group shadow-sm hover:shadow-lg"
               whileHover={{ y: -4 }}
             >
-              <div className="absolute top-4 right-6 text-muted-foreground/30 font-display text-5xl">
+              <div className="absolute top-4 right-6 text-[#630091]/20 font-display text-5xl group-hover:text-[#630091]/30 transition-colors">
                 {s.step}
               </div>
-              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#630091]/20 to-[#d81e62]/20 flex items-center justify-center mb-4 group-hover:from-[#630091]/30 group-hover:to-[#d81e62]/30 transition-all">
-                <s.icon className="h-6 w-6 text-[#d81e62] group-hover:text-[#630091] transition-all" />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#630091] to-[#d81e62] flex items-center justify-center mb-4">
+                <s.icon className="h-6 w-6 text-white" />
               </div>
-              <h3 className="font-display text-xl mb-3">{s.title}</h3>
+              <h3 className="font-display text-xl mb-3 text-[#630091]">{s.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
             </motion.div>
           ))}

@@ -29,7 +29,8 @@ export default function SolutionSection() {
 
   return (
     <section ref={ref} className="py-28 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#630091]/5 via-transparent to-[#d81e62]/5" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#d81e62] via-[#630091] to-[#d81e62]" />
+      <div className="absolute inset-0 bg-white/90" />
       
       <div className="relative mx-auto max-w-5xl px-6">
         <motion.div
@@ -38,10 +39,10 @@ export default function SolutionSection() {
           variants={fadeInUp}
           className="mb-16"
         >
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#d81e62] font-semibold mb-4">
             A solução
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl text-balance max-w-2xl mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl text-balance max-w-2xl mb-4 text-[#630091]">
             Um espaço só seu. Onde a conexão vira conversão.
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl">
@@ -56,14 +57,14 @@ export default function SolutionSection() {
               initial={{ opacity: 0, y: 10 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.03 * i, duration: 0.3 }}
-              className="flex items-start gap-3 p-4 rounded-xl bg-white/50 border border-border hover:border-[#630091]/30 transition-all group"
+              className="flex items-start gap-3 p-4 rounded-xl bg-gradient-to-br from-[#630091]/10 to-[#d81e62]/10 border border-[#630091]/20 hover:border-[#d81e62]/50 transition-all group shadow-sm"
               whileHover={{ y: -2 }}
             >
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#630091]/20 to-[#d81e62]/20 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:from-[#630091]/30 group-hover:to-[#d81e62]/30 transition-all">
-                <Check className="h-3 w-3 text-[#d81e62] group-hover:text-[#630091] transition-all" />
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#630091] to-[#d81e62] flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Check className="h-3 w-3 text-white" />
               </div>
               <div>
-                <span className="text-sm font-medium">{benefit.title}</span>
+                <span className="text-sm font-medium text-[#630091]">{benefit.title}</span>
                 <p className="text-xs text-muted-foreground mt-1">{benefit.desc}</p>
               </div>
             </motion.div>

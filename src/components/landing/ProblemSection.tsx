@@ -43,7 +43,7 @@ export default function ProblemSection() {
 
   return (
     <section ref={ref} className="py-28 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#630091]/5 via-[#d81e62]/3 to-[#630091]/5" />
       
       <div className="relative mx-auto max-w-5xl px-6">
         <motion.div
@@ -52,10 +52,10 @@ export default function ProblemSection() {
           variants={fadeInUp}
           className="mb-16"
         >
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4">
+          <p className="text-xs uppercase tracking-[0.2em] text-[#d81e62] font-semibold mb-4">
             O problema
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl text-balance max-w-2xl mb-4">
+          <h2 className="font-display text-3xl sm:text-4xl text-balance max-w-2xl mb-4 text-[#630091]">
             As redes sociais trabalham contra você.
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl">
@@ -70,11 +70,11 @@ export default function ProblemSection() {
               initial={{ opacity: 0, y: 15 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.05 * i, duration: 0.4 }}
-              className="group p-6 rounded-xl bg-background border border-border hover:border-[#d81e62]/30 transition-all"
+              className="group p-6 rounded-xl bg-white/80 border border-[#630091]/20 hover:border-[#d81e62]/50 transition-all shadow-sm hover:shadow-md"
               whileHover={{ y: -2 }}
             >
-              <div className="h-1 w-8 bg-gradient-to-r from-[#630091] to-[#d81e62] rounded-full mb-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <h3 className="font-medium text-lg mb-3">{problem.title}</h3>
+              <div className="h-1 w-10 bg-gradient-to-r from-[#630091] to-[#d81e62] rounded-full mb-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <h3 className="font-medium text-lg mb-3 text-[#630091] group-hover:text-[#d81e62] transition-colors">{problem.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{problem.desc}</p>
             </motion.div>
           ))}
