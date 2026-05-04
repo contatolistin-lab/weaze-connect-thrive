@@ -12,14 +12,14 @@ const fadeInUp = {
 };
 
 const comparison = [
-  { feature: "Algoritmo", social: false, weaze: true },
-  { feature: "Domínio próprio", social: false, weaze: true },
-  { feature: "CRM completo", social: false, weaze: true },
-  { feature: "Venda direta", social: false, weaze: true },
-  { feature: "Agenda nativa", social: false, weaze: true },
-  { feature: "White-label", social: false, weaze: true },
-  { feature: "Dados reais", social: false, weaze: true },
-  { feature: "Sem límites", social: false, weaze: true },
+  { feature: "Feed próprio", social: false, weaze: true },
+  { feature: "Mensagens da marca", social: false, weaze: true },
+  { feature: "Agenda integrada", social: false, weaze: true },
+  { feature: "Catálogo de produtos", social: false, weaze: true },
+  { feature: "Dados da audiência", social: false, weaze: true },
+  { feature: "Membros ilimitados", social: false, weaze: true },
+  { feature: "Sem algoritmos", social: false, weaze: true },
+  { feature: " eigene marca", social: false, weaze: true },
 ];
 
 export default function ComparisonSection() {

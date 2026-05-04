@@ -14,20 +14,20 @@ const fadeInUp = {
 const steps = [
   {
     number: "01",
-    title: "Crie seu espaço",
-    desc: "Escolha cores, nome e carregue seu logo. Minutos depois você tem um ambiente 100% personalizado.",
+    title: "Crie sua marca",
+    desc: "Escolha o nome da sua comunidade e personalize com a identidade da sua marca.",
     icon: Sparkles
   },
   {
     number: "02",
-    title: "Convide sua gente",
-    desc: "Compartilhe o link com quem já te segue. Cada pessoa que entra vira membro automaticamente.",
+    title: "Convide membros",
+    desc: "Compartilhe o link com quem já te segue. Cada pessoa que entra vira membro.",
     icon: Users
   },
   {
     number: "03",
-    title: " monetize",
-    desc: "Publique, engaje, venda. Tudo num só lugar. Sem link externo, sem perda de atenção.",
+    title: "Publique e engaje",
+    desc: "Crie posts, videos, agenda eventos. Tudo num só lugar para sua comunidade.",
     icon: TrendingUp
   }
 ];

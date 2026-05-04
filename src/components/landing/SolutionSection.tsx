@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Check, Sparkles, Users, TrendingUp, MessageCircle, Calendar, ShoppingBag, BarChart3, Globe, Shield, Rocket } from "lucide-react";
+import { Check, Sparkles, Users, TrendingUp, MessageCircle, Calendar, ShoppingBag, BarChart3, Bell, Image } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -12,15 +12,15 @@ const fadeInUp = {
 };
 
 const benefits = [
-  { icon: Sparkles, title: "Feed proprietário", desc: "Seu conteúdo, suas regras. Sem algoritmo." },
-  { icon: Globe, title: "Domínio próprio", desc: "seumarca.com — 100% white-label." },
-  { icon: MessageCircle, title: "Mensagens", desc: "Chat integrado. Sem WhatsApp pessoal." },
-  { icon: Calendar, title: "Agenda", desc: "Agendamentos nativos." },
-  { icon: ShoppingBag, title: "Loja", desc: "Venda direta, sem link externo." },
-  { icon: BarChart3, title: "Dados reais", desc: "CRM completo." },
-  { icon: Users, title: "Membros", desc: "Lista completa." },
-  { icon: Shield, title: "Segurança", desc: "Seus dados, suas regras." },
-  { icon: Rocket, title: "Escala", desc: "Suporta milhares." }
+  { icon: Image, title: "Feed", desc: "Posts, vídeos, carrosséis. Seu conteúdo." },
+  { icon: MessageCircle, title: "Conversas", desc: "Chat com sua comunidade." },
+  { icon: Calendar, title: "Agenda", desc: "Agendamentos e eventos." },
+  { icon: ShoppingBag, title: "Produtos", desc: "Catálogo de produtos." },
+  { icon: BarChart3, title: "Dados", desc: "Métricas e análises." },
+  { icon: Users, title: "Membros", desc: "Lista de membros." },
+  { icon: Bell, title: "Notificações", desc: "Push e alertas." },
+  { icon: TrendingUp, title: "Engajamento", desc: "Curtidas e comentários." },
+  { icon: Sparkles, title: "White-label", desc: "Sua marca, suas cores." }
 ];
 
 const colors = ["from-[#630091] to-[#8b2091]", "from-[#8b2091] to-[#d81e62]", "from-[#d81e62] to-[#630091]"];
@@ -42,13 +42,13 @@ export default function SolutionSection() {
           className="text-center mb-16"
         >
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-[#d81e62] font-semibold mb-4">
-            A solução
+            O que você ganha
           </div>
           <h2 className="font-display text-4xl sm:text-5xl text-balance max-w-2xl mx-auto mb-4 text-[#1a1a1a]">
-            Sua própria infraestrutura.
+            Tudo que precisa num só lugar.
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
-            Weaze é a plataforma que marcas profissionais usam para criar relacionamento real. Sem algoritmo, sem intermediários.
+           Uma plataforma completa para construir e engajarsua comunidade. Sem mensalidade por usuário.
           </p>
         </motion.div>
 

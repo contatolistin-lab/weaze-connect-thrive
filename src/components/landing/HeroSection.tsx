@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronDown, Zap, Shield, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, ChevronDown, Image, MessageSquare, Calendar, Users } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -17,10 +17,10 @@ const stagger = {
 };
 
 const stats = [
-  { icon: Users, value: "10K+", label: "Comunidades" },
-  { icon: TrendingUp, value: "85%", label: "Engajamento" },
-  { icon: Zap, value: "2min", label: "Setup" },
-  { icon: Shield, value: "99.9%", label: "Uptime" },
+  { icon: Image, value: "Feed", label: "Posts e vídeos" },
+  { icon: MessageSquare, value: "Chat", label: "Mensagens" },
+  { icon: Calendar, value: "Agenda", label: "Eventos" },
+  { icon: Users, value: "Membros", label: "Lista" },
 ];
 
 export default function HeroSection() {
@@ -47,7 +47,7 @@ export default function HeroSection() {
               className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-[#d81e62] font-semibold mb-6"
             >
               <span className="h-px w-10 bg-gradient-to-r from-[#630091] to-[#d81e62]" />
-              Infraestrutura white-label
+              Comunidade white-label
             </motion.div>
             
             <motion.h1 
@@ -64,7 +64,7 @@ export default function HeroSection() {
               variants={fadeInUp}
               className="text-lg sm:text-xl text-muted-foreground text-pretty max-w-lg mb-8 leading-relaxed"
             >
-              A plataforma que marcas profissionais usam para criar relacionamento real com sua audiência. Sem algoritmos, sem intermediários — só você e sua gente.
+              Uma plataforma para criar relacionamento real com sua audiência. Feed, mensagens, agenda e dados — tudo integrado.
             </motion.p>
             
             <motion.div variants={fadeInUp} className="flex flex-wrap gap-4 mb-12">
@@ -91,13 +91,11 @@ export default function HeroSection() {
               </Link>
             </motion.div>
 
-            <motion.div variants={fadeInUp} className="flex items-center gap-8 pt-4 border-t border-[#630091]/10">
+            <motion.div variants={fadeInUp} className="flex items-center gap-6 pt-4 border-t border-[#630091]/10">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#630091]/10 to-[#d81e62]/10 mb-2 mx-auto">
-                    <stat.icon className="h-5 w-5 text-[#d81e62]" />
-                  </div>
-                  <div className="font-display text-2xl font-bold text-[#630091]">{stat.value}</div>
+                  <stat.icon className="h-6 w-6 text-[#630091] mx-auto mb-1" />
+                  <div className="font-display text-sm font-semibold text-[#1a1a1a]">{stat.value}</div>
                   <div className="text-xs text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
@@ -115,7 +113,7 @@ export default function HeroSection() {
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-yellow-400" />
                   <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <span className="ml-4 text-xs text-muted-foreground">weaze.com</span>
+                  <span className="ml-4 text-xs text-muted-foreground">Sua comunidade</span>
                 </div>
                 <div className="p-8 space-y-6">
                   <div className="h-8 w-2/3 bg-gradient-to-r from-[#630091]/20 to-[#d81e62]/20 rounded-lg" />
@@ -127,9 +125,6 @@ export default function HeroSection() {
                   <div className="flex gap-3 pt-4">
                     <div className="h-20 w-20 rounded-xl bg-gradient-to-br from-[#630091]/20 to-[#d81e62]/20" />
                     <div className="h-20 flex-1 bg-muted rounded-xl" />
-                  </div>
-                  <div className="h-24 rounded-xl bg-gradient-to-r from-[#630091]/10 via-[#d81e62]/10 to-[#630091]/10 flex items-center justify-center">
-                    <span className="text-[#630091]/40 font-display text-xl">Dashboard Preview</span>
                   </div>
                 </div>
               </div>

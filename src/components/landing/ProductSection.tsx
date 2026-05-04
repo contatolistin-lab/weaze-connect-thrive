@@ -1,6 +1,6 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { ScrollText, MessageSquare, Calendar, ShoppingBag, BarChart3, Users, Bell, Globe, ArrowRight } from "lucide-react";
+import { ScrollText, MessageSquare, Calendar, ShoppingBag, BarChart3, Users, Bell, Image, ArrowRight } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -12,14 +12,14 @@ const fadeInUp = {
 };
 
 const features = [
-  { icon: ScrollText, title: "Feed", desc: "Seu conteúdo, suas regras" },
-  { icon: MessageSquare, title: "Mensagens", desc: "Chat integrado" },
+  { icon: ScrollText, title: "Feed", desc: "Posts e vídeos" },
+  { icon: MessageSquare, title: "Mensagens", desc: "Chat da marca" },
   { icon: Calendar, title: "Agenda", desc: "Agendamentos" },
-  { icon: ShoppingBag, title: "Loja", desc: "Venda direta" },
-  { icon: BarChart3, title: "Dados", desc: "CRM completo" },
-  { icon: Users, title: "Membros", desc: "Lista completa" },
-  { icon: Bell, title: "Notificações", desc: "Push + Email" },
-  { icon: Globe, title: "Domínio", desc: "100% white-label" }
+  { icon: ShoppingBag, title: "Produtos", desc: "Catálogo" },
+  { icon: BarChart3, title: "Dados", desc: "Métricas" },
+  { icon: Users, title: "Membros", desc: "Lista" },
+  { icon: Bell, title: "Notificações", desc: "Alertas" },
+  { icon: Image, title: "Mídia", desc: "Imagens e vídeos" }
 ];
 
 export default function ProductSection() {
@@ -44,7 +44,7 @@ export default function ProductSection() {
             Tudo que você precisa.
           </h2>
           <p className="text-muted-foreground text-lg max-w-lg mx-auto leading-relaxed">
-            Integrado e funcionando. Sem mensalidade por usuário. Sem limites escondidos.
+            Integrado e funcionando. Sem mensalidade por usuário.
           </p>
         </motion.div>
 
