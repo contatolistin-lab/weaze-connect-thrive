@@ -15,7 +15,7 @@ export default function PWAInstallButton() {
       className="text-muted-foreground"
     >
       <Download className="w-4 h-4 mr-2" />
-      Instalar app
+      Baixar aplicativo
     </Button>
   );
 }
