@@ -22,7 +22,7 @@ export type PendingMember = {
 };
 
 export const getMemberStatus = async (tenantId: string): Promise<MemberStatus> => {
-  const { data, error } = await supabase.rpc("get_member_status", { p_tenant_id: tenantId });
+  const { data, error } = await (supabase as any).rpc("get_member_status", { p_tenant_id: tenantId });
   if (error) {
     console.error("Error getting member status:", error);
     return "none";
@@ -31,7 +31,7 @@ export const getMemberStatus = async (tenantId: string): Promise<MemberStatus> =
 };
 
 export const requestJoinCommunity = async (tenantId: string): Promise<{ id: string; status: string } | null> => {
-  const { data, error } = await supabase.rpc("request_community_join", { p_tenant_id: tenantId });
+  const { data, error } = await (supabase as any).rpc("request_community_join", { p_tenant_id: tenantId });
   if (error) {
     console.error("Error requesting join:", error);
     return null;
@@ -40,7 +40,7 @@ export const requestJoinCommunity = async (tenantId: string): Promise<{ id: stri
 };
 
 export const approveMember = async (membershipId: string): Promise<boolean> => {
-  const { data, error } = await supabase.rpc("approve_community_member", { p_membership_id: membershipId });
+  const { data, error } = await (supabase as any).rpc("approve_community_member", { p_membership_id: membershipId });
   if (error) {
     console.error("Error approving member:", error);
     return false;
@@ -49,7 +49,7 @@ export const approveMember = async (membershipId: string): Promise<boolean> => {
 };
 
 export const rejectMember = async (membershipId: string): Promise<boolean> => {
-  const { data, error } = await supabase.rpc("reject_community_member", { p_membership_id: membershipId });
+  const { data, error } = await (supabase as any).rpc("reject_community_member", { p_membership_id: membershipId });
   if (error) {
     console.error("Error rejecting member:", error);
     return false;
@@ -58,7 +58,7 @@ export const rejectMember = async (membershipId: string): Promise<boolean> => {
 };
 
 export const getPendingMembers = async (tenantId: string): Promise<PendingMember[]> => {
-  const { data, error } = await supabase.rpc("get_pending_members", { p_tenant_id: tenantId });
+  const { data, error } = await (supabase as any).rpc("get_pending_members", { p_tenant_id: tenantId });
   if (error) {
     console.error("Error getting pending members:", error);
     return [];
