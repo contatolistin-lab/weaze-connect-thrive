@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCommunityAccess, requestCommunityAccess, AccessStatus } from "@/lib/communityAccess";
+import { getAccessStatus, requestAccess, AccessStatus } from "@/lib/communityAccess";
 import { Building2, Users, MessageCircle, Calendar, ArrowRight, ArrowLeft, Clock, XCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -35,8 +35,6 @@ export default function CommunityPage() {
   const [accessStatus, setAccessStatus] = useState<AccessStatus>("none");
   const [requesting, setRequesting] = useState(false);
 
-  console.log("CommunityPage - isB2B:", isB2B, "user:", user?.id);
-
   useEffect(() => {
     if (!communitySlug) {
       setError("Slug não fornecido");
@@ -59,35 +57,40 @@ export default function CommunityPage() {
 
       setTenant(tenantData);
 
-      // === REGRA PRINCIPAL: B2B TEM ACESSO TOTAL ===
       if (isB2B) {
-        // Limpar qualquer localStorage para evitar conflito
-        localStorage.removeItem(`community_${communitySlug}`);
         setAccessStatus("approved");
-        console.log("B2B detected - access approved");
         setLoading(false);
         return;
       }
 
-      // === PARA B2C: APLICAR CONTROLE VIA LOCALSTORAGE ===
-      const access = getCommunityAccess(communitySlug);
-      setAccessStatus(access);
-      console.log("B2C access:", access);
+      if (!user) {
+        setAccessStatus("none");
+        setLoading(false);
+        return;
+      }
+
+      const status = getAccessStatus(communitySlug, user.id);
+      setAccessStatus(status);
       
       setLoading(false);
     })();
-  }, [communitySlug, isB2B]);
+  }, [communitySlug, isB2B, user]);
 
   const handleRequestAccess = () => {
-    if (!communitySlug) return;
+    if (!communitySlug || !user || !tenant) return;
+    
     setRequesting(true);
-    const status = requestCommunityAccess(communitySlug);
-    setAccessStatus(status);
+    requestAccess(
+      communitySlug, 
+      user.id, 
+      user.user_metadata?.name || user.email?.split('@')[0] || null,
+      user.email || "",
+      tenant.id
+    );
+    setAccessStatus("pending");
     setRequesting(false);
     toast.success("Solicitação enviada! Aguarde aprovação da marca.");
   };
-
-  
 
   if (loading) {
     return (
@@ -116,7 +119,6 @@ export default function CommunityPage() {
   }
 
   const renderContent = () => {
-    // === B2B: SEMPRE LIBERADO ===
     if (isB2B) {
       return (
         <div className="bg-green-50 rounded-3xl border border-green-200 p-6 space-y-4 shadow-soft">
@@ -134,7 +136,6 @@ export default function CommunityPage() {
       );
     }
 
-    // === B2C: SEM LOGIN ===
     if (!user) {
       return (
         <div className="bg-card rounded-3xl border border-border p-6 space-y-4 shadow-soft">
@@ -174,7 +175,6 @@ export default function CommunityPage() {
       );
     }
 
-    // === B2C: PENDING ===
     if (accessStatus === "pending") {
       return (
         <div className="bg-amber-50 rounded-3xl border border-amber-200 p-6 space-y-4 shadow-soft">
@@ -191,16 +191,13 @@ export default function CommunityPage() {
               Enquanto isso, você pode explorar outras comunidades ou voltar mais tarde.
             </p>
           </div>
-          <div className="flex flex-col gap-2">
-            <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
-              Explorar
-            </Button>
-          </div>
+          <Button variant="outline" className="w-full" onClick={() => navigate("/communities")}>
+            Explorar outras comunidades
+          </Button>
         </div>
       );
     }
 
-    // === B2C: REJECTED ===
     if (accessStatus === "rejected") {
       return (
         <div className="bg-red-50 rounded-3xl border border-red-200 p-6 space-y-4 shadow-soft">
@@ -214,14 +211,13 @@ export default function CommunityPage() {
           <p className="text-sm text-red-600">
             Entre em contato diretamente com a marca para mais informações.
           </p>
-          <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
-            Voltar ao início
+          <Button variant="outline" className="w-full" onClick={() => navigate("/communities")}>
+            Explorar outras comunidades
           </Button>
         </div>
       );
     }
 
-    // === B2C: APPROVED ===
     if (accessStatus === "approved") {
       return (
         <div className="bg-green-50 rounded-3xl border border-green-200 p-6 space-y-4 shadow-soft">
@@ -239,7 +235,6 @@ export default function CommunityPage() {
       );
     }
 
-    // === B2C: SEM STATUS - SOLICITAR ACESSO ===
     return (
       <div className="bg-card rounded-3xl border border-border p-6 space-y-4 shadow-soft">
         <h2 className="font-semibold text-lg">Solicitar Entrada</h2>
