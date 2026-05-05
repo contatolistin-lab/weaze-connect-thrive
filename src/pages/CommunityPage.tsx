@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getCommunityAccess, requestCommunityAccess, simulateApproval, AccessStatus } from "@/lib/communityAccess";
-import { Building2, Users, MessageCircle, Calendar, ArrowRight, Clock, XCircle, CheckCircle, Zap } from "lucide-react";
+import { getCommunityAccess, requestCommunityAccess, AccessStatus } from "@/lib/communityAccess";
+import { Building2, Users, MessageCircle, Calendar, ArrowRight, Clock, XCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -87,12 +87,7 @@ export default function CommunityPage() {
     toast.success("Solicitação enviada! Aguarde aprovação da marca.");
   };
 
-  const handleSimulateApproval = () => {
-    if (!communitySlug) return;
-    const status = simulateApproval(communitySlug);
-    setAccessStatus(status);
-    toast.success("Acesso aprovado! (Simulação)");
-  };
+  
 
   if (loading) {
     return (
@@ -200,13 +195,6 @@ export default function CommunityPage() {
             <Button variant="outline" className="w-full" onClick={() => navigate("/")}>
               Explorar
             </Button>
-            <Button 
-              variant="outline" 
-              className="w-full text-xs" 
-              onClick={handleSimulateApproval}
-            >
-              <Zap className="h-3 w-3 mr-1" /> Simular aprovação (TESTE)
-            </Button>
           </div>
         </div>
       );
@@ -265,14 +253,6 @@ export default function CommunityPage() {
           disabled={requesting}
         >
           {requesting ? "Enviando..." : "Solicitar Acesso"}
-        </Button>
-
-        <Button 
-          variant="outline" 
-          className="w-full text-xs" 
-          onClick={handleSimulateApproval}
-        >
-          <Zap className="h-3 w-3 mr-1" /> Simular aprovação (TESTE)
         </Button>
       </div>
     );
