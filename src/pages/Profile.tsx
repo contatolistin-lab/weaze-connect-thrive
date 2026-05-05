@@ -14,7 +14,7 @@ import { getUserStats } from "@/lib/gamification";
 
 export default function Profile() {
   const { user, signOut, isB2C } = useAuth();
-  const { tenant, isOwner, canManage, tenants } = useTenant();
+  const { tenant, isOwner, tenants } = useTenant();
   const nav = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -238,7 +238,7 @@ export default function Profile() {
               <Link to="/communities"><ArrowLeftRight className="h-4 w-4 mr-2" />Trocar de comunidade ({tenants.length})</Link>
             </Button>
           )}
-          {canManage && tenant && (
+{isOwner && (
             <div className="bg-gradient-to-r from-[#630091]/10 to-[#d81e62]/10 rounded-xl p-4 border border-[#630091]/20">
               <div className="flex items-center gap-2 mb-2">
                 <Link2 className="h-4 w-4 text-[#630091]" />
@@ -272,8 +272,8 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
-)}
-          {(isOwner || canManage) && (
+          )}
+          {(isOwner) && (
             <>
               <Button variant="outline" className="w-full justify-start rounded-xl" asChild>
                 <Link to="/admin"><BarChart3 className="h-4 w-4 mr-2" />Painel da marca</Link>
