@@ -129,6 +129,41 @@ export type Database = {
           },
         ]
       }
+      community_members: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          id: string
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_members_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_messages: {
         Row: {
           content: string
@@ -1204,6 +1239,10 @@ export type Database = {
       }
     }
     Functions: {
+      approve_community_member: {
+        Args: { p_membership_id: string }
+        Returns: boolean
+      }
       award_engagement_points: {
         Args: {
           p_action_type: string
@@ -1215,6 +1254,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_member_status: { Args: { p_tenant_id: string }; Returns: string }
       get_monthly_ranking: {
         Args: { p_limit?: number; p_tenant_id: string }
         Returns: {
@@ -1225,6 +1265,18 @@ export type Database = {
           rank: number
           state: string
           user_id: string
+        }[]
+      }
+      get_pending_members: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          status: string
+          tenant_id: string
+          user_email: string
+          user_id: string
+          user_name: string
         }[]
       }
       get_user_engagement_stats: {
@@ -1263,6 +1315,17 @@ export type Database = {
       is_tenant_owner: {
         Args: { _tenant_id: string; _user_id: string }
         Returns: boolean
+      }
+      reject_community_member: {
+        Args: { p_membership_id: string }
+        Returns: boolean
+      }
+      request_community_join: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          id: string
+          status: string
+        }[]
       }
     }
     Enums: {
