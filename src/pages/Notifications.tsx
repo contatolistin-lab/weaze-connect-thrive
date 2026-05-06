@@ -22,12 +22,21 @@ export default function Notifications() {
       return;
     }
 
+    console.log("=== NOTIFICATIONS DEBUG ===");
+    console.log("User:", user.id);
+    console.log("isB2B:", isB2B);
+    console.log("Tenant:", tenant?.id);
+
     if (isB2B && tenant) {
       const notifications = getB2BNotifications(tenant.id);
+      console.log("B2B Notifications para tenant:", tenant.id, notifications);
       setB2bNotifications(notifications);
     } else if (!isB2B && user) {
       const notifications = getB2CNotifications(user.id);
+      console.log("B2C Notifications para user:", user.id, notifications);
       setB2cNotifications(notifications);
+    } else if (isB2B && !tenant) {
+      console.log("B2B logado mas sem tenant selecionado!");
     }
     
     setLoading(false);

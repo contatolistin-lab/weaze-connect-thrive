@@ -77,9 +77,20 @@ export default function CommunityPage() {
   }, [communitySlug, isB2B, user]);
 
   const handleRequestAccess = () => {
-    if (!communitySlug || !user || !tenant) return;
+    if (!communitySlug || !user || !tenant) {
+      console.error("Dados faltando:", { communitySlug, user: !!user, tenant: !!tenant });
+      return;
+    }
     
     setRequesting(true);
+    
+    console.log("=== SOLICITAR ACESSO DEBUG ===");
+    console.log("Slug:", communitySlug);
+    console.log("User ID:", user.id);
+    console.log("User Name:", user.user_metadata?.name || user.email?.split('@')[0]);
+    console.log("User Email:", user.email);
+    console.log("Tenant ID (brandId):", tenant.id);
+    
     requestAccess(
       communitySlug, 
       user.id, 
@@ -87,6 +98,7 @@ export default function CommunityPage() {
       user.email || "",
       tenant.id
     );
+    
     setAccessStatus("pending");
     setRequesting(false);
     toast.success("Solicitação enviada! Aguarde aprovação da marca.");
