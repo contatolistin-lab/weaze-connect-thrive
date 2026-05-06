@@ -174,15 +174,15 @@ export default function HeroSection() {
             />
 
             <motion.div
-              className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-white/40 bg-white mx-auto max-w-[200px] sm:max-w-md lg:max-w-none"
+              className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-white/40 bg-white mx-auto max-w-[280px] sm:max-w-md lg:max-w-none"
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
               <img
                 src={heroMockup}
                 alt="App weaze mostrando feed de comunidade"
-                width={400}
-                height={500}
+                width={560}
+                height={700}
                 className="w-full h-auto"
               />
             </motion.div>
