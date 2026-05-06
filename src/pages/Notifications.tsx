@@ -7,9 +7,15 @@ import { getB2BNotifications, getB2CNotifications, approveAccess, rejectAccess, 
 import { Button } from "@/components/ui/button";
 import { Bell, Check, X, Clock, User, Mail, Building2, ArrowRight, Trash2 } from "lucide-react";
 
+type TenantInfo = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 export default function Notifications() {
   const { user, isB2B } = useAuth();
-  const { tenant } = useTenant();
+  const { tenants } = useTenant();
   const navigate = useNavigate();
   
   const [b2bNotifications, setB2bNotifications] = useState<B2BNotification[]>([]);
@@ -25,22 +31,41 @@ export default function Notifications() {
     console.log("=== NOTIFICATIONS DEBUG ===");
     console.log("User:", user.id);
     console.log("isB2B:", isB2B);
-    console.log("Tenant:", tenant?.id);
+    console.log("Tenants do B2B:", tenants);
 
-    if (isB2B && tenant) {
-      const notifications = getB2BNotifications(tenant.id);
-      console.log("B2B Notifications para tenant:", tenant.id, notifications);
-      setB2bNotifications(notifications);
-    } else if (!isB2B && user) {
+    if (isB2B) {
+      // B2B: buscar notificações de TODOS os tenants que é dono
+      let allNotifications: B2BNotification[] = [];
+      
+      if (tenants && tenants.length > 0) {
+        // Buscar notificações para cada tenant
+        tenants.forEach((t: TenantInfo) => {
+          const notifications = getB2BNotifications(t.id);
+          console.log(`Notificações para tenant ${t.name} (${t.id}):`, notifications);
+          allNotifications = [...allNotifications, ...notifications];
+        });
+      } else {
+        // Se não tem tenants, pode ser que esteja acessando uma comunidade específica
+        console.log("B2B sem tenants carregados ainda");
+      }
+      
+      // Ordenar por data (mais recente primeiro)
+      allNotifications.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      
+      console.log("Total de notificações B2B:", allNotifications);
+      setB2bNotifications(allNotifications);
+      
+    } else if (user) {
+      // B2C: buscar suas próprias notificações
       const notifications = getB2CNotifications(user.id);
       console.log("B2C Notifications para user:", user.id, notifications);
       setB2cNotifications(notifications);
-    } else if (isB2B && !tenant) {
-      console.log("B2B logado mas sem tenant selecionado!");
     }
     
     setLoading(false);
-  }, [user, isB2B, tenant, navigate]);
+  }, [user, isB2B, tenants, navigate]);
 
   const handleApprove = async (notification: B2BNotification) => {
     const { data: tenantData } = await supabase
@@ -115,6 +140,7 @@ export default function Notifications() {
               <div className="text-center py-12 text-muted-foreground">
                 <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhuma solicitação pendente</p>
+                <p className="text-sm mt-2">Todas as suas comunidades serão monitoradas</p>
               </div>
             ) : (
               b2bNotifications.map((notification, index) => (
