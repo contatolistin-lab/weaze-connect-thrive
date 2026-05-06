@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
 import { getB2BNotifications, getB2CNotifications, approveAccess, rejectAccess, B2BNotification, B2CNotification } from "@/lib/communityAccess";
 import { Button } from "@/components/ui/button";
-import { Bell, Check, X, Clock, User, Mail, Building2, ArrowRight, Trash2 } from "lucide-react";
+import { Bell, Check, X, User, Mail, Building2, ArrowRight } from "lucide-react";
 
 type TenantInfo = {
   id: string;
@@ -22,114 +22,92 @@ export default function Notifications() {
   const [b2cNotifications, setB2cNotifications] = useState<B2CNotification[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadNotifications = async () => {
-      if (!user || !user.id) {
-        console.warn("Usuário inválido");
-        navigate("/auth");
-        return;
+  const loadNotifications = async () => {
+    if (!user || !user.id) {
+      console.warn("Usuário inválido");
+      navigate("/auth");
+      return;
+    }
+
+    console.log("=== NOTIFICATIONS DEBUG ===");
+    console.log("User ID:", user.id);
+    console.log("isB2B:", isB2B);
+    console.log("Tenants:", tenants?.length || 0);
+
+    console.log("GLOBAL ACCESS REQUESTS:", localStorage.getItem('global_access_requests'));
+
+    if (isB2B) {
+      let allNotifications: B2BNotification[] = [];
+      let tenantList: TenantInfo[] = [];
+
+      if (tenants && tenants.length > 0) {
+        tenantList = tenants as TenantInfo[];
+        console.log("Tenants do contexto:", tenantList.length);
+      } else {
+        console.log("Buscando tenants do banco...");
+        const { data: mems, error } = await supabase
+          .from("memberships")
+          .select("tenant_id, role, tenants(id, name, slug)")
+          .eq("user_id", user.id)
+          .in("role", ["owner", "admin"]);
+        
+        if (error) {
+          console.error("Erro ao buscar tenants:", error);
+        }
+        
+        if (mems) {
+          tenantList = mems
+            .map((m: any) => m.tenants)
+            .filter(Boolean) as TenantInfo[];
+          console.log("Tenants do banco:", tenantList.length);
+        }
       }
 
-      console.log("=== NOTIFICATIONS DEBUG ===");
-      console.log("User ID:", user.id);
-      console.log("isB2B:", isB2B);
-      console.log("Tenants:", tenants?.length || 0);
+      if (tenantList.length > 0) {
+        const combined: B2BNotification[] = [];
+        tenantList.forEach((t: TenantInfo) => {
+          const notifications = getB2BNotifications(t.id);
+          combined.push(...notifications);
+        });
 
-      console.log("GLOBAL ACCESS REQUESTS:", localStorage.getItem('global_access_requests'));
-
-      if (isB2B) {
-        let allNotifications: B2BNotification[] = [];
-        let tenantList: TenantInfo[] = [];
-
-        if (tenants && tenants.length > 0) {
-          tenantList = tenants as TenantInfo[];
-          console.log("Tenants do contexto:", tenantList.length);
-        } else {
-          console.log("Buscando tenants do banco...");
-          const { data: mems, error } = await supabase
-            .from("memberships")
-            .select("tenant_id, role, tenants(id, name, slug)")
-            .eq("user_id", user.id)
-            .in("role", ["owner", "admin"]);
-          
-          if (error) {
-            console.error("Erro ao buscar tenants:", error);
-          }
-          
-          if (mems) {
-            tenantList = mems
-              .map((m: any) => m.tenants)
-              .filter(Boolean) as TenantInfo[];
-            console.log("Tenants do banco:", tenantList.length);
-          }
-        }
-
-        if (tenantList.length > 0) {
-          const combined: B2BNotification[] = [];
-          tenantList.forEach((t: TenantInfo) => {
-            const notifications = getB2BNotifications(t.id);
-            combined.push(...notifications);
-          });
-
-          const uniqueMap = new Map();
-          combined.forEach((item) => {
-            const key = item.userId + item.createdAt;
-            uniqueMap.set(key, item);
-          });
-          allNotifications = Array.from(uniqueMap.values());
-        }
-        
-        allNotifications.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        
-        console.log("B2B Notifications carregadas:", allNotifications.length);
-        setB2bNotifications(allNotifications);
-        
-      } else if (user) {
-        const notifications = getB2CNotifications(user.id);
-        console.log("B2C Notifications carregadas:", notifications.length);
-        setB2cNotifications(notifications);
+        const uniqueMap = new Map();
+        combined.forEach((item) => {
+          const key = item.userId + item.createdAt;
+          uniqueMap.set(key, item);
+        });
+        allNotifications = Array.from(uniqueMap.values());
       }
       
-      setLoading(false);
-    };
+      allNotifications.sort((a, b) => 
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+      
+      console.log("B2B Notifications carregadas:", allNotifications.length);
+      setB2bNotifications(allNotifications);
+      
+    } else if (user) {
+      const notifications = getB2CNotifications(user.id);
+      console.log("B2C Notifications carregadas:", notifications.length);
+      setB2cNotifications(notifications);
+    }
+    
+    setLoading(false);
+    console.log("Estado final B2B:", b2bNotifications.length);
+    console.log("Estado final B2C:", b2cNotifications.length);
+  };
 
+  useEffect(() => {
     loadNotifications();
   }, [user, isB2B, tenants]);
 
   const handleApprove = async (notification: B2BNotification) => {
-    const { data: tenantData } = await supabase
-      .from("tenants")
-      .select("name")
-      .eq("id", notification.tenantId)
-      .maybeSingle();
-    
-    approveAccess(
-      notification.slug, 
-      notification.userId, 
-      notification.tenantId, 
-      tenantData?.name || "Comunidade"
-    );
-    
-    setB2bNotifications(prev => prev.filter(n => n !== notification));
+    approveAccess(notification.slug, notification.userId, notification.tenantId);
+    await loadNotifications();
   };
 
   const handleReject = async (notification: B2BNotification) => {
-    const { data: tenantData } = await supabase
-      .from("tenants")
-      .select("name")
-      .eq("id", notification.tenantId)
-      .maybeSingle();
-    
-    rejectAccess(
-      notification.slug, 
-      notification.userId, 
-      notification.tenantId, 
-      tenantData?.name || "Comunidade"
-    );
-    
-    setB2bNotifications(prev => prev.filter(n => n !== notification));
+    rejectAccess(notification.slug, notification.userId, notification.tenantId);
+    await loadNotifications();
   };
 
   const formatDate = (dateString: string) => {
@@ -171,7 +149,6 @@ export default function Notifications() {
               <div className="text-center py-12 text-muted-foreground">
                 <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhuma solicitação pendente</p>
-                <p className="text-sm mt-2">Todas as suas comunidades serão monitoradas</p>
               </div>
             ) : (
               b2bNotifications.map((notification) => (
@@ -228,7 +205,7 @@ export default function Notifications() {
             ) : (
               b2cNotifications.map((notification) => (
                 <div 
-                  key={notification.slug + notification.createdAt} 
+                  key={notification.slug + notification.createdAt + notification.type}
                   className={`border rounded-2xl p-4 space-y-3 ${
                     notification.type === "approved" 
                       ? "bg-green-50 border-green-200" 
