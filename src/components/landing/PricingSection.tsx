@@ -3,7 +3,7 @@ import { Check, DollarSign, Sparkles } from "lucide-react";
 
 const handlePaymentClick = () => {
   // TODO: adicionar link Mercado Pago
-  console.log("_assinar agora - conectar com Mercado Pago");
+  console.log("Assinar agora - conectar com Mercado Pago");
 };
 
 export default function PricingSection() {
@@ -25,13 +25,11 @@ export default function PricingSection() {
           viewport={{ once: true }}
           className="bg-white rounded-3xl border-2 border-[#630091]/20 shadow-2xl overflow-hidden"
         >
-          {/* Header com badge */}
           <div className="bg-gradient-to-r from-[#630091] to-[#d81e62] px-6 py-5 flex items-center justify-center gap-3">
             <Sparkles className="h-5 w-5 text-white" />
             <span className="text-white font-semibold text-lg">Plano Fundador</span>
           </div>
           
-          {/* Preço */}
           <div className="text-center py-8 px-6">
             <div className="flex items-center justify-center gap-1">
               <span className="text-2xl text-[#6a6a6a]">R$</span>
@@ -40,14 +38,12 @@ export default function PricingSection() {
             </div>
           </div>
           
-          {/* Descrição */}
           <div className="px-6 pb-2">
             <p className="text-center text-[#4a4a4a] mb-6">
               Acesso completo à plataforma durante a fase inicial da Weaze.
               Crie sua comunidade, gerencie membros e publique conteúdos em um ambiente próprio da sua marca.
             </p>
             
-            {/* Lista de benefícios */}
             <ul className="space-y-3 mb-8">
               {[
                 "Comunidade própria da marca",
@@ -66,7 +62,6 @@ export default function PricingSection() {
               ))}
             </ul>
             
-            {/* BOTÃO PRINCIPAL */}
             <motion.button
               onClick={handlePaymentClick}
               className="w-full inline-flex items-center justify-center gap-2 text-white px-8 py-4 rounded-full font-semibold text-lg"
