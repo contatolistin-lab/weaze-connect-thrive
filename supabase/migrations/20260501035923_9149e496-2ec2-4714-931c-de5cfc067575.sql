@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.lives (
 ALTER TABLE public.lives ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS lives_select_all ON public.lives;
-CREATE POLICY lives_select_all ON public.lives FOR SELECT USING (true);
+CREATE POLICY lives_select_all ON public.lives FOR SELECT USING (public.is_tenant_member(auth.uid(), tenant_id));
 
 DROP POLICY IF EXISTS lives_manage_member ON public.lives;
 CREATE POLICY lives_manage_member ON public.lives FOR ALL

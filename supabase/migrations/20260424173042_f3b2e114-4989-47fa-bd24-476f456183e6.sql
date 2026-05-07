@@ -114,7 +114,10 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
 $$;
 
 -- Tenants policies (depois das funções)
-CREATE POLICY "tenants_select_all" ON public.tenants FOR SELECT USING (true);
+CREATE POLICY "tenants_select_members" ON public.tenants FOR SELECT USING (
+  public.is_tenant_member(auth.uid(), id)
+  OR public.has_role(auth.uid(), 'admin')
+);
 CREATE POLICY "tenants_insert_authenticated" ON public.tenants FOR INSERT WITH CHECK (auth.uid() = created_by);
 CREATE POLICY "tenants_update_owner" ON public.tenants FOR UPDATE USING (public.is_tenant_owner(auth.uid(), id));
 CREATE POLICY "tenants_delete_owner" ON public.tenants FOR DELETE USING (public.is_tenant_owner(auth.uid(), id));
