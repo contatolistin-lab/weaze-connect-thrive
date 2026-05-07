@@ -81,9 +81,23 @@ CREATE OR REPLACE FUNCTION award_engagement_points(
   p_reference_id UUID DEFAULT NULL,
   p_metadata JSONB DEFAULT '{}'
 )
-RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_max_points INTEGER := 100;
 BEGIN
   IF p_points IS NULL OR p_points <= 0 THEN RETURN; END IF;
+  p_points := LEAST(p_points, v_max_points);
+
+  -- Only allow awarding points to self or if user is tenant owner/admin
+  IF p_user_id != auth.uid() AND NOT public.is_tenant_owner(auth.uid(), p_tenant_id) AND NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'Not authorized to award points to other users';
+  END IF;
+
+  -- Validate action_type
+  IF p_action_type NOT IN ('view', 'like', 'comment', 'click_cta', 'conversion') THEN
+    RAISE EXCEPTION 'Invalid action_type';
+  END IF;
+
   IF EXISTS (SELECT 1 FROM engagement_logs WHERE user_id = p_user_id AND tenant_id = p_tenant_id AND action_type = p_action_type AND reference_id IS NOT DISTINCT FROM p_reference_id LIMIT 1) THEN RETURN; END IF;
   INSERT INTO engagement_logs (user_id, tenant_id, action_type, points, reference_id, metadata)
   VALUES (p_user_id, p_tenant_id, p_action_type, p_points, p_reference_id, p_metadata) ON CONFLICT DO NOTHING;

@@ -1,10 +1,26 @@
 
--- Award engagement points
+-- Award engagement points (SECURED)
 CREATE OR REPLACE FUNCTION public.award_engagement_points(
   p_user_id uuid, p_tenant_id uuid, p_action_type text, p_points integer,
   p_reference_id uuid DEFAULT NULL, p_metadata jsonb DEFAULT '{}'::jsonb
 ) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_max_points INTEGER := 100;
 BEGIN
+  -- Cap points to prevent abuse
+  p_points := LEAST(p_points, v_max_points);
+  IF p_points < 1 THEN RETURN; END IF;
+
+  -- Only allow awarding points to self or if user is tenant owner/admin
+  IF p_user_id != auth.uid() AND NOT public.is_tenant_owner(auth.uid(), p_tenant_id) AND NOT public.has_role(auth.uid(), 'admin') THEN
+    RAISE EXCEPTION 'Not authorized to award points to other users';
+  END IF;
+
+  -- Validate action_type
+  IF p_action_type NOT IN ('view', 'like', 'comment', 'click_cta', 'conversion') THEN
+    RAISE EXCEPTION 'Invalid action_type';
+  END IF;
+
   INSERT INTO public.engagement_logs (user_id, tenant_id, action_type, points, reference_id, metadata)
   VALUES (p_user_id, p_tenant_id, p_action_type, p_points, p_reference_id, p_metadata);
 
