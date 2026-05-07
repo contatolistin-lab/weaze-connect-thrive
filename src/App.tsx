@@ -79,22 +79,21 @@ const NeedsAccess = ({ children }: { children: JSX.Element }) => {
       return;
     }
 
-    // B2B sempre tem acesso
     if (isB2B) {
       setHasAccess(true);
       setLoading(false);
       return;
     }
 
-    // B2C: verificar localStorage com user.id
-    const status = getAccessStatus(tenant.slug, user.id);
-    const approved = status === "approved";
-    setHasAccess(approved);
-    setLoading(false);
-    
-    if (!approved) {
-      navigate(`/c?slug=${tenant.slug}`, { replace: true });
-    }
+    getAccessStatus(tenant.id, user.id).then((status) => {
+      const approved = status === "approved";
+      setHasAccess(approved);
+      setLoading(false);
+
+      if (!approved) {
+        navigate(`/c?slug=${tenant.slug}`, { replace: true });
+      }
+    });
   }, [user, tenant, isB2B, navigate]);
 
   if (loading) return <Loading />;

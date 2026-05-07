@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAccessStatus, requestAccess, addGlobalRequest, AccessStatus } from "@/lib/communityAccess";
+import { getAccessStatus, requestAccess, AccessStatus } from "@/lib/communityAccess";
 import { Building2, Users, MessageCircle, Calendar, ArrowRight, ArrowLeft, Clock, XCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -69,32 +69,35 @@ export default function CommunityPage() {
         return;
       }
 
-      const status = getAccessStatus(communitySlug, user.id);
+      const status = await getAccessStatus(tenantData.id, user.id);
       setAccessStatus(status);
-      
+
       setLoading(false);
     })();
   }, [communitySlug, isB2B, user]);
 
-  const handleRequestAccess = () => {
+  const handleRequestAccess = async () => {
     if (!communitySlug || !user || !tenant) {
       return;
     }
-    
+
     setRequesting(true);
-    
-    requestAccess(
-      communitySlug,
-      user.id,
-      user.user_metadata?.name || user.email?.split('@')[0] || null,
-      user.email || "",
+
+    const result = await requestAccess(
       tenant.id,
-      tenant.name,
+      user.id,
+      user.user_metadata?.name || user.email?.split('@')[0] || "",
+      user.email || "",
     );
-    
-    setAccessStatus("pending");
+
+    if (result.success) {
+      setAccessStatus("pending");
+      toast.success("Solicitação enviada! Aguarde aprovação da marca.");
+    } else {
+      toast.error(result.error || "Erro ao enviar solicitação");
+    }
+
     setRequesting(false);
-    toast.success("Solicitação enviada! Aguarde aprovação da marca.");
   };
 
   if (loading) {

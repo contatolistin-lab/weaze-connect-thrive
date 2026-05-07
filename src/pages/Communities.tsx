@@ -40,21 +40,20 @@ export default function Communities() {
     (t) => !myIds.has(t.id) && t.name.toLowerCase().includes(query.toLowerCase()),
   );
 
-  const enter = (id: string) => {
+  const enter = async (id: string) => {
     if (!user) { nav("/auth"); return; }
-    
+
     const tenant = tenants.find(t => t.id === id);
     if (!tenant) return;
-    
-    // B2B sempre tem acesso
+
     if (isB2B) {
       selectTenant(id);
       nav("/feed");
       return;
     }
-    
-    const status = getAccessStatus(tenant.slug, user.id);
-    
+
+    const status = await getAccessStatus(tenant.id, user.id);
+
     if (status === "approved") {
       selectTenant(id);
       nav("/feed");
@@ -64,26 +63,25 @@ export default function Communities() {
     }
   };
 
-  const join = (id: string) => {
+  const join = async (id: string) => {
     if (!user) { nav("/auth"); return; }
-    
+
     const tenant = discover.find(t => t.id === id);
     if (!tenant) return;
-    
-    // B2B sempre tem acesso
+
     if (isB2B) {
       selectTenant(id);
       nav("/feed");
       return;
     }
-    
-    const status = getAccessStatus(tenant.slug, user.id);
-    
+
+    const status = await getAccessStatus(tenant.id, user.id);
+
     if (status === "approved") {
       selectTenant(id);
       nav("/feed");
     } else {
-      requestAccess(tenant.slug, user.id, user.user_metadata?.name || null, user.email || "", tenant.id, tenant.name);
+      await requestAccess(tenant.id, user.id, user.user_metadata?.name || "", user.email || "");
       selectTenant(id);
       nav(`/c/${tenant.slug}`);
     }

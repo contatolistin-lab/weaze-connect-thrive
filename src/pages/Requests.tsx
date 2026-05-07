@@ -3,16 +3,27 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
-import { getAllRequestsByBrandIds, updateRequestStatus, setAccessStatus, GlobalAccessRequest } from "@/lib/communityAccess";
 import { Button } from "@/components/ui/button";
-import { Bell, Check, X, User, Mail, Building2, ArrowRight, Clock } from "lucide-react";
+import { Bell, Check, X, User, Mail, Building2, Clock } from "lucide-react";
+
+type AccessRequest = {
+  id: string;
+  user_id: string;
+  tenant_id: string;
+  status: string;
+  created_at: string;
+  profiles?: {
+    name: string | null;
+    email: string;
+  };
+};
 
 export default function Requests() {
   const { user, isB2B } = useAuth();
   const { tenants } = useTenant();
   const navigate = useNavigate();
-  
-  const [requests, setRequests] = useState<GlobalAccessRequest[]>([]);
+
+  const [requests, setRequests] = useState<AccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,44 +33,72 @@ export default function Requests() {
         return;
       }
 
-      let brandIds: string[] = [];
-      
+      let tenantIds: string[] = [];
+
       if (tenants && tenants.length > 0) {
-        brandIds = tenants.map((t: any) => t.id);
+        tenantIds = tenants.map((t: any) => t.id);
       } else {
         const { data: mems } = await supabase
           .from("memberships")
           .select("tenant_id")
           .eq("user_id", user.id)
           .in("role", ["owner", "admin"]);
-        
+
         if (mems) {
-          brandIds = mems.map(m => m.tenant_id);
+          tenantIds = mems.map(m => m.tenant_id);
         }
       }
 
-      const allRequests = getAllRequestsByBrandIds(brandIds);
-      
-      // Filtrar apenas pendentes
-      const pendingRequests = allRequests.filter(r => r.status === "pending");
-      
-      setRequests(pendingRequests);
+      if (tenantIds.length === 0) {
+        setRequests([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("community_members")
+        .select(`
+          id,
+          user_id,
+          tenant_id,
+          status,
+          created_at,
+          profiles (name, email)
+        `)
+        .in("tenant_id", tenantIds)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setRequests(data);
+      }
+
       setLoading(false);
     };
 
     loadRequests();
   }, [user, isB2B, tenants, navigate]);
 
-  const handleApprove = (request: GlobalAccessRequest) => {
-    updateRequestStatus(request.id, "approved");
-    setAccessStatus(request.slug, request.userId, "approved");
-    setRequests(prev => prev.filter(r => r.id !== request.id));
+  const handleApprove = async (requestId: string) => {
+    const { error } = await supabase
+      .from("community_members")
+      .update({ status: "approved", approved_at: new Date().toISOString() })
+      .eq("id", requestId);
+
+    if (!error) {
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+    }
   };
 
-  const handleReject = (request: GlobalAccessRequest) => {
-    updateRequestStatus(request.id, "rejected");
-    setAccessStatus(request.slug, request.userId, "rejected");
-    setRequests(prev => prev.filter(r => r.id !== request.id));
+  const handleReject = async (requestId: string) => {
+    const { error } = await supabase
+      .from("community_members")
+      .update({ status: "rejected" })
+      .eq("id", requestId);
+
+    if (!error) {
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -100,43 +139,42 @@ export default function Requests() {
           </div>
         ) : (
           <div className="space-y-4">
-            {requests.map((request, index) => (
-              <div key={index} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+            {requests.map((request) => (
+              <div key={request.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-brand/10 flex items-center justify-center">
                     <User className="h-5 w-5 text-brand" />
                   </div>
                   <div>
-                    <p className="font-semibold">{request.userName || "Usuário"}</p>
+                    <p className="font-semibold">{request.profiles?.name || "Usuário"}</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Mail className="h-3 w-3" /> {request.userEmail}
+                      <Mail className="h-3 w-3" /> {request.profiles?.email || "-"}
                     </p>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Building2 className="h-4 w-4" />
-                  <span>Comunidade: {request.slug}</span>
-                </div>
-                
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>{formatDate(request.createdAt)}</span>
+                  Solicitado em: {formatDate(request.created_at)}
                 </div>
-                
+
                 <div className="flex gap-2 pt-2">
-                  <Button 
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                    onClick={() => handleApprove(request)}
+                  <Button
+                    size="sm"
+                    className="flex-1 gap-2"
+                    onClick={() => handleApprove(request.id)}
                   >
-                    <Check className="h-4 w-4 mr-2" /> Aprovar
+                    <Check className="h-4 w-4" />
+                    Aprovar
                   </Button>
-                  <Button 
+                  <Button
+                    size="sm"
                     variant="outline"
-                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                    onClick={() => handleReject(request)}
+                    className="flex-1 gap-2"
+                    onClick={() => handleReject(request.id)}
                   >
-                    <X className="h-4 w-4 mr-2" /> Recusar
+                    <X className="h-4 w-4" />
+                    Recusar
                   </Button>
                 </div>
               </div>
