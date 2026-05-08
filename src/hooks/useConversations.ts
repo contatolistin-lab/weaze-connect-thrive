@@ -36,9 +36,16 @@ function getOrCreateConversationsListChannel() {
 export function useConversations(tenantId: string, userId: string) {
   const queryClient = useQueryClient();
 
+  console.log("[useConversations] Hook called with:", { tenantId, userId, enabled: !!tenantId && !!userId });
+
   const conversationsQuery = useQuery({
     queryKey: ["conversations", tenantId, userId],
-    queryFn: () => conv.getMyConversationsWithRole(tenantId, userId),
+    queryFn: async () => {
+      console.log("[useConversations] Query executing for:", { tenantId, userId });
+      const result = await conv.getMyConversationsWithRole(tenantId, userId);
+      console.log("[useConversations] Query result:", result);
+      return result;
+    },
     enabled: !!tenantId && !!userId,
     staleTime: 0,
     refetchOnMount: true,
@@ -68,8 +75,8 @@ export function useConversations(tenantId: string, userId: string) {
       return result;
     },
     onSuccess: () => {
-      console.log("[useConversations] onSuccess - invalidating queries");
-      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] });
+      console.log("[useConversations] onSuccess - invalidating queries for", tenantId, userId);
+      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId, userId] });
     },
     onError: (error) => {
       console.error("[useConversations] onError:", error);
