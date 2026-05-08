@@ -59,6 +59,7 @@ export default function ConversationsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showMention, setShowMention] = useState(false);
   const [mentionUsers, setMentionUsers] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const { conversations, isLoading: convLoading, createConversation, isCreating, createError, error: convError, refetch } = useConversations(tenant?.id ?? "", user?.id ?? "");
   const {
@@ -103,18 +104,54 @@ export default function ConversationsPage() {
     setPrevConvCount(conversations.length);
   }, [conversations.length, prevConvCount]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!tenant || !user || !newTitle.trim()) {
       console.warn("[handleCreate] Missing required fields");
       return;
     }
-    const title = newTitle;
-    console.log("[handleCreate] Creating conversation:", title, newVis, "tenant:", tenant.id, "user:", user.id);
-    createConversation({ title, description: newDesc, visibility: newVis });
-    setShowCreate(false);
-    setNewTitle("");
-    setNewDesc("");
-    setNewVis("public");
+
+    if (submitting) {
+      console.warn("[handleCreate] Already submitting");
+      return;
+    }
+
+    const title = newTitle.trim();
+    const existingConv = conversations.find(
+      (c) => c.title.trim().toLowerCase() === title.toLowerCase()
+    );
+    if (existingConv) {
+      toast.error("Já existe uma conversa com esse nome");
+      return;
+    }
+
+    console.log("[handleCreate] Creating conversation:", title, newVis, "tenant:", tenant.id, "user:", user.id, "timestamp:", Date.now());
+    setSubmitting(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        createConversation(
+          { title, description: newDesc, visibility: newVis },
+          {
+            onSuccess: () => {
+              console.log("[handleCreate] Success callback at", Date.now());
+              resolve();
+            },
+            onError: (err) => {
+              console.error("[handleCreate] Error callback:", err);
+              reject(err);
+            },
+          }
+        );
+      });
+      setShowCreate(false);
+      setNewTitle("");
+      setNewDesc("");
+      setNewVis("public");
+    } catch (err) {
+      console.error("[handleCreate] Failed:", err);
+      toast.error(`Erro ao criar conversa: ${err instanceof Error ? err.message : "Erro desconhecido"}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSend = () => {
@@ -605,10 +642,10 @@ export default function ConversationsPage() {
             </div>
             <Button
               onClick={handleCreate}
-              disabled={!newTitle.trim() || isCreating}
-              className="w-full bg-gradient-to-r from-[#630091] to-[#d81e62] hover:opacity-90"
+              disabled={!newTitle.trim() || isCreating || submitting}
+              className={`w-full bg-gradient-to-r from-[#630091] to-[#d81e62] hover:opacity-90 ${submitting ? "opacity-50 pointer-events-none" : ""}`}
             >
-              {isCreating ? "Criando..." : "Criar conversa"}
+              {isCreating || submitting ? "Criando..." : "Criar conversa"}
             </Button>
           </div>
         </DialogContent>

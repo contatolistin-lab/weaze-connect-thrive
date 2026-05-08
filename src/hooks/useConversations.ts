@@ -61,49 +61,18 @@ export function useConversations(tenantId: string, userId: string) {
   }, [tenantId, userId, queryClient]);
 
   const createMutation = useMutation({
-    mutationFn: (params: { title: string; description?: string; visibility: ConversationVisibility }) => {
-      console.log("[useConversations] Creating conversation:", params);
-      return conv.createConversation({ tenantId, title: params.title, description: params.description, visibility: params.visibility, createdBy: userId });
+    mutationFn: async (params: { title: string; description?: string; visibility: ConversationVisibility }) => {
+      console.log("[useConversations] Creating conversation - START:", Date.now(), params);
+      const result = await conv.createConversation({ tenantId, title: params.title, description: params.description, visibility: params.visibility, createdBy: userId });
+      console.log("[useConversations] Creating conversation - END:", Date.now(), result);
+      return result;
     },
-    onMutate: async (params) => {
-      console.log("[useConversations] onMutate - optimistic update");
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["conversations", tenantId, userId] });
-      // Snapshot previous value
-      const previous = queryClient.getQueryData<any[]>(["conversations", tenantId, userId]);
-      // Optimistically add the new conversation
-      const optimisticConv: any = {
-        id: `temp-${Date.now()}`,
-        tenant_id: tenantId,
-        title: params.title,
-        description: params.description || null,
-        visibility: params.visibility,
-        created_by: userId,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        archived: false,
-        max_pins: 3,
-        my_role: "owner",
-        conversation_members: [{ user_id: userId, role: "owner" }],
-      };
-      console.log("[useConversations] Adding optimistic conv:", optimisticConv.id);
-      queryClient.setQueryData<any[]>(["conversations", tenantId, userId], (old = []) => [optimisticConv, ...old]);
-      return { previous };
+    onSuccess: () => {
+      console.log("[useConversations] onSuccess - invalidating queries");
+      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] });
     },
-    onError: (_err, _vars, context) => {
-      console.error("[useConversations] onError - rolling back optimistic update:", _err);
-      // Rollback to previous value
-      if (context?.previous) {
-        queryClient.setQueryData(["conversations", tenantId, userId], context.previous);
-      }
-    },
-    onSuccess: (data) => {
-      console.log("[useConversations] onSuccess - replacing optimistic with real conv:", data.id, data.title);
-      const currentData = queryClient.getQueryData<any[]>(["conversations", tenantId, userId]);
-      console.log("[useConversations] Cache BEFORE replacement:", currentData?.map(c => ({id: c.id, title: c.title})) ?? "empty");
-      const next = (currentData ?? []).map((c) => (c.id.startsWith("temp-") ? { ...data, my_role: "owner" } : c));
-      queryClient.setQueryData(["conversations", tenantId, userId], next);
-      console.log("[useConversations] Cache AFTER replacement:", next.map(c => ({id: c.id, title: c.title})));
+    onError: (error) => {
+      console.error("[useConversations] onError:", error);
     },
   });
 
@@ -117,7 +86,7 @@ export function useConversations(tenantId: string, userId: string) {
     isLoading: conversationsQuery.isLoading,
     error: conversationsQuery.error,
     refetch: conversationsQuery.refetch,
-    createConversation: createMutation.mutate,
+    createConversation: createMutation.mutateAsync,
     isCreating: createMutation.isPending,
     createError: createMutation.error,
     archiveConversation: archiveMutation.mutate,

@@ -125,18 +125,6 @@ export async function createConversation(params: {
   return { ...conversation, my_role: "owner" };
 }
 
-  console.log("[createConversation] RPC succeeded, result:", JSON.stringify(conv));
-
-  if (!conv) {
-    throw new Error("create_conversation returned empty result");
-  }
-
-  // conv should be the full conversation object from the RPC
-  const conversation = conv as Conversation;
-  console.log("[createConversation] Returning conversation:", conversation.id, conversation.title);
-  return { ...conversation, my_role: "owner" };
-}
-
 export async function updateConversation(id: string, params: {
   title?: string;
   description?: string;
