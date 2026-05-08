@@ -32,12 +32,14 @@ const AdminOverview = lazy(() => import("./pages/admin/Overview"));
 const AdminRevenue = lazy(() => import("./pages/admin/Revenue"));
 const AdminFunnel = lazy(() => import("./pages/admin/Funnel"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
+const AdminConversations = lazy(() => import("./pages/admin/Conversations"));
 const Requests = lazy(() => import("./pages/Requests"));
 const AdminTenants = lazy(() => import("./pages/admin/Tenants"));
 const AdminGlobal = lazy(() => import("./pages/admin/AdminGlobal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const Topics = lazy(() => import("./pages/Topics"));
+const Conversations = lazy(() => import("./pages/Conversations"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Lives = lazy(() => import("./pages/admin/Lives"));
 const InviteLinks = lazy(() => import("./pages/admin/InviteLinks"));
@@ -133,11 +135,15 @@ const App = () => (
                     <Route path="/metrics" element={<Protected><NeedsTenant><NeedsAccess><AdminOverview /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/metrics/revenue" element={<Protected><NeedsTenant><NeedsAccess><AdminRevenue /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/metrics/funnel" element={<Protected><NeedsTenant><AdminFunnel /></NeedsTenant></Protected>} />
-                    <Route path="/metrics/users" element={<Protected><NeedsTenant><AdminUsers /></NeedsTenant></Protected>} />
-                    <Route path="/metrics/tenants" element={<Protected><NeedsTenant><AdminTenants /></NeedsTenant></Protected>} />
+                    <Route path="/metrics/users" element={<Protected><NeedsTenant><NeedsAccess><AdminUsers /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/metrics/conversations" element={<Protected><NeedsTenant><NeedsAccess><AdminConversations /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/metrics/tenants" element={<Protected><NeedsTenant><NeedsAccess><AdminTenants /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/admin" element={<Protected><AdminGlobal /></Protected>} />
                     <Route path="/create" element={<Protected><NeedsTenant><NeedsAccess><CreatePost /></NeedsAccess></NeedsTenant></Protected>} />
-                    <Route path="/conversas" element={<Protected><NeedsTenant><NeedsAccess><Topics /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversas" element={<Protected><NeedsTenant><NeedsAccess><Conversations /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversas/:conversationId" element={<Protected><NeedsTenant><NeedsAccess><Conversations /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversations" element={<Protected><NeedsTenant><NeedsAccess><Conversations /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversations/:conversationId" element={<Protected><NeedsTenant><NeedsAccess><Conversations /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/conversas/:topicId" element={<Protected><NeedsTenant><NeedsAccess><Topics /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/invite/:code" element={<InviteLanding />} />
                     <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
