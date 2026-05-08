@@ -233,6 +233,15 @@ export async function getMyConversationsWithRole(tenantId: string, userId: strin
 
   console.log("[getMyConversationsWithRole] Executing Supabase query for tenant:", tenantId);
   
+  // Primeiro: buscar TODAS as conversas do tenant (sem filtro de archived)
+  const { data: allConvs, error: allError } = await supabase
+    .from("conversations")
+    .select("id, title, tenant_id, archived")
+    .eq("tenant_id", tenantId);
+  
+  console.log("[getMyConversationsWithRole] ALL conversations in tenant (no RLS):", allConvs?.length ?? 0, allConvs);
+  
+  // Segundo: buscar comarchived = false
   const { data, error } = await supabase
     .from("conversations")
     .select("*, conversation_members(user_id, role)")
