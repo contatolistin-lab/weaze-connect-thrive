@@ -49,7 +49,7 @@ export function useConversations(tenantId: string, userId: string) {
   console.log("[useConversations] Hook called with:", { tenantId, userId, isReady });
 
   const conversationsQuery = useQuery({
-    queryKey: ["conversations", tenantId, userId],
+    queryKey: ["conversations", tenantId],
     queryFn: async () => {
       console.log("[useConversations] Query executing for:", { tenantId, userId });
       if (!tenantId || !userId) {
@@ -77,7 +77,7 @@ export function useConversations(tenantId: string, userId: string) {
 
     const listener = () => {
       console.log("[useConversations] Invalidating conversations cache");
-      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId, userId] });
+      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] });
     };
     convListListeners.add(listener);
 
@@ -94,8 +94,8 @@ export function useConversations(tenantId: string, userId: string) {
       return result;
     },
     onSuccess: () => {
-      console.log("[useConversations] onSuccess - invalidating queries for", tenantId, userId);
-      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId, userId] });
+      console.log("[useConversations] onSuccess - invalidating queries for tenant:", tenantId);
+      queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] });
     },
     onError: (error) => {
       console.error("[useConversations] onError:", error);
@@ -104,7 +104,7 @@ export function useConversations(tenantId: string, userId: string) {
 
   const archiveMutation = useMutation({
     mutationFn: (id: string) => conv.archiveConversation(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations", tenantId, userId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations", tenantId] }),
   });
 
   return {
