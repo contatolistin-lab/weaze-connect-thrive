@@ -241,12 +241,11 @@ export async function getMyConversationsWithRole(tenantId: string, userId: strin
   
   console.log("[getMyConversationsWithRole] ALL conversations in tenant (no RLS):", allConvs?.length ?? 0, allConvs);
   
-  // Segundo: buscar comarchived = false
+  // Segundo: buscar TODAS as conversas (sem filtro archived)
   const { data, error } = await supabase
     .from("conversations")
     .select("*, conversation_members(user_id, role)")
     .eq("tenant_id", tenantId)
-    .eq("archived", false)
     .order("updated_at", { ascending: false });
 
   console.log("[getMyConversationsWithRole] Query result - data:", data?.length ?? 0, "error:", error);
