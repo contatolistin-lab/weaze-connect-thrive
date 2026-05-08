@@ -1,58 +1,39 @@
 -- =============================================
--- FIX ALL RLS POLICIES FOR CONVERSATIONS
--- Fixes: is_tenant_member_check uses m.status (doesn't exist)
--- memberships columns: id, user_id, tenant_id, role, created_at
+-- FIX ALL RLS - drop dependent policies first, then functions
 -- Run this in Supabase SQL Editor
 -- =============================================
 
--- Fix is_tenant_member_check (was checking non-existent m.status column)
+-- Drop dependent policies FIRST
+DROP POLICY IF EXISTS conv_messages_select ON public.conversation_messages;
+DROP POLICY IF EXISTS conv_messages_insert ON public.conversation_messages;
+DROP POLICY IF EXISTS conv_pins_select ON public.conversation_message_pins;
+DROP POLICY IF EXISTS conversations_select ON public.conversations;
+DROP POLICY IF EXISTS conversations_insert ON public.conversations;
+DROP POLICY IF EXISTS conv_members_select ON public.conversation_members;
+DROP POLICY IF EXISTS conv_members_insert ON public.conversation_members;
+
+-- Drop functions (now no dependencies)
 DROP FUNCTION IF EXISTS public.is_tenant_member_check(UUID, UUID);
-CREATE OR REPLACE FUNCTION public.is_tenant_member_check(p_user_id UUID, p_tenant_id UUID)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.memberships m
-    WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id
-  );
-END;
-$$;
-
--- Fix is_tenant_admin_check (was checking non-existent m.status column)
 DROP FUNCTION IF EXISTS public.is_tenant_admin_check(UUID, UUID);
-CREATE OR REPLACE FUNCTION public.is_tenant_admin_check(p_user_id UUID, p_tenant_id UUID)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.memberships m
-    WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id AND m.role IN ('owner', 'admin')
-  );
-END;
+
+-- Recreate is_tenant_member_check (no m.status column)
+CREATE OR REPLACE FUNCTION public.is_tenant_member_check(p_user_id UUID, p_tenant_id UUID)
+RETURNS BOOLEAN LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN RETURN EXISTS (SELECT 1 FROM public.memberships m WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id); END;
 $$;
 
--- Fix the helper function (remove status check)
+-- Recreate is_tenant_admin_check
+CREATE OR REPLACE FUNCTION public.is_tenant_admin_check(p_user_id UUID, p_tenant_id UUID)
+RETURNS BOOLEAN LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN RETURN EXISTS (SELECT 1 FROM public.memberships m WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id AND m.role IN ('owner','admin')); END;
+$$;
+
+-- Recreate get_user_tenant_role
 DROP FUNCTION IF EXISTS public.get_user_tenant_role(UUID, UUID);
 CREATE OR REPLACE FUNCTION public.get_user_tenant_role(p_user_id UUID, p_tenant_id UUID)
-RETURNS TEXT
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_role TEXT;
-BEGIN
-  SELECT m.role INTO v_role
-  FROM public.memberships m
-  WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id
-  LIMIT 1;
-  RETURN COALESCE(v_role, 'none');
+RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_role TEXT;
+BEGIN SELECT m.role INTO v_role FROM public.memberships m WHERE m.user_id = p_user_id AND m.tenant_id = p_tenant_id LIMIT 1; RETURN COALESCE(v_role, 'none');
 END;
 $$;
 
