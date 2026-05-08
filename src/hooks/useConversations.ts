@@ -36,14 +36,18 @@ function getOrCreateConversationsListChannel() {
 export function useConversations(tenantId: string, userId: string) {
   const queryClient = useQueryClient();
 
-  console.log("[useConversations] Hook called with:", { tenantId, userId, enabled: !!tenantId && !!userId });
+  console.log("[useConversations] Hook called with:", { tenantId, userId, enabled: !!tenantId && !!userId, tenantIdEmpty: !tenantId, userIdEmpty: !userId });
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations", tenantId, userId],
     queryFn: async () => {
       console.log("[useConversations] Query executing for:", { tenantId, userId });
+      if (!tenantId || !userId) {
+        console.log("[useConversations] SKIP - missing params");
+        return [];
+      }
       const result = await conv.getMyConversationsWithRole(tenantId, userId);
-      console.log("[useConversations] Query result:", result);
+      console.log("[useConversations] Query result:", result?.length ?? 0, "items");
       return result;
     },
     enabled: !!tenantId && !!userId,

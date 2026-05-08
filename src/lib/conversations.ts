@@ -220,21 +220,27 @@ export async function getMyRole(conversationId: string, userId: string): Promise
 }
 
 export async function getMyConversationsWithRole(tenantId: string, userId: string): Promise<Conversation[]> {
+  console.log("[getMyConversationsWithRole] START - tenantId:", tenantId, "userId:", userId);
+  
   if (!tenantId) {
-    console.warn("[getMyConversationsWithRole] Missing tenantId");
+    console.warn("[getMyConversationsWithRole] Missing tenantId - returning empty");
     return [];
   }
   if (!userId) {
-    console.warn("[getMyConversationsWithRole] Missing userId");
+    console.warn("[getMyConversationsWithRole] Missing userId - returning empty");
     return [];
   }
 
+  console.log("[getMyConversationsWithRole] Executing Supabase query for tenant:", tenantId);
+  
   const { data, error } = await supabase
     .from("conversations")
     .select("*, conversation_members(user_id, role)")
     .eq("tenant_id", tenantId)
     .eq("archived", false)
     .order("updated_at", { ascending: false });
+
+  console.log("[getMyConversationsWithRole] Query result - data:", data?.length ?? 0, "error:", error);
 
   if (error) {
     console.error("[getMyConversationsWithRole] Error:", error);

@@ -62,6 +62,9 @@ export default function ConversationsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const { conversations, isLoading: convLoading, createConversation, isCreating, createError, error: convError, refetch } = useConversations(tenant?.id ?? "", user?.id ?? "");
+  
+  console.log("[ConversationsPage] Context check - tenant:", tenant?.id, "user:", user?.id, "tenantExists:", !!tenant);
+  
   const {
     messages, pinned, members, myRole, isLoadingMessages,
     sendMessage, updateMessage, deleteMessage,
