@@ -243,6 +243,14 @@ export default function Profile() {
           <p className="text-sm text-muted-foreground mb-3">Você está em <strong>{tenant?.name ?? "—"}</strong></p>
         </section>
 
+        {/* DEBUG VISÍVEL */}
+        <div className="bg-yellow-100 border-2 border-yellow-400 p-4 rounded-xl">
+          <p className="font-bold text-yellow-800">🔍 DEBUG:</p>
+          <p>isB2B: <span className="font-mono">{String(isB2B)}</span></p>
+          <p>tenant.slug: <span className="font-mono">{tenant?.slug ?? "NULO"}</span></p>
+          <p>tenant.name: <span className="font-mono">{tenant?.name ?? "NULO"}</span></p>
+        </div>
+
         {isB2B && tenant?.slug && (
           <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-200 p-5 space-y-4">
             <div className="flex items-center gap-2">
