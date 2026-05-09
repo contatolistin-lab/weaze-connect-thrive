@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Loader2, Users } from "lucide-react";
 
-type Brand = {
+type Tenant = {
   id: string;
   name: string;
   slug: string;
@@ -18,9 +18,9 @@ export default function InviteLanding() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { selectTenant, tenant: currentTenant } = useTenant();
+  const { selectTenant } = useTenant();
   
-  const [brand, setBrand] = useState<Brand | null>(null);
+  const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -30,6 +30,10 @@ export default function InviteLanding() {
 
   useEffect(() => {
     if (!slug) return;
+    
+    setLoading(true);
+    setError(null);
+    
     (async () => {
       const { data, error: e } = await supabase
         .from("tenants")
@@ -38,12 +42,12 @@ export default function InviteLanding() {
         .single();
       
       if (e || !data) {
-        setError("Marca não encontrada");
+        setError("Comunidade não encontrada");
         setLoading(false);
         return;
       }
       
-      setBrand(data);
+      setTenant(data);
       
       // Track visit
       await supabase.from("invite_link_events").insert({
@@ -53,124 +57,180 @@ export default function InviteLanding() {
         campaign: campaign || null,
       });
       
+      // Se não está logado, salvar slug para recuperação após login
+      if (!user) {
+        localStorage.setItem("pending_invite_slug", slug);
+      }
+      
       setLoading(false);
     })();
-  }, [slug, ref, campaign]);
+  }, [slug, ref, campaign, user]);
 
-  // If user authenticated, redirect to feed of brand
+  // Se usuário autenticado, entrar automaticamente
   useEffect(() => {
-    if (user && brand && !authLoading && !processing) {
+    if (user && tenant && !authLoading && !processing) {
       handleEnter();
     }
-  }, [user, brand, authLoading, processing]);
+  }, [user, tenant, authLoading, processing]);
 
   const handleEnter = async () => {
-    if (!brand || !user) return;
+    if (!tenant || !user) return;
     setProcessing(true);
     
     try {
-      // Check if user is member of this brand
+      // Verificar membership existente
       const { data: membership } = await supabase
         .from("memberships")
-        .select("id")
-        .eq("tenant_id", brand.id)
+        .select("id, role")
+        .eq("tenant_id", tenant.id)
         .eq("user_id", user.id)
         .single();
       
-      // If not member, create membership
+      // Se não é membro, criar membership automático
       if (!membership) {
-        await supabase.from("memberships").insert({
-          tenant_id: brand.id,
+        const { error: insertError } = await supabase.from("memberships").insert({
+          tenant_id: tenant.id,
           user_id: user.id,
           role: "member",
+          status: "approved", // Aprovado automaticamente via invite
         });
         
-        // Track signup event
+        if (insertError) {
+          console.error("Erro ao criar membership:", insertError);
+        }
+        
+        // Track signup
         await supabase.from("invite_link_events").insert({
-          tenant_id: brand.id,
+          tenant_id: tenant.id,
           event_type: "signup",
           ref: ref || null,
           campaign: campaign || null,
         });
       } else {
-        // Track login event
+        // Track login
         await supabase.from("invite_link_events").insert({
-          tenant_id: brand.id,
+          tenant_id: tenant.id,
           event_type: "login",
           ref: ref || null,
           campaign: campaign || null,
         });
       }
       
-      // Select tenant and redirect
-      await selectTenant(brand.id);
+      // Selecionar tenant e ir para feed
+      await selectTenant(tenant.id);
+      
+      // Limpar pending invite
+      localStorage.removeItem("pending_invite_slug");
+      
       navigate("/feed");
     } catch (err) {
-      console.error("Error entering brand:", err);
+      console.error("Erro ao entrar na comunidade:", err);
       setProcessing(false);
     }
   };
 
+  const handleAuth = (isSignUp: boolean) => {
+    // Salvar slug antes de ir para auth
+    if (slug) {
+      localStorage.setItem("pending_invite_slug", slug);
+    }
+    
+    const redirectPath = `/m/${slug}`;
+    const authParams = new URLSearchParams();
+    authParams.set("redirect", redirectPath);
+    if (ref) authParams.set("ref", ref);
+    if (campaign) authParams.set("campaign", campaign);
+    if (isSignUp) authParams.set("mode", "signup");
+    
+    navigate(`/auth?${authParams.toString()}`);
+  };
+
   if (loading || authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-500">Carregando comunidade...</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !tenant) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center p-8">
-          <h1 className="text-2xl font-display text-[#1a1a1a] mb-2">Erro</h1>
-          <p className="text-muted-foreground">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-purple-50">
+        <div className="text-center p-8 max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <Users className="h-8 w-8 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Comunidade não encontrada</h1>
+          <p className="text-gray-500 mb-6">{error || "Este link pode estar expirado ou ser inválido."}</p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full font-medium transition-colors"
+          >
+            Voltar ao início
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50 p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         className="max-w-md w-full text-center"
       >
-        {brand?.logo_url && (
+        {/* Logo da comunidade */}
+        {tenant.logo_url ? (
           <img
-            src={brand.logo_url}
-            alt={brand.name}
-            className="w-20 h-20 rounded-2xl object-cover mx-auto mb-6 shadow-lg"
+            src={tenant.logo_url}
+            alt={tenant.name}
+            className="w-24 h-24 rounded-3xl object-cover mx-auto mb-6 shadow-xl border-4 border-white"
           />
+        ) : (
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <span className="text-4xl font-bold text-white">{tenant.name[0]?.toUpperCase()}</span>
+          </div>
         )}
         
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#630091] to-[#d81e62] flex items-center justify-center mx-auto mb-6">
-          <Sparkles className="h-8 w-8 text-white" />
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur px-4 py-2 rounded-full shadow-sm mb-6">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm font-medium text-gray-700">Comunidade privada</span>
         </div>
         
-        <h1 className="font-display text-3xl text-[#1a1a1a] mb-2">
-          Você está entrando na comunidade de
+        {/* Título */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Você foi convidado para a comunidade
         </h1>
-        <p className="text-2xl font-display bg-gradient-to-r from-[#630091] via-[#8b2091] to-[#d81e62] bg-clip-text text-transparent mb-8">
-          {brand?.name}
+        <p className="text-2xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-6">
+          {tenant.name}
         </p>
         
-        <p className="text-muted-foreground mb-8">
-          Entre ou crie sua conta para acessar a comunidade.
+        <p className="text-gray-600 mb-8">
+          Crie sua conta ou faça login para acessar conteúdo exclusivo e interagir com outros membros.
         </p>
         
+        {/* Botões de ação */}
         <div className="space-y-3">
           {user ? (
             <button
               onClick={handleEnter}
               disabled={processing}
-              className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#630091] via-[#8b2091] to-[#d81e62] text-white hover:opacity-90 shadow-lg px-7 py-4 rounded-full font-medium transition-all disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white hover:opacity-90 shadow-lg px-8 py-4 rounded-full font-semibold text-lg transition-all disabled:opacity-50"
             >
               {processing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Entrando...
+                </>
               ) : (
                 <>
+                  <Check className="h-5 w-5" />
                   Entrar na comunidade
                   <ArrowRight className="h-5 w-5" />
                 </>
@@ -179,22 +239,28 @@ export default function InviteLanding() {
           ) : (
             <>
               <button
-                onClick={() => navigate(`/auth?redirect=/m/${slug}&ref=${ref || ""}&campaign=${campaign || ""}`)}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#630091] via-[#8b2091] to-[#d81e62] text-white hover:opacity-90 shadow-lg px-7 py-4 rounded-full font-medium transition-all"
+                onClick={() => handleAuth(true)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white hover:opacity-90 shadow-lg px-8 py-4 rounded-full font-semibold text-lg transition-all"
               >
-                Criar conta
+                <Sparkles className="h-5 w-5" />
+                Criar minha conta
                 <ArrowRight className="h-5 w-5" />
               </button>
               
               <button
-                onClick={() => navigate(`/auth?redirect=/m/${slug}&ref=${ref || ""}&campaign=${campaign || ""}`)}
-                className="w-full inline-flex items-center justify-center gap-2 border-2 border-[#630091]/20 bg-white hover:bg-[#630091]/5 text-[#630091] hover:border-[#630091]/40 px-7 py-4 rounded-full font-medium transition-all"
+                onClick={() => handleAuth(false)}
+                className="w-full inline-flex items-center justify-center gap-2 border-2 border-purple-200 bg-white hover:bg-purple-50 text-purple-700 hover:border-purple-300 px-8 py-4 rounded-full font-semibold text-lg transition-all"
               >
-                Entrar
+                Já tenho conta - Entrar
               </button>
             </>
           )}
         </div>
+        
+        {/* Footer */}
+        <p className="text-xs text-gray-400 mt-8">
+          Ao continuar, você concorda com os termos de uso da comunidade.
+        </p>
       </motion.div>
     </div>
   );

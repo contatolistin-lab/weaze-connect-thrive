@@ -62,6 +62,21 @@ const Protected = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+const B2BOnly = ({ children }: { children: JSX.Element }) => {
+  const { isB2B, user, loading } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!loading && !isB2B && user) {
+      navigate("/feed", { replace: true });
+    }
+  }, [loading, isB2B, user, navigate]);
+  
+  if (loading) return <Loading />;
+  if (!isB2B) return null;
+  return children;
+};
+
 const NeedsTenant = ({ children }: { children: JSX.Element }) => {
   const { loading } = useTenant();
   if (loading) return <Loading />;
@@ -124,7 +139,7 @@ const App = () => (
                     <Route path="/c/:slug" element={<CommunityPage />} />
                     <Route path="/community/:slug" element={<CommunityPage />} />
                     <Route path="/onboarding" element={<Protected><Onboarding /></Protected>} />
-<Route path="/communities" element={<Protected><Communities /></Protected>} />
+<Route path="/communities" element={<Protected><B2BOnly><Communities /></B2BOnly></Protected>} />
                     <Route path="/feed" element={<Protected><NeedsTenant><NeedsAccess><Feed /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/messages" element={<Protected><NeedsTenant><NeedsAccess><Messages /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/content" element={<Protected><NeedsTenant><NeedsAccess><Content /></NeedsAccess></NeedsTenant></Protected>} />

@@ -106,14 +106,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       setUserState(state);
       
+      // Verificar pending invite primeiro
+      const pendingSlug = localStorage.getItem("pending_invite_slug");
+      if (pendingSlug) {
+        // Não redirecionar, o sistema de convite vai lidar com isso
+        setRedirected(true);
+        return;
+      }
+      
       // Definir redirecionamento apenas uma vez por sessão
       if (state.isB2B && !state.hasCommunity) {
         setRedirectTo("/create");
         setRedirected(true);
-      } else if (!state.isB2B && !state.hasJoinedCommunities) {
-        setRedirectTo("/communities");
+      } else if (!state.isB2B && state.hasJoinedCommunities) {
+        // B2C com comunidade - vai para o feed da comunidade selecionada
         setRedirected(true);
       }
+      // B2C sem comunidade nenhuma será direcionado pelo InviteLanding
     })();
     
     return () => { cancelled = true; };

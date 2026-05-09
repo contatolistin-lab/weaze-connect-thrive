@@ -40,14 +40,23 @@ export default function Auth() {
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/communities`,
+        emailRedirectTo: `${window.location.origin}/feed`,
         data: { name: parsed.data.name, account_type: parsed.data.account_type },
       },
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Conta criada");
-    // Todos vão direto pro feed; B2B verá popup de criação de marca lá
+    
+    // Verificar pending invite após cadastro
+    const pendingSlug = localStorage.getItem("pending_invite_slug");
+    if (pendingSlug) {
+      localStorage.removeItem("pending_invite_slug");
+      nav(`/m/${pendingSlug}`);
+      return;
+    }
+    
+    // Padrão: ir para feed
     nav("/feed");
   };
 
@@ -61,7 +70,15 @@ export default function Auth() {
     if (error) { toast.error(error.message); return; }
     toast.success("Bem-vindo");
     
-    // Verificar role para redirecionar corretamente
+    // Após login/cadastro, verificar pending invite
+    const pendingSlug = localStorage.getItem("pending_invite_slug");
+    if (pendingSlug) {
+      localStorage.removeItem("pending_invite_slug");
+      nav(`/m/${pendingSlug}`);
+      return;
+    }
+    
+    // Comportamento padrão baseado no role
     if (data?.user) {
       const { data: roles } = await supabase
         .from("user_roles")
@@ -71,8 +88,8 @@ export default function Auth() {
       const userRoles = (roles ?? []).map((r) => r.role);
       const isB2B = userRoles.includes("b2b") || userRoles.includes("admin");
       
-      // B2B vai para feed; B2C vai para comunidades
-      nav(isB2B ? "/feed" : "/communities");
+      // B2B e B2C vão para feed (comunidade já selecionada)
+      nav("/feed");
     } else {
       nav("/feed");
     }
