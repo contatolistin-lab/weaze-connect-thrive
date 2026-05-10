@@ -236,7 +236,7 @@ export default function Profile() {
           <p className="text-sm text-muted-foreground mb-3">Você está em <strong>{tenant?.name ?? "—"}</strong></p>
         </section>
 
-        {isOwner && tenant && (
+        {isB2B && tenant && (
           <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-200 p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Link2 className="h-5 w-5 text-purple-600" />
@@ -245,13 +245,13 @@ export default function Profile() {
             <p className="text-sm text-purple-700">Copie o link e compartilhe com seus clientes para que eles acessem sua comunidade.</p>
             <div className="flex items-center gap-2">
               <div className="flex-1 bg-white rounded-lg px-4 py-3 border border-purple-200 text-sm text-gray-700 truncate">
-                {typeof window !== "undefined" ? `${window.location.origin}/m/${tenant.slug}` : `/m/${tenant.slug}`}
+                {typeof window !== "undefined" ? `${window.location.origin}/invite/${tenant.slug}` : `/invite/${tenant.slug}`}
               </div>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={async () => {
-                  const link = `${window.location.origin}/m/${tenant.slug}`;
+                  const link = `${window.location.origin}/invite/${tenant.slug}`;
                   await navigator.clipboard.writeText(link);
                   setCopied(true);
                   toast.success("Link copiado!");
@@ -268,7 +268,7 @@ export default function Profile() {
               className="w-full bg-white border-purple-300 text-purple-700 hover:bg-purple-50"
               asChild
             >
-              <a href={`https://wa.me/?text=Venha%20participar%20da%20comunidade%20${encodeURIComponent(tenant.name)}%20${encodeURIComponent(window.location.origin + "/m/" + tenant.slug)}`} target="_blank" rel="noopener noreferrer">
+              <a href={`https://wa.me/?text=Venha%20participar%20da%20comunidade%20${encodeURIComponent(tenant.name)}%20${encodeURIComponent(window.location.origin + "/invite/" + tenant.slug)}`} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Compartilhar no WhatsApp
               </a>
