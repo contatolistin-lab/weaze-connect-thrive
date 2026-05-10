@@ -201,33 +201,38 @@ export default function Profile() {
           </Button>
         </section>
 
-        {isOwner && tenant && (
+        {isB2B && tenant?.slug && (
           <section className="bg-card rounded-2xl border border-border p-5 space-y-4 shadow-soft">
-            <h2 className="font-semibold">Logotipo da marca</h2>
-            <div className="flex items-center gap-4">
-              <button type="button" onClick={() => tenantFileRef.current?.click()} className="relative group">
-                <div className="h-20 w-20 rounded-2xl bg-brand grid place-items-center text-primary-foreground text-2xl font-bold overflow-hidden">
-                  {tenantLogo ? (
-                    <img src={tenantLogo} alt="Logo" className="w-full h-full object-cover" />
-                  ) : (
-                    <Building2 className="h-8 w-8" />
-                  )}
-                </div>
-                <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Upload className="h-5 w-5 text-white" />
-                </div>
-              </button>
-              <input ref={tenantFileRef} type="file" accept="image/*" className="hidden" onChange={handleTenantLogoChange} />
-              <div className="text-sm text-muted-foreground">
-                <p>PNG, JPG ou GIF</p>
-                <p>Máx. 5MB</p>
-              </div>
+            <div className="flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-brand" />
+              <h2 className="font-semibold">Compartilhar Comunidade</h2>
             </div>
-            {tenantLogoFile && (
-              <Button onClick={async () => { setLoading(true); const ok = await uploadTenantLogo(); setLoading(false); if (ok) toast.success("Logo atualizado"); }} disabled={loading} className="w-full">
-                {loading ? "Salvando…" : "Salvar logo"}
+            <p className="text-sm text-muted-foreground">Convide membros para {tenant?.name}</p>
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-xl">
+              <code className="flex-1 text-sm font-mono truncate">{typeof window !== 'undefined' ? `${window.location.origin}/invite/${tenant?.slug}` : ''}</code>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  const link = `${window.location.origin}/invite/${tenant?.slug}`;
+                  navigator.clipboard.writeText(link);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <span className="text-green-600 text-xs">Copiado!</span> : <Copy className="h-4 w-4" />}
               </Button>
-            )}
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                const link = `${window.location.origin}/invite/${tenant?.slug}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(`${tenant?.name}: ${link}`)}`, '_blank');
+              }}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />Compartilhar via WhatsApp
+            </Button>
           </section>
         )}
 
