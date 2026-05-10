@@ -8,27 +8,17 @@ import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, ArrowLeftRight, Upload, Trophy, MapPin, TrendingUp, Copy, ExternalLink, Link2 } from "lucide-react";
+import { LogOut, Trophy, MapPin, TrendingUp, Copy, ExternalLink, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { getUserStats } from "@/lib/gamification";
 
 export default function Profile() {
   const { user, signOut, isB2B } = useAuth();
-  const { tenant, isOwner, tenants } = useTenant();
+  const { tenant } = useTenant();
   const nav = useNavigate();
 
   const shareLink = typeof window !== "undefined" ? `${window.location.origin}/invite/${tenant?.slug}` : `/invite/${tenant?.slug}`;
 
-  console.log("[PROFILE] Full debug:", {
-    userId: user?.id,
-    isB2B,
-    appRole: (user as any)?._id,
-    tenant,
-    tenantSlug: tenant?.slug,
-    tenantsCount: tenants.length,
-    tenantsList: tenants.map(t => ({ id: t.id, name: t.name, slug: t.slug })),
-    shouldShowShare: isB2B && !!tenant?.slug,
-  });
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -36,25 +26,12 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   
-  // Location fields
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
   
-  // Gamification
   const [userPoints, setUserPoints] = useState<{total: number; monthly: number; yearly: number} | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: mems } = await supabase
-        .from("memberships")
-        .select("role, tenant_id")
-        .eq("user_id", user.id);
-      console.log("[PROFILE] Direct memberships query:", mems);
-    })();
-  }, [user?.id]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -65,36 +42,19 @@ export default function Profile() {
     setAvatar(URL.createObjectURL(f));
   };
 
-
-
   const uploadAvatar = async (): Promise<boolean> => {
     if (!avatarFile || !user) return false;
     try {
       const ext = avatarFile.name.split(".").pop();
       const path = `avatars/${user.id}.${ext}`;
-      const { data, error } = await supabase.storage.from("public").upload(path, avatarFile, { upsert: true });
+      const { error } = await supabase.storage.from("public").upload(path, avatarFile, { upsert: true });
       if (error) { toast.error(`Erro ao upload: ${error.message}`); return false; }
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
       const avatarUrl = urlData.publicUrl;
       await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("user_id", user.id);
       setAvatar(avatarUrl);
       return true;
-    } catch (e: any) { toast.error(e.message); return false; }
-  };
-
-  const uploadTenantLogo = async (): Promise<boolean> => {
-    if (!tenantLogoFile || !tenant) return false;
-    try {
-      const ext = tenantLogoFile.name.split(".").pop();
-      const path = `logos/${tenant.id}.${ext}`;
-      const { data, error } = await supabase.storage.from("public").upload(path, tenantLogoFile, { upsert: true });
-      if (error) { toast.error(`Erro ao upload: ${error.message}`); return false; }
-      const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
-      const logoUrl = urlData.publicUrl;
-      await supabase.from("tenants").update({ logo_url: logoUrl }).eq("id", tenant.id);
-      setTenantLogo(logoUrl);
-      return true;
-    } catch (e: any) { toast.error(e.message); return false; }
+    } catch (e: unknown) { toast.error(String(e)); return false; }
   };
 
   useEffect(() => {
@@ -119,8 +79,6 @@ export default function Profile() {
       if (stats) setUserPoints({ total: stats.total_points, monthly: stats.monthly_points, yearly: stats.yearly_points });
     })();
   }, [user?.id, tenant?.id]);
-
-  
 
   const save = async () => {
     if (!user) return;
@@ -156,7 +114,9 @@ export default function Profile() {
               )}
             </div>
             <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Upload className="h-5 w-5 text-white" />
+              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
           </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />

@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Loader2, Users } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Loader2, Users } from "lucide-react";
 
 type Tenant = {
   id: string;
