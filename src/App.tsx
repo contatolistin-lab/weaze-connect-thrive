@@ -38,7 +38,7 @@ const AdminTenants = lazy(() => import("./pages/admin/Tenants"));
 const AdminGlobal = lazy(() => import("./pages/admin/AdminGlobal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
-const Topics = lazy(() => import("./pages/Topics"));
+const Conversas = lazy(() => import("./pages/Conversas"));
 
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Lives = lazy(() => import("./pages/admin/Lives"));
@@ -157,8 +157,8 @@ const App = () => (
                     <Route path="/admin" element={<Protected><AdminGlobal /></Protected>} />
                     <Route path="/create" element={<Protected><NeedsTenant><NeedsAccess><CreatePost /></NeedsAccess></NeedsTenant></Protected>} />
                     
-                    <Route path="/conversas" element={<Protected><NeedsTenant><NeedsAccess><Topics /></NeedsAccess></NeedsTenant></Protected>} />
-                    <Route path="/conversas/:topicId" element={<Protected><NeedsTenant><NeedsAccess><Topics /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversas" element={<Protected><NeedsTenant><NeedsAccess><Conversas /></NeedsAccess></NeedsTenant></Protected>} />
+                    <Route path="/conversas/:conversationId" element={<Protected><NeedsTenant><NeedsAccess><Conversas /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/invite/:slug" element={<InviteLanding />} />
                     <Route path="/waiting" element={<WaitingApproval />} />
                     <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
