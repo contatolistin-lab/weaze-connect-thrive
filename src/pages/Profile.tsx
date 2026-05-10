@@ -8,13 +8,13 @@ import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, Trophy, MapPin, TrendingUp, Copy, ExternalLink, Link2 } from "lucide-react";
+import { LogOut, Building2, Upload, Trophy, MapPin, TrendingUp, Copy, ExternalLink, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { getUserStats } from "@/lib/gamification";
 
 export default function Profile() {
   const { user, signOut, isB2B } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, isOwner } = useTenant();
   const nav = useNavigate();
 
   const shareLink = typeof window !== "undefined" ? `${window.location.origin}/invite/${tenant?.slug}` : `/invite/${tenant?.slug}`;
@@ -25,6 +25,9 @@ export default function Profile() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [tenantLogo, setTenantLogo] = useState<string | null>(null);
+  const [tenantLogoFile, setTenantLogoFile] = useState<File | null>(null);
+  const tenantFileRef = useRef<HTMLInputElement>(null);
   
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -42,6 +45,15 @@ export default function Profile() {
     setAvatar(URL.createObjectURL(f));
   };
 
+  const handleTenantLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { toast.error("Arquivo deve ser imagem"); return; }
+    if (f.size > 5 * 1024 * 1024) { toast.error("Imagem deve ter menos de 5MB"); return; }
+    setTenantLogoFile(f);
+    setTenantLogo(URL.createObjectURL(f));
+  };
+
   const uploadAvatar = async (): Promise<boolean> => {
     if (!avatarFile || !user) return false;
     try {
@@ -54,7 +66,22 @@ export default function Profile() {
       await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("user_id", user.id);
       setAvatar(avatarUrl);
       return true;
-    } catch (e: unknown) { toast.error(String(e)); return false; }
+    } catch (e: any) { toast.error(e.message); return false; }
+  };
+
+  const uploadTenantLogo = async (): Promise<boolean> => {
+    if (!tenantLogoFile || !tenant) return false;
+    try {
+      const ext = tenantLogoFile.name.split(".").pop();
+      const path = `logos/${tenant.id}.${ext}`;
+      const { error } = await supabase.storage.from("public").upload(path, tenantLogoFile, { upsert: true });
+      if (error) { toast.error(`Erro ao upload: ${error.message}`); return false; }
+      const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
+      const logoUrl = urlData.publicUrl;
+      await supabase.from("tenants").update({ logo_url: logoUrl }).eq("id", tenant.id);
+      setTenantLogo(logoUrl);
+      return true;
+    } catch (e: any) { toast.error(e.message); return false; }
   };
 
   useEffect(() => {
@@ -79,6 +106,10 @@ export default function Profile() {
       if (stats) setUserPoints({ total: stats.total_points, monthly: stats.monthly_points, yearly: stats.yearly_points });
     })();
   }, [user?.id, tenant?.id]);
+
+  useEffect(() => {
+    if (tenant) { setTenantLogo(tenant.logo_url); }
+  }, [tenant?.logo_url]);
 
   const save = async () => {
     if (!user) return;
@@ -114,9 +145,7 @@ export default function Profile() {
               )}
             </div>
             <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+              <Upload className="h-5 w-5 text-white" />
             </div>
           </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
@@ -171,6 +200,41 @@ export default function Profile() {
           <Button onClick={save} disabled={loading} className="w-full bg-brand text-primary-foreground hover:opacity-90">
             {loading ? "Salvando…" : "Salvar"}
           </Button>
+        </section>
+
+        {isOwner && tenant && (
+          <section className="bg-card rounded-2xl border border-border p-5 space-y-4 shadow-soft">
+            <h2 className="font-semibold">Logotipo da marca</h2>
+            <div className="flex items-center gap-4">
+              <button type="button" onClick={() => tenantFileRef.current?.click()} className="relative group">
+                <div className="h-20 w-20 rounded-2xl bg-brand grid place-items-center text-primary-foreground text-2xl font-bold overflow-hidden">
+                  {tenantLogo ? (
+                    <img src={tenantLogo} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 className="h-8 w-8" />
+                  )}
+                </div>
+                <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Upload className="h-5 w-5 text-white" />
+                </div>
+              </button>
+              <input ref={tenantFileRef} type="file" accept="image/*" className="hidden" onChange={handleTenantLogoChange} />
+              <div className="text-sm text-muted-foreground">
+                <p>PNG, JPG ou GIF</p>
+                <p>Máx. 5MB</p>
+              </div>
+            </div>
+            {tenantLogoFile && (
+              <Button onClick={async () => { setLoading(true); const ok = await uploadTenantLogo(); setLoading(false); if (ok) toast.success("Logo atualizado"); }} disabled={loading} className="w-full">
+                {loading ? "Salvando…" : "Salvar logo"}
+              </Button>
+            )}
+          </section>
+        )}
+
+        <section className="bg-card rounded-2xl border border-border p-5 space-y-2 shadow-soft">
+          <h2 className="font-semibold mb-2">Comunidade</h2>
+          <p className="text-sm text-muted-foreground mb-3">Você está em <strong>{tenant?.name ?? "—"}</strong></p>
         </section>
 
         {isB2B && tenant?.slug && (
