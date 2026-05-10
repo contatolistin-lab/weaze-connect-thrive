@@ -45,6 +45,7 @@ const Lives = lazy(() => import("./pages/admin/Lives"));
 const InviteLinks = lazy(() => import("./pages/admin/InviteLinks"));
 const Offline = lazy(() => import("./pages/Offline"));
 const InviteLanding = lazy(() => import("./pages/InviteLanding"));
+const WaitingApproval = lazy(() => import("./pages/WaitingApproval"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, loading, redirectTo } = useAuth();
@@ -161,6 +162,7 @@ const App = () => (
                     <Route path="/conversations/:conversationId" element={<Protected><NeedsTenant><NeedsAccess><Conversations /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/conversas/:topicId" element={<Protected><NeedsTenant><NeedsAccess><Topics /></NeedsAccess></NeedsTenant></Protected>} />
                     <Route path="/invite/:slug" element={<InviteLanding />} />
+                    <Route path="/waiting" element={<WaitingApproval />} />
                     <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
                     <Route path="/requests" element={<Protected><Requests /></Protected>} />
                     <Route path="/profile" element={<Protected><NeedsTenant><Profile /></NeedsTenant></Protected>} />

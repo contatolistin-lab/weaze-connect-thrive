@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTenant } from "@/contexts/TenantContext";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Sparkles, Loader2, Users } from "lucide-react";
+import { ArrowRight, Sparkles, Loader2, Users } from "lucide-react";
 
 type Tenant = {
   id: string;
@@ -18,7 +17,6 @@ export default function InviteLanding() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const { selectTenant } = useTenant();
   
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,67 +75,16 @@ export default function InviteLanding() {
     if (!tenant || !user) return;
     setProcessing(true);
     
-    try {
-      // Verificar membership existente
-      const { data: membership } = await supabase
-        .from("memberships")
-        .select("id, role")
-        .eq("tenant_id", tenant.id)
-        .eq("user_id", user.id)
-        .single();
-      
-      // Se não é membro, criar membership automático
-      if (!membership) {
-        const { error: insertError } = await supabase.from("memberships").insert({
-          tenant_id: tenant.id,
-          user_id: user.id,
-          role: "member",
-          status: "approved", // Aprovado automaticamente via invite
-        });
-        
-        if (insertError) {
-          console.error("Erro ao criar membership:", insertError);
-        }
-        
-        // Track signup
-        await supabase.from("invite_link_events").insert({
-          tenant_id: tenant.id,
-          event_type: "signup",
-          ref: ref || null,
-          campaign: campaign || null,
-        });
-      } else {
-        // Track login
-        await supabase.from("invite_link_events").insert({
-          tenant_id: tenant.id,
-          event_type: "login",
-          ref: ref || null,
-          campaign: campaign || null,
-        });
-      }
-      
-      // Selecionar tenant e ir para feed
-      await selectTenant(tenant.id);
-      
-      // Limpar pending invite
-      localStorage.removeItem("pending_invite_slug");
-      
-      navigate("/feed");
-    } catch (err) {
-      console.error("Erro ao entrar na comunidade:", err);
-      setProcessing(false);
-    }
+    localStorage.setItem("pending_invite_slug", tenant.slug);
+    localStorage.removeItem("pending_invite_slug");
+    navigate(`/waiting?slug=${tenant.slug}`);
   };
 
   const handleAuth = (isSignUp: boolean) => {
-    // Salvar slug antes de ir para auth
     if (slug) {
       localStorage.setItem("pending_invite_slug", slug);
     }
-    
-    const redirectPath = `/m/${slug}`;
     const authParams = new URLSearchParams();
-    authParams.set("redirect", redirectPath);
     if (ref) authParams.set("ref", ref);
     if (campaign) authParams.set("campaign", campaign);
     if (isSignUp) authParams.set("mode", "signup");
