@@ -64,17 +64,20 @@ const Protected = ({ children }: { children: JSX.Element }) => {
 };
 
 const B2BOnly = ({ children }: { children: JSX.Element }) => {
-  const { isB2B, user, loading } = useAuth();
+  const { user, loading } = useAuth();
+  const { isOwner, loading: tenantLoading } = useTenant();
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!loading && !isB2B && user) {
+    if (loading || tenantLoading) return;
+    if (!user) return;
+    if (!isOwner) {
       navigate("/feed", { replace: true });
     }
-  }, [loading, isB2B, user, navigate]);
+  }, [loading, tenantLoading, isOwner, user, navigate]);
   
-  if (loading) return <Loading />;
-  if (!isB2B) return null;
+  if (loading || tenantLoading) return <Loading />;
+  if (!isOwner) return null;
   return children;
 };
 
@@ -85,7 +88,7 @@ const NeedsTenant = ({ children }: { children: JSX.Element }) => {
 };
 
 const NeedsAccess = ({ children }: { children: JSX.Element }) => {
-  const { user, isB2B } = useAuth();
+  const { user } = useAuth();
   const { tenant } = useTenant();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -93,12 +96,6 @@ const NeedsAccess = ({ children }: { children: JSX.Element }) => {
 
   useEffect(() => {
     if (!user || !tenant) {
-      setLoading(false);
-      return;
-    }
-
-    if (isB2B) {
-      setHasAccess(true);
       setLoading(false);
       return;
     }
@@ -117,7 +114,7 @@ const NeedsAccess = ({ children }: { children: JSX.Element }) => {
         }
       }
     });
-  }, [user, tenant, isB2B, navigate]);
+  }, [user, tenant, navigate]);
 
   if (loading) return <Loading />;
   if (!hasAccess) return null;

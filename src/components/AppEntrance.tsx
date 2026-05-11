@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/contexts/TenantContext";
 import { isPWA, hasVisitedBefore, markAsVisited } from "@/utils/isPWA";
 
 interface AppEntranceProps {
@@ -10,24 +11,26 @@ interface AppEntranceProps {
 export default function AppEntrance({ children }: AppEntranceProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { tenant, loading: tenantLoading } = useTenant();
   const [processed, setProcessed] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
+    if (authLoading || tenantLoading) return;
 
     const visited = hasVisitedBefore();
     const isStandalone = isPWA();
 
     const isAuthPage = location.pathname === "/auth";
     const isLanding = location.pathname === "/";
+    const isWaiting = location.pathname === "/waiting";
 
-    if (!visited && isStandalone && !isAuthPage) {
+    if (!visited && isStandalone && !isAuthPage && !isWaiting) {
       markAsVisited();
       
-      if (user) {
+      if (user && tenant) {
         navigate("/feed", { replace: true });
-      } else if (isLanding) {
+      } else if (user && !tenant && isLanding) {
         navigate("/auth", { replace: true });
       }
     } else if (!visited) {
@@ -35,9 +38,9 @@ export default function AppEntrance({ children }: AppEntranceProps) {
     }
     
     setProcessed(true);
-  }, [loading, user, location.pathname]);
+  }, [authLoading, tenantLoading, user, tenant, location.pathname]);
 
-  if (loading) {
+  if (authLoading || tenantLoading) {
     return null;
   }
 

@@ -61,25 +61,24 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     setMemRoles(roles);
     setTenants(list);
     
-    const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
     const justJoinedId = sessionStorage.getItem("just_joined_community");
+    const savedId = localStorage.getItem("weaze:active_tenant");
     
     let targetId: string | null = null;
     
-    if (justJoinedId && list.find(t => t.id === justJoinedId)) {
-      targetId = justJoinedId;
-    } else if (pendingSlug) {
-      const pendingTenant = list.find(t => t.slug === pendingSlug);
-      if (pendingTenant) {
-        targetId = pendingTenant.id;
+    if (justJoinedId) {
+      sessionStorage.removeItem("just_joined_community");
+      if (list.find(t => t.id === justJoinedId)) {
+        targetId = justJoinedId;
       }
-    } else {
-      const savedId = localStorage.getItem("weaze:active_tenant");
-      targetId = savedId && list.find(t => t.id === savedId) ? savedId : list[0]?.id;
+    } else if (savedId && list.find(t => t.id === savedId)) {
+      targetId = savedId;
+    } else if (list.length > 0) {
+      targetId = list[0].id;
     }
     
-    const targetRole = targetId ? roles[targetId] : null;
-    if (targetId && targetRole) {
+    if (targetId && roles[targetId]) {
+      const targetRole = roles[targetId];
       setTenant(list.find(t => t.id === targetId)!);
       setIsOwner(targetRole === "owner");
       setCanManage(targetRole === "owner" || targetRole === "admin");

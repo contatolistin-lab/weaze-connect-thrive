@@ -112,7 +112,26 @@ export default function Auth() {
       return;
     }
     
-    nav("/feed");
+    const { data: memberships } = await supabase
+      .from("memberships")
+      .select("tenant_id, role")
+      .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
+
+    const roles = (memberships ?? []).map((m) => m.role);
+    const isOwner = roles.includes("owner") || roles.includes("admin");
+    const hasJoined = roles.includes("member");
+
+    if (isOwner && memberships?.length === 1) {
+      const tenantId = memberships![0].tenant_id;
+      localStorage.setItem("weaze:active_tenant", tenantId);
+      nav("/feed");
+    } else if (hasJoined && memberships?.length === 1) {
+      const tenantId = memberships![0].tenant_id;
+      localStorage.setItem("weaze:active_tenant", tenantId);
+      nav("/feed");
+    } else {
+      nav("/");
+    }
   };
 
   return (
