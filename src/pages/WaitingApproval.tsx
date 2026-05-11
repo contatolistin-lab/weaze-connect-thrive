@@ -100,10 +100,12 @@ export default function WaitingApproval() {
       if (cancelled) return;
 
       if (memberCheck) {
-        setStatus("approved");
+        // Already a member, redirect to feed
         localStorage.removeItem("pending_invite_slug");
         sessionStorage.removeItem("pending_invite_slug");
-        setLoading(false);
+        localStorage.setItem("weaze:active_tenant", tenantData.id);
+        sessionStorage.setItem("just_joined_community", tenantData.id);
+        navigate("/feed", { replace: true });
         return;
       }
 
@@ -118,25 +120,37 @@ export default function WaitingApproval() {
 
       if (request) {
         setStatus(request.status as "pending" | "approved" | "rejected");
-        localStorage.removeItem("pending_invite_slug");
-        sessionStorage.removeItem("pending_invite_slug");
-      } else {
-        const { data: insertData, error: insertError } = await supabase
-          .from("community_requests")
-          .insert({ 
-            tenant_id: tenantData.id, 
-            user_id: user.id, 
-            status: "pending" 
-          })
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error("Error creating request:", insertError);
-        } else {
-          console.log("Request created successfully:", insertData);
+        // If already approved (old flow), create membership and redirect
+        if (request.status === "approved" || request.status === "pending") {
+          // Create membership automatically
+          await supabase.from("memberships").insert({
+            tenant_id: tenantData.id,
+            user_id: user.id,
+            role: "member"
+          });
+          localStorage.setItem("weaze:active_tenant", tenantData.id);
+          sessionStorage.setItem("just_joined_community", tenantData.id);
+          navigate("/feed", { replace: true });
+          return;
         }
-        setStatus("pending");
+      } else {
+        // No request exists - create membership directly (new flow)
+        const { error: membershipError } = await supabase
+          .from("memberships")
+          .insert({
+            tenant_id: tenantData.id,
+            user_id: user.id,
+            role: "member"
+          });
+        
+        if (membershipError) {
+          console.error("Error creating membership:", membershipError);
+        }
+        
+        localStorage.setItem("weaze:active_tenant", tenantData.id);
+        sessionStorage.setItem("just_joined_community", tenantData.id);
+        navigate("/feed", { replace: true });
+        return;
       }
       
       setLoading(false);
