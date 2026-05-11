@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Users, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/contexts/AuthContext";
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Nome muito curto").max(80),
@@ -19,6 +20,7 @@ const signupSchema = z.object({
 
 export default function Auth() {
   const nav = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [fromInvite, setFromInvite] = useState(false);
   const [inviteTenantName, setInviteTenantName] = useState<string | null>(null);
@@ -26,7 +28,23 @@ export default function Auth() {
   const [login, setLogin] = useState({ email: "", password: "" });
 
   useEffect(() => {
-    const pendingSlug = localStorage.getItem("pending_invite_slug");
+    if (authLoading) return;
+    
+    const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
+    
+    if (pendingSlug && user) {
+      nav(`/waiting?slug=${pendingSlug}`, { replace: true });
+      return;
+    }
+    
+    if (user && !pendingSlug) {
+      nav("/feed", { replace: true });
+      return;
+    }
+  }, [user, authLoading, nav]);
+
+  useEffect(() => {
+    const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
     if (pendingSlug) {
       setFromInvite(true);
       supabase.from("tenants").select("name").eq("slug", pendingSlug).single()
