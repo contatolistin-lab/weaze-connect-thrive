@@ -65,19 +65,52 @@ export default function InviteLanding() {
     })();
   }, [slug, ref, campaign, user]);
 
-  // If user is authenticated, enter automatically
+  // If user is authenticated, check membership and redirect accordingly
   useEffect(() => {
-    if (user && tenant && !authLoading && !processing) {
-      handleEnter();
-    }
+    if (!user || !tenant || authLoading || processing) return;
+    
+    (async () => {
+      const { data: membership } = await supabase
+        .from("memberships")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("tenant_id", tenant.id)
+        .maybeSingle();
+      
+      if (membership) {
+        localStorage.setItem("weaze:active_tenant", tenant.id);
+        sessionStorage.setItem("just_joined_community", tenant.id);
+        localStorage.removeItem("pending_invite_slug");
+        sessionStorage.removeItem("pending_invite_slug");
+        navigate("/feed");
+      } else {
+        handleEnter();
+      }
+    })();
   }, [user, tenant, authLoading, processing]);
 
   const handleEnter = async () => {
     if (!tenant || !user) return;
     setProcessing(true);
     
+    const { data: existingRequest } = await supabase
+      .from("community_requests")
+      .select("status")
+      .eq("tenant_id", tenant.id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    
+    if (!existingRequest) {
+      await supabase.from("community_requests").upsert({
+        tenant_id: tenant.id,
+        user_id: user.id,
+        status: "pending",
+      }, { onConflict: "tenant_id,user_id" });
+    }
+    
     localStorage.setItem("pending_invite_slug", tenant.slug);
     sessionStorage.setItem("pending_invite_slug", tenant.slug);
+    sessionStorage.setItem("just_joined_community", tenant.id);
     navigate(`/waiting?slug=${tenant.slug}`);
   };
 

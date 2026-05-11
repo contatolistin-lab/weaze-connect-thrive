@@ -141,10 +141,13 @@ export default function WaitingApproval() {
   const handleGoHome = () => {
     localStorage.removeItem("pending_invite_slug");
     sessionStorage.removeItem("pending_invite_slug");
-    sessionStorage.setItem("just_joined_community", tenantIdRef.current || tenant?.id || "");
-    if (tenantIdRef.current || tenant) {
-      localStorage.setItem("weaze:active_tenant", tenantIdRef.current || tenant?.id || "");
+    
+    const tenantId = tenantIdRef.current || tenant?.id;
+    if (tenantId) {
+      sessionStorage.setItem("just_joined_community", tenantId);
+      localStorage.setItem("weaze:active_tenant", tenantId);
     }
+    
     navigate("/feed");
   };
 
