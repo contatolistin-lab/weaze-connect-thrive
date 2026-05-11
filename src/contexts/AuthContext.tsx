@@ -99,9 +99,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (pendingSlug) {
+        const redirectPath = `/waiting?slug=${pendingSlug}`;
         localStorage.removeItem("pending_invite_slug");
         sessionStorage.removeItem("pending_invite_slug");
-        setRedirectTo(`/waiting?slug=${pendingSlug}`);
+        setRedirectTo(redirectPath);
         setRedirected(true);
         return;
       }

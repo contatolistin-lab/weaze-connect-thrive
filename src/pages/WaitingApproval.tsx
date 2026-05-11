@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,9 +21,47 @@ export default function WaitingApproval() {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
+  const supabaseRef = useRef(supabase);
+  const [polling, setPolling] = useState(false);
+  const tenantIdRef = useRef<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
+
+  if (tenant) tenantIdRef.current = tenant.id;
+  if (user) userIdRef.current = user.id;
+
+  useEffect(() => {
+    if (status !== "pending" || !tenantIdRef.current || !userIdRef.current) return;
+
+    setPolling(true);
+    const interval = setInterval(async () => {
+      if (!tenantIdRef.current || !userIdRef.current) return;
+      
+      const { data: request } = await supabaseRef.current
+        .from("community_requests")
+        .select("status")
+        .eq("tenant_id", tenantIdRef.current)
+        .eq("user_id", userIdRef.current)
+        .maybeSingle();
+      
+      if (request && request.status !== "pending") {
+        setStatus(request.status as "approved" | "rejected");
+        localStorage.removeItem("pending_invite_slug");
+        sessionStorage.removeItem("pending_invite_slug");
+        setPolling(false);
+        clearInterval(interval);
+      }
+    }, 10000);
+    
+    return () => {
+      clearInterval(interval);
+      setPolling(false);
+    };
+  }, [status]);
 
   useEffect(() => {
     if (!slug || !user) return;
+
+    let cancelled = false;
 
     (async () => {
       const { data: tenantData } = await supabase
@@ -32,8 +70,25 @@ export default function WaitingApproval() {
         .eq("slug", slug)
         .single();
       
-      if (!tenantData) { setLoading(false); return; }
+      if (cancelled || !tenantData) { setLoading(false); return; }
       setTenant(tenantData);
+
+      const { data: memberCheck } = await supabase
+        .from("memberships")
+        .select("id")
+        .eq("tenant_id", tenantData.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      
+      if (cancelled) return;
+
+      if (memberCheck) {
+        setStatus("approved");
+        localStorage.removeItem("pending_invite_slug");
+        sessionStorage.removeItem("pending_invite_slug");
+        setLoading(false);
+        return;
+      }
 
       const { data: request } = await supabase
         .from("community_requests")
@@ -42,39 +97,28 @@ export default function WaitingApproval() {
         .eq("user_id", user.id)
         .maybeSingle();
       
+      if (cancelled) return;
+
       if (request) {
         setStatus(request.status as "pending" | "approved" | "rejected");
         localStorage.removeItem("pending_invite_slug");
         sessionStorage.removeItem("pending_invite_slug");
-      }
-      
-      if (!request) {
-        const { data: memberCheck } = await supabase
-          .from("memberships")
-          .select("id")
-          .eq("tenant_id", tenantData.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        
-        if (memberCheck) {
-          setStatus("approved");
-          localStorage.removeItem("pending_invite_slug");
-          sessionStorage.removeItem("pending_invite_slug");
-        } else {
-          const { data: newRequest, error } = await supabase
-            .from("community_requests")
-            .insert({ tenant_id: tenantData.id, user_id: user.id, status: "pending" })
-            .select()
-            .single();
-          
-          if (error) {
-            console.error("Erro ao criar solicitação:", error);
-          }
-        }
+      } else {
+        await supabase
+          .from("community_requests")
+          .upsert({ 
+            tenant_id: tenantData.id, 
+            user_id: user.id, 
+            status: "pending" 
+          }, {
+            onConflict: "tenant_id,user_id"
+          });
+        setStatus("pending");
       }
       
       setLoading(false);
     })();
+    return () => { cancelled = true; };
   }, [slug, user]);
 
   const handleGoHome = () => {
