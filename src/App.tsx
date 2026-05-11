@@ -109,7 +109,12 @@ const NeedsAccess = ({ children }: { children: JSX.Element }) => {
       setLoading(false);
 
       if (!approved) {
-        navigate(`/c?slug=${tenant.slug}`, { replace: true });
+        const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
+        if (pendingSlug && tenant.slug === pendingSlug) {
+          navigate(`/waiting?slug=${pendingSlug}`, { replace: true });
+        } else {
+          navigate(`/c?slug=${tenant.slug}`, { replace: true });
+        }
       }
     });
   }, [user, tenant, isB2B, navigate]);

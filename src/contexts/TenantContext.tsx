@@ -61,12 +61,23 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     setMemRoles(roles);
     setTenants(list);
     
-    const savedId = localStorage.getItem("weaze:active_tenant");
+    const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
     const justJoinedId = sessionStorage.getItem("just_joined_community");
-    let targetId = justJoinedId && list.find(t => t.id === justJoinedId) ? justJoinedId : null;
-    if (!targetId) {
+    
+    let targetId: string | null = null;
+    
+    if (justJoinedId && list.find(t => t.id === justJoinedId)) {
+      targetId = justJoinedId;
+    } else if (pendingSlug) {
+      const pendingTenant = list.find(t => t.slug === pendingSlug);
+      if (pendingTenant) {
+        targetId = pendingTenant.id;
+      }
+    } else {
+      const savedId = localStorage.getItem("weaze:active_tenant");
       targetId = savedId && list.find(t => t.id === savedId) ? savedId : list[0]?.id;
     }
+    
     const targetRole = targetId ? roles[targetId] : null;
     if (targetId && targetRole) {
       setTenant(list.find(t => t.id === targetId)!);
