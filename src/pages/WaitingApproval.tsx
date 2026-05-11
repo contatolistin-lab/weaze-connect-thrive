@@ -121,16 +121,20 @@ export default function WaitingApproval() {
         localStorage.removeItem("pending_invite_slug");
         sessionStorage.removeItem("pending_invite_slug");
       } else {
-        const { error: upsertError } = await supabase
+        const { data: insertData, error: insertError } = await supabase
           .from("community_requests")
-          .upsert({ 
+          .insert({ 
             tenant_id: tenantData.id, 
             user_id: user.id, 
             status: "pending" 
-          });
+          })
+          .select()
+          .single();
         
-        if (upsertError) {
-          console.error("Error creating request:", upsertError);
+        if (insertError) {
+          console.error("Error creating request:", insertError);
+        } else {
+          console.log("Request created successfully:", insertData);
         }
         setStatus("pending");
       }
