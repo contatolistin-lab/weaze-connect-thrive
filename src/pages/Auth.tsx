@@ -79,6 +79,9 @@ export default function Auth() {
         email: parsed.data.email,
       });
       
+      // Wait for onAuthStateChange to fire
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Check for pending invite
       const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
       if (pendingSlug) {
@@ -111,8 +114,12 @@ export default function Auth() {
       password: parsed.data.password 
     });
     
+    if (error) { setLoading(false); toast.error(error.message); return; }
+    
+    // Wait for onAuthStateChange to fire and update context
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
     toast.success("Bem-vindo");
     
     // Check for pending invite
@@ -124,18 +131,23 @@ export default function Auth() {
       return;
     }
     
-    // Get user memberships
-    const { data: { user: authUser } } = await supabase.auth.getUser();
+    // Get user from current session (NOT from getUser which may be cached)
+    const { data: { user: authUser } } = await supabase.auth.getSession();
+    if (!authUser) {
+      nav("/auth", { replace: true });
+      return;
+    }
+    
     const { data: mems } = await supabase
       .from("memberships")
       .select("tenant_id, role")
-      .eq("user_id", authUser?.id);
+      .eq("user_id", authUser.id);
     
     const roles = (mems ?? []).map((m) => m.role);
-    const isOwner = roles.includes("owner") || roles.includes("admin");
+    const isB2B = roles.includes("owner") || roles.includes("admin");
     
     // If B2B without community, go to profile to create
-    if (isOwner && (!mems || mems.length === 0)) {
+    if (isB2B && (!mems || mems.length === 0)) {
       nav("/profile", { replace: true });
       return;
     }

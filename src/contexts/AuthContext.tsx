@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       const { data: mems } = await supabase
         .from("memberships")
-        .select("tenant_id, role");
+        .select("tenant_id, role")
+        .eq("user_id", user.id);
       
       if (cancelled) return;
       
@@ -138,6 +139,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => { 
     setRedirected(false);
     setRedirectTo(null);
+    setAppRole(null);
+    setUserState(null);
     await supabase.auth.signOut(); 
   };
 
