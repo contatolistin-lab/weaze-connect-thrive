@@ -27,22 +27,24 @@ export default function Auth() {
   const [signup, setSignup] = useState({ name: "", email: "", password: "" });
   const [login, setLogin] = useState({ email: "", password: "" });
 
+  // Track if user has tried to authenticate
+  const [hasAuthAttempt, setHasAuthAttempt] = useState(false);
+
   useEffect(() => {
+    // Don't redirect on initial mount - only redirect if user already logged in BEFORE visiting this page
     if (authLoading) return;
     
-    const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
-    
-    if (pendingSlug && user) {
-      // Redirect back to invite page to create membership automatically
-      nav(`/invite/${pendingSlug}`, { replace: true });
-      return;
+    // If user was already logged in before visiting /auth, redirect
+    // But don't redirect if we're in the middle of an auth attempt
+    if (user && !hasAuthAttempt) {
+      const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
+      if (pendingSlug) {
+        nav(`/invite/${pendingSlug}`, { replace: true });
+      } else {
+        nav("/feed", { replace: true });
+      }
     }
-    
-    if (user && !pendingSlug) {
-      nav("/feed", { replace: true });
-      return;
-    }
-  }, [user, authLoading, nav]);
+  }, [user, authLoading, nav, hasAuthAttempt]);
 
   useEffect(() => {
     const pendingSlug = localStorage.getItem("pending_invite_slug") || sessionStorage.getItem("pending_invite_slug");
@@ -57,6 +59,7 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAuthAttempt(true); // Mark that user is trying to authenticate
     const parsed = signupSchema.safeParse(signup);
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setLoading(true);
@@ -86,6 +89,7 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHasAuthAttempt(true); // Mark that user is trying to authenticate
     const loginSchema = z.object({
       email: z.string().trim().email("Email inválido"),
       password: z.string().min(1, "Senha obrigatória"),
