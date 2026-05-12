@@ -66,7 +66,9 @@ export default function BrandInsights(_props: { conversationsCount?: number; cta
         
         const [{ data: interactions, error: intErr }, { data: topicsData, error: topicErr }] = await Promise.all([
           supabase.from("interactions").select("action_type, user_id").eq("tenant_id", tenant.id).gte("created_at", d30),
-          supabase.from("topic_messages").select("id, user_id").eq("tenant_id", tenant.id).gte("created_at", d30),
+          supabase.from("topic_messages").select("id, user_id").in("topic_id", 
+            (await supabase.from("topics").select("id").eq("tenant_id", tenant.id).then(r => r.data?.map(t => t.id) || []))
+          ).gte("created_at", d30),
         ]);
         
         if (intErr || topicErr) {
