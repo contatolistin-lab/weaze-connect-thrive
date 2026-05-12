@@ -203,16 +203,18 @@ export default function Topics() {
     setSendingReply(true);
     
     const contentToSend = newReply.trim();
+    const insertPayload = {
+      topic_id: selectedTopic.id,
+      user_id: user.id,
+      content: contentToSend,
+      parent_id: replyToMsg?.id || null,
+    };
     
-    // Insert only, no select to avoid relationship errors
-    const { error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await supabase
       .from("topic_messages")
-      .insert({
-        topic_id: selectedTopic.id,
-        user_id: user.id,
-        content: contentToSend,
-        parent_id: replyToMsg?.id || null,
-      });
+      .insert(insertPayload)
+      .select("id, topic_id, user_id, content, parent_id, created_at")
+      .single();
     
     if (insertError) {
       console.error("Error sending reply:", insertError);
@@ -221,28 +223,21 @@ export default function Topics() {
       return;
     }
     
-    // Create message locally with user profile
     const userProfile = (user as any).user_metadata;
-    const localMsg: TopicMessage = {
-      id: `temp-${Date.now()}`,
-      topic_id: selectedTopic.id,
-      user_id: user.id,
-      content: contentToSend,
-      parent_id: replyToMsg?.id || null,
-      created_at: new Date().toISOString(),
+    const realMsg: TopicMessage = {
+      ...inserted,
       profiles: {
         name: userProfile?.name || "Você",
         avatar_url: userProfile?.avatar_url || null
       }
     };
     
-    // Atualizar counters do topic localmente
     setTopics(topics.map(t => 
       t.id === selectedTopic.id 
         ? { ...t, replies_count: (t.replies_count || 0) + 1, last_activity_at: new Date().toISOString() }
         : t
     ));
-    setMessages([...messages, localMsg]);
+    setMessages([...messages, realMsg]);
     setNewReply("");
     setReplyToMsg(null);
     await awardPoints(user.id, selectedTopic.tenant_id, "reply");
@@ -482,57 +477,58 @@ export default function Topics() {
                 const isReply = msg.parent_id !== null;
                 const parentMsg = isReply ? messages.find(m => m.id === msg.parent_id) : null;
                 return (
-                <div key={msg.id} className={`flex gap-3 ${isReply ? 'ml-6 border-l-2 border-purple-200 pl-3' : ''}`}>
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={msg.profiles?.avatar_url || ""} />
-                    <AvatarFallback className="text-xs bg-gray-200 text-gray-600">{msg.profiles?.name?.[0]?.toUpperCase() || "?"}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-sm font-medium text-gray-800">{msg.profiles?.name || "Usuário"}</span>
-                      <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
-                      {isReply && parentMsg && (
-                        <span className="text-xs text-purple-500">↳ Respondendo @{parentMsg.profiles?.name || "usuário"}</span>
-                      )}
-                      {msg.user_id !== user?.id && !isReply && (
-                        <button onClick={() => replyToMessage(msg)} className="text-xs text-purple-600 hover:text-purple-800 ml-2">Responder</button>
-                      )}
-                    </div>
-                    {editingMsgId === msg.id ? (
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                        <div className="flex items-center gap-1 mb-2 text-xs text-purple-600">
-                          <Pencil className="h-3 w-3" />
-                          <span>Editando mensagem</span>
-                        </div>
-                        <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm resize-none" rows={2} autoFocus onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveEditMessage(); } if (e.key === "Escape") cancelEditMessage(); }} />
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-gray-400">Enter para salvar, Esc para cancelar</span>
-                          <div className="flex gap-2">
-                            <button onClick={cancelEditMessage} className="text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 px-3 py-1.5 rounded-md transition-colors">Cancelar</button>
-                            <button onClick={saveEditMessage} disabled={!editContent.trim()} className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors disabled:opacity-50">Salvar</button>
+                  <div key={msg.id} className={`flex gap-3 ${isReply ? 'ml-6 border-l-2 border-purple-200 pl-3' : ''}`}>
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarImage src={msg.profiles?.avatar_url || ""} />
+                      <AvatarFallback className="text-xs bg-gray-200 text-gray-600">{msg.profiles?.name?.[0]?.toUpperCase() || "?"}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-sm font-medium text-gray-800">{msg.profiles?.name || "Usuário"}</span>
+                        <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
+                        {isReply && parentMsg && (
+                          <span className="text-xs text-purple-500">↳ Respondendo @{parentMsg.profiles?.name || "usuário"}</span>
+                        )}
+                        {msg.user_id !== user?.id && !isReply && (
+                          <button onClick={() => replyToMessage(msg)} className="text-xs text-purple-600 hover:text-purple-800 ml-2">Responder</button>
+                        )}
+                      </div>
+                      {editingMsgId === msg.id ? (
+                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                          <div className="flex items-center gap-1 mb-2 text-xs text-purple-600">
+                            <Pencil className="h-3 w-3" />
+                            <span>Editando mensagem</span>
+                          </div>
+                          <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm resize-none" rows={2} autoFocus onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveEditMessage(); } if (e.key === "Escape") cancelEditMessage(); }} />
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs text-gray-400">Enter para salvar, Esc para cancelar</span>
+                            <div className="flex gap-2">
+                              <button onClick={cancelEditMessage} className="text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 px-3 py-1.5 rounded-md transition-colors">Cancelar</button>
+                              <button onClick={saveEditMessage} disabled={!editContent.trim()} className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors disabled:opacity-50">Salvar</button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-100 rounded-lg p-3">
-                        <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
-                      </div>
-                    )}
-                    {msg.user_id === user?.id && (
-                      <div className="flex gap-2 mt-1">
-                        <button onClick={() => startEditMessage(msg)} className="text-xs text-gray-400 hover:text-purple-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition-colors">
-                          <Pencil className="h-3 w-3" />
-                          <span>Editar</span>
-                        </button>
-                        <button onClick={() => confirmDeleteMessage(msg)} className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors">
-                          <Trash2 className="h-3 w-3" />
-                          <span>Excluir</span>
-                        </button>
-                      </div>
-)}
-              </div>
-            </div>
-              ))
+                      ) : (
+                        <div className="bg-gray-100 rounded-lg p-3">
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                        </div>
+                      )}
+                      {msg.user_id === user?.id && (
+                        <div className="flex gap-2 mt-1">
+                          <button onClick={() => startEditMessage(msg)} className="text-xs text-gray-400 hover:text-purple-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition-colors">
+                            <Pencil className="h-3 w-3" />
+                            <span>Editar</span>
+                          </button>
+                          <button onClick={() => confirmDeleteMessage(msg)} className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                            <Trash2 className="h-3 w-3" />
+                            <span>Excluir</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
             )}
             <div ref={messagesEndRef} />
           </div>
@@ -568,7 +564,7 @@ export default function Topics() {
                   <input type="text" value={newReply} onChange={handleReplyChange} placeholder="Escreva sua resposta... (@ para mencionar)" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !showMentionList) { e.preventDefault(); sendReply(); } if (e.key === "Escape") setShowMentionList(false); }} />
                   <AtSign className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
                 </div>
-                <button onClick={sendReply} disabled={sendingReply || !newReply.trim()} className="bg-purple-700 hover:bg-purple-800 text-white p-2 rounded-lg disabled:opacity-50">
+<button onClick={sendReply} disabled={sendingReply || !newReply.trim()} className="bg-purple-700 hover:bg-purple-800 text-white p-2 rounded-lg disabled:opacity-50">
                   <Send className="h-5 w-5" />
                 </button>
               </div>
