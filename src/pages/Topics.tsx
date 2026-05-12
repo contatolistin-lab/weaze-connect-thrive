@@ -19,11 +19,12 @@ type Topic = {
   related_post_id: string | null;
   title: string;
   created_by: string | null;
-  replies_count: number;
+  replies_count: number | null;
   last_activity_at: string;
   is_pinned: boolean;
   is_locked: boolean;
   created_at: string;
+  messages_count?: number;
   profiles?: { name: string; avatar_url: string | null } | null;
   first_message?: { content: string } | null;
 };
@@ -104,12 +105,16 @@ export default function Topics() {
             .order("created_at", { ascending: true })
             .limit(1)
             .maybeSingle();
+          const { count: msgCount } = await supabase
+            .from("topic_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("topic_id", topic.id);
           const { data: profile } = await supabase
             .from("profiles")
             .select("name, avatar_url")
             .eq("user_id", topic.created_by)
             .maybeSingle();
-          return { ...topic, first_message: firstMsg, profiles: profile };
+          return { ...topic, first_message: firstMsg, profiles: profile, messages_count: msgCount || 0 };
         })
       );
       setTopics(topicsWithFirstMsg);
@@ -235,7 +240,7 @@ export default function Topics() {
     
     setTopics(prev => prev.map(t => 
       t.id === selectedTopic.id 
-        ? { ...t, replies_count: (t.replies_count || 0) + 1, last_activity_at: new Date().toISOString() }
+        ? { ...t, messages_count: (t.messages_count || 0) + 1, last_activity_at: new Date().toISOString() }
         : t
     ));
     setMessages([...messages, realMsg]);
@@ -429,7 +434,7 @@ export default function Topics() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">{topic.replies_count || 0} respostas</p>
+                    <p className="text-xs text-gray-500">{topic.messages_count || 0} respostas</p>
                     <p className="text-xs text-green-600 font-medium">
                       {topic.last_activity_at && new Date(topic.last_activity_at).getTime() > Date.now() - 60000 ? "● Ativo agora" : `Última: ${formatTime(topic.last_activity_at)}`}
                     </p>
