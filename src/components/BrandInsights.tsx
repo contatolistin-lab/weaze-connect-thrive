@@ -64,12 +64,15 @@ export default function BrandInsights(_props: { conversationsCount?: number; cta
         const now = new Date();
         const d30 = new Date(now.getTime() - 30 * 86400_000).toISOString();
         
-        const [{ data: interactions, error: intErr }, { data: topicsData, error: topicErr }] = await Promise.all([
+        const [{ data: interactions, error: intErr }, { data: allTopics }] = await Promise.all([
           supabase.from("interactions").select("action_type, user_id").eq("tenant_id", tenant.id).gte("created_at", d30),
-          supabase.from("topic_messages").select("id, user_id").in("topic_id", 
-            (await supabase.from("topics").select("id").eq("tenant_id", tenant.id).then(r => r.data?.map(t => t.id) || []))
-          ).gte("created_at", d30),
+          supabase.from("topics").select("id").eq("tenant_id", tenant.id),
         ]);
+        
+        const topicIds = (allTopics ?? []).map((t: any) => t.id);
+        const { data: topicsData, error: topicErr } = topicIds.length > 0
+          ? await supabase.from("topic_messages").select("id, user_id").in("topic_id", topicIds).gte("created_at", d30)
+          : { data: null, error: null };
         
         if (intErr || topicErr) {
           console.error("BrandInsights query error:", intErr || topicErr);

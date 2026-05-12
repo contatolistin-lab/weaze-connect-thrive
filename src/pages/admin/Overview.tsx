@@ -94,7 +94,7 @@ export default function Overview() {
         supabase.from("memberships").select("*", { count: "exact", head: true }).eq("tenant_id", tenant.id).gte("created_at", dCurrent),
         supabase.from("interactions").select("user_id, created_at, action_type, post_id, cta_id").eq("tenant_id", tenant.id).gte("created_at", dPrev),
         supabase.from("posts").select("id, description, created_at").eq("tenant_id", tenant.id).gte("created_at", dCurrent).order("created_at", { ascending: false }),
-        supabase.from("post_cta").select("id, type, post_id"),
+        supabase.from("post_cta").select("id, type, post_id").in("post_id", (posts ?? []).map((p: any) => p.id)),
         supabase.from("topics").select("id, created_at").eq("tenant_id", tenant.id).gte("created_at", dCurrent),
       ]);
 
