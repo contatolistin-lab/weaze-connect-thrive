@@ -65,65 +65,35 @@ function ChatList({
     }
   };
 
-  if (loading) {
+if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", padding: "40px" }}>
-        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        <TopBar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+        <BottomNav />
       </div>
     );
   }
 
-  if (threads.length === 0) {
+  // B2C sem thread ainda (criando automaticamente acima)
+  if (!isOwner && !threadId) {
     return (
-      <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
-        <p>Nenhuma conversa ainda</p>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        <TopBar />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div style={{ overflowY: "auto", height: "100%" }}>
-      <h2 style={{ padding: "16px", fontSize: "20px", fontWeight: "bold" }}>
-        Mensagens
-      </h2>
-      {threads.map((thread) => (
-        <button
-          key={thread.id}
-          onClick={() => onSelect(thread.id)}
-          style={{
-            width: "100%",
-            padding: "16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            border: "none",
-            borderBottom: "1px solid #f0f0f0",
-            background: "white",
-            cursor: "pointer",
-            textAlign: "left"
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              background: "#e8e8e8",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0
-            }}
-          >
-            {thread.author_name ? (
-              <span style={{ fontWeight: 500, color: "#333" }}>
-                {thread.author_name[0].toUpperCase()}
-              </span>
-            ) : (
-              <span style={{ color: "#666" }}>?</span>
-            )}
-          </div>
-          <div style={{ flex: 1, overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
+      <TopBar />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}>
             <p style={{ fontWeight: 500, color: "#333", marginBottom: "4px" }}>
               {thread.author_name || "Usuário"}
             </p>
@@ -168,7 +138,7 @@ function ChatWindow({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Header */}
       <div
         style={{
@@ -178,7 +148,9 @@ function ChatWindow({
           padding: "12px 16px",
           borderBottom: "1px solid #e8e8e8",
           background: "white",
-          flexShrink: 0
+          height: "60px",
+          flexShrink: 0,
+          boxSizing: "border-box"
         }}
       >
         <button
@@ -214,10 +186,11 @@ function ChatWindow({
       <div
         ref={scrollRef}
         style={{
-          flex: 1,
+          flex: "1 1 auto",
           overflowY: "auto",
           padding: "16px",
-          background: "#f5f5f5"
+          background: "#f5f5f5",
+          minHeight: "200px"
         }}
       >
         {messages.length === 0 ? (
@@ -271,7 +244,11 @@ function ChatWindow({
           padding: "12px 16px",
           background: "white",
           borderTop: "1px solid #e8e8e8",
-          flexShrink: 0
+          flexShrink: 0,
+          height: "70px",
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center"
         }}
       >
         <div style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
@@ -551,9 +528,9 @@ export default function Messages() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <TopBar />
-      <div style={{ flex: 1, overflow: "hidden" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}>
         {threadId ? (
           <ChatWindow
             threadId={threadId}
