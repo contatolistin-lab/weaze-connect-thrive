@@ -79,10 +79,14 @@ export default function Messages() {
 
   // Scroll
   useEffect(() => {
-    if (messages.length > 0 && scrollRef.current) {
-      setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, 100);
+    if (scrollRef.current) {
+      setTimeout(() => { 
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 50);
     }
-  }, [messages, threadId]);
+  }, [messages.length, threadId]);
 
   // Send
   async function handleSend() {
@@ -126,7 +130,7 @@ export default function Messages() {
         
         {/* Chat Window */}
         {threadId ? (
-          <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+          <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%", minHeight: 0 }}>
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid #e0e0e0", background: "#fff", flexShrink: 0 }}>
               <button onClick={() => setThreadId(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
@@ -139,7 +143,7 @@ export default function Messages() {
             </div>
 
             {/* Messages */}
-            <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: 16, background: "#f5f5f5" }}>
+            <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 16, paddingBottom: 20, background: "#f5f5f5" }}>
               {messages.map(m => {
                 const isMine = m.sender_id === user?.id;
                 return (
