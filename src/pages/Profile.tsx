@@ -8,9 +8,8 @@ import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, Building2, Upload, Trophy, MapPin, TrendingUp, Copy, ExternalLink, Link2 } from "lucide-react";
+import { LogOut, Building2, Upload, MapPin, Copy, ExternalLink, Link2 } from "lucide-react";
 import { toast } from "sonner";
-import { getUserStats } from "@/lib/gamification";
 
 export default function Profile() {
   const { user, signOut, isB2B } = useAuth();
@@ -33,7 +32,7 @@ export default function Profile() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
-  const [userPoints, setUserPoints] = useState<{total: number; monthly: number; yearly: number} | null>(null);
+  
   const [copied, setCopied] = useState(false);
   
   
@@ -99,17 +98,7 @@ export default function Profile() {
         setCountry(data.country ?? "");
       }
     })();
-  }, [user?.id]);
-
-  useEffect(() => {
-    if (!user || !tenant) return;
-    (async () => {
-      const stats = await getUserStats(user.id, tenant.id);
-      if (stats) setUserPoints({ total: stats.total_points, monthly: stats.monthly_points, yearly: stats.yearly_points });
-    })();
-  }, [user?.id, tenant?.id]);
-
-  
+}, [user?.id]);
 
   const save = async () => {
     if (!user) return;
@@ -159,32 +148,6 @@ export default function Profile() {
           <h2 className="font-semibold">Dados</h2>
           <div><Label htmlFor="p-name">Nome</Label><Input id="p-name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></div>
           <div><Label htmlFor="p-phone">Telefone</Label><Input id="p-phone" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20} /></div>
-          
-          {userPoints && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="h-5 w-5 text-green-600" />
-                <span className="font-semibold text-green-800">Sua Pontuação</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p className="text-2xl font-bold text-green-700">{userPoints.total}</p>
-                  <p className="text-xs text-muted-foreground">Total</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-green-700">{userPoints.monthly}</p>
-                  <p className="text-xs text-muted-foreground">Este mês</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-green-700">{userPoints.yearly}</p>
-                  <p className="text-xs text-muted-foreground">Este ano</p>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full text-sm mt-3" asChild>
-                <Link to="/metrics"><TrendingUp className="h-4 w-4 mr-2" />Ver Ranking</Link>
-              </Button>
-            </div>
-          )}
           
           <div className="space-y-3">
             <Label className="flex items-center gap-2">
