@@ -110,7 +110,7 @@ export default function Members() {
       <TopBar />
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-20">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-[#630091] to-[#d81e62] flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#630091] flex items-center justify-center">
             <Users className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -193,7 +193,7 @@ export default function Members() {
                     <Button
                       onClick={() => handleSendMessage(member)}
                       size="sm"
-                      className="w-full mt-2 bg-gradient-to-r from-[#630091] to-[#d81e62] text-white hover:opacity-90 rounded-xl"
+                      className="w-full mt-2 bg-[#630091] text-white hover:bg-[#52007a] rounded-xl"
                     >
                       <MessageCircle className="h-4 w-4 mr-1.5" />
                       Mensagem

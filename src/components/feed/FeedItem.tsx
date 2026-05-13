@@ -455,7 +455,7 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
             <Button 
               onClick={sendChatComment} 
               disabled={sending || !chatComment.trim()}
-              className="w-full h-12 bg-gradient-to-r from-[#630091] to-[#d81e62] text-white hover:opacity-90 transition-opacity rounded-xl font-medium disabled:opacity-50"
+              className="w-full h-12 bg-[#630091] text-white hover:bg-[#52007a] transition-colors rounded-xl font-medium disabled:opacity-50"
             >
               {sending ? "Enviando..." : "Comentar no post"}
             </Button>

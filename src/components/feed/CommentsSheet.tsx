@@ -267,7 +267,7 @@ export default function CommentsSheet({
               onClick={send} 
               disabled={!user || sending || (!text.trim() && !image)} 
               size="icon"
-              className="h-11 w-11 shrink-0 bg-gradient-to-r from-[#630091] to-[#d81e62] text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="h-11 w-11 shrink-0 bg-[#630091] text-white hover:bg-[#52007a] transition-colors disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </Button>
