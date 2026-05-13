@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/contexts/TenantContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,7 @@ import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { Loader2, ArrowLeft } from "lucide-react";
 
-const MessageInput = memo(function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; disabled: boolean }) {
+function MessageInput({ onSend, disabled }: { onSend: (text: string) => void; disabled: boolean }) {
   const [text, setText] = useState("");
 
   const handleSend = useCallback(() => {
@@ -16,21 +16,25 @@ const MessageInput = memo(function MessageInput({ onSend, disabled }: { onSend: 
   }, [text, disabled, onSend]);
 
   return (
-    <div style={{ padding: "12px", background: "white", borderTop: "1px solid #e5e5e5", display: "flex", gap: "8px" }}>
-      <input
-        type="text"
+    <div style={{ padding: "12px", background: "white", borderTop: "1px solid #e5e5e5", display: "flex", gap: "8px", alignItems: "flex-end" }}>
+      <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
         placeholder="Digite uma mensagem..."
         disabled={disabled}
+        rows={1}
         style={{ 
           flex: 1, 
           padding: "10px 16px", 
-          borderRadius: "24px", 
+          borderRadius: "20px", 
           border: "1px solid #ddd", 
           fontSize: "14px", 
-          outline: "none" 
+          outline: "none",
+          resize: "none",
+          minHeight: "40px",
+          maxHeight: "120px",
+          fontFamily: "inherit"
         }}
       />
       <button
@@ -46,13 +50,13 @@ const MessageInput = memo(function MessageInput({ onSend, disabled }: { onSend: 
           cursor: text.trim() && !disabled ? "pointer" : "default"
         }}
       >
-        Enviar
+        {disabled ? "Enviando..." : "Enviar"}
       </button>
     </div>
   );
-});
+}
 
-const MessageBubble = memo(function MessageBubble({ content, time, isMine }: { content: string; time: string; isMine: boolean }) {
+function MessageBubble({ content, time, isMine }: { content: string; time: string; isMine: boolean }) {
   return (
     <div style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "8px" }}>
       <div style={{ 
@@ -62,40 +66,43 @@ const MessageBubble = memo(function MessageBubble({ content, time, isMine }: { c
         background: isMine ? "#25D366" : "white", 
         color: isMine ? "white" : "black" 
       }}>
-        <p style={{ fontSize: "14px", wordBreak: "break-word" }}>{content}</p>
+        <p style={{ fontSize: "14px", wordBreak: "break-word", whiteSpace: "pre-wrap" }}>{content}</p>
         <p style={{ fontSize: "10px", marginTop: "4px", color: isMine ? "rgba(255,255,255,0.7)" : "#999" }}>{time}</p>
       </div>
     </div>
   );
-});
+}
 
-function ChatWindow({ threadId, messages, onBack }: { threadId: string; messages: any[]; onBack: () => void }) {
+function ChatWindow({ 
+  threadId, 
+  messages, 
+  setMessages, 
+  onBack 
+}: { 
+  threadId: string; 
+  messages: any[]; 
+  setMessages: React.Dispatch<React.SetStateAction<any[]>>; 
+  onBack: () => void; 
+}) {
   const { user } = useAuth();
   const { tenant, isOwner } = useTenant();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [sending, setSending] = useState(false);
 
   const chatName = useMemo(() => {
     return isOwner ? "Usuário" : (tenant?.name || "Marca");
   }, [isOwner, tenant]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
   }, [messages]);
 
   const handleSend = useCallback(async (content: string) => {
-    const tempId = crypto.randomUUID();
-    const optimisticMsg = {
-      id: tempId,
-      content,
-      sender_id: user!.id,
-      created_at: new Date().toISOString(),
-      pending: true
-    };
-    
-    setMessages(prev => [...prev, optimisticMsg]);
-
+    setSending(true);
     try {
       const { error } = await supabase.from("messages").insert({
         thread_id: threadId,
@@ -105,13 +112,14 @@ function ChatWindow({ threadId, messages, onBack }: { threadId: string; messages
       if (error) throw error;
     } catch (err) {
       console.error(err);
-      setMessages(prev => prev.filter(m => m.id !== tempId));
+    } finally {
+      setSending(false);
     }
   }, [threadId, user]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderBottom: "1px solid #e5e5e5", background: "white" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderBottom: "1px solid #e5e5e5", background: "white", flexShrink: 0 }}>
         <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer" }}>
           <ArrowLeft size={20} color="#666" />
         </button>
@@ -132,7 +140,7 @@ function ChatWindow({ threadId, messages, onBack }: { threadId: string; messages
         ))}
       </div>
 
-      <MessageInput onSend={handleSend} disabled={false} />
+      <MessageInput onSend={handleSend} disabled={sending} />
     </div>
   );
 }
@@ -225,11 +233,18 @@ export default function Messages() {
 
     const ch = supabase.channel("msg-" + threadId)
       .on("postgres_changes", { event: "INSERT", table: "messages", filter: `thread_id=eq.${threadId}` }, (payload) => {
-        setMessages(prev => [...prev, payload.new]);
+        setMessages(prev => {
+          const exists = prev.some(m => m.id === payload.new.id);
+          if (exists) return prev;
+          return [...prev, payload.new];
+        });
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      ch.unsubscribe();
+      supabase.removeChannel(ch);
+    };
   }, [threadId]);
 
   if (loading) {
@@ -249,7 +264,12 @@ export default function Messages() {
       <TopBar />
       <div className="flex-1 overflow-hidden">
         {threadId ? (
-          <ChatWindow threadId={threadId} messages={messages} onBack={() => setThreadId(null)} />
+          <ChatWindow 
+            threadId={threadId} 
+            messages={messages} 
+            setMessages={setMessages}
+            onBack={() => setThreadId(null)} 
+          />
         ) : isOwner ? (
           <ChatList threads={threads} onSelect={setThreadId} />
         ) : (
