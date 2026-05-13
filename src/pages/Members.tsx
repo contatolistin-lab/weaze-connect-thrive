@@ -70,26 +70,37 @@ export default function Members() {
   const handleSendMessage = async (member: Member) => {
     if (!user || !tenant) return;
     
-    const { data: existingThread } = await supabase
-      .from("message_threads")
-      .select("id")
-      .eq("tenant_id", tenant.id)
-      .eq("user_id", member.user_id)
-      .maybeSingle();
-
-    let threadId = existingThread?.id;
-
-    if (!threadId) {
-      const { data: newThread } = await supabase
+    try {
+      const { data: existingThread } = await supabase
         .from("message_threads")
-        .insert({ tenant_id: tenant.id, user_id: member.user_id })
         .select("id")
-        .single();
-      threadId = newThread?.id;
-    }
+        .eq("tenant_id", tenant.id)
+        .eq("user_id", member.user_id)
+        .maybeSingle();
 
-    if (threadId) {
-      navigate(`/messages?thread=${threadId}`);
+      let threadId = existingThread?.id;
+
+      if (!threadId) {
+        const { data: newThread, error: createError } = await supabase
+          .from("message_threads")
+          .insert({ tenant_id: tenant.id, user_id: member.user_id })
+          .select("id")
+          .single();
+        
+        if (createError) {
+          toast.error("Erro ao criar conversa");
+          return;
+        }
+        threadId = newThread?.id;
+      }
+
+      if (threadId) {
+        navigate(`/messages?thread=${threadId}`);
+      } else {
+        toast.error("Erro ao iniciar conversa");
+      }
+    } catch (err) {
+      toast.error("Erro ao enviar mensagem");
     }
   };
 
@@ -131,7 +142,6 @@ export default function Members() {
           <div className="grid grid-cols-2 gap-3">
             {members.map((member) => {
               const profile = member.profiles;
-              const initial = profile?.name?.[0]?.toUpperCase() || "?";
               
               return (
                 <div 
