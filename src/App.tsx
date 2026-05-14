@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate, useNavigate } from "react-route
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Suspense, lazy, useState, useEffect } from "react";
+import { Suspense, lazy, useState, useEffect, useRef } from "react";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TenantProvider, useTenant } from "@/contexts/TenantContext";
@@ -129,35 +129,25 @@ const NeedsTenant = ({ children }: { children: JSX.Element }) => {
 const NeedsAccess = ({ children }: { children: JSX.Element }) => {
   const { user, loading: authLoading } = useAuth();
   const { tenant, loading: tenantLoading } = useTenant();
-  const [accessChecked, setAccessChecked] = useState(false);
+  const accessCheckedRef = useRef(false);
   const [isBlocked, setIsBlocked] = useState(false);
   
   useEffect(() => {
-    if (authLoading || tenantLoading || !user || !tenant) return;
+    if (authLoading || tenantLoading || !user || !tenant || accessCheckedRef.current) return;
     
-    const timeout = setTimeout(() => {
-      setAccessChecked(true);
-      setIsBlocked(false);
-    }, 5000);
+    accessCheckedRef.current = true;
     
     (async () => {
       try {
         const status = await getAccessStatus(tenant.id, user.id);
-        clearTimeout(timeout);
         setIsBlocked(status === "blocked");
-        setAccessChecked(true);
       } catch (err) {
-        clearTimeout(timeout);
         setIsBlocked(false);
-        setAccessChecked(true);
       }
     })();
-    
-    return () => clearTimeout(timeout);
   }, [user, tenant, authLoading, tenantLoading]);
   
   if (authLoading || tenantLoading) return <Loading />;
-  if (!accessChecked) return <Loading />;
   
   if (isBlocked) {
     return (

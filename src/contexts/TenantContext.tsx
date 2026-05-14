@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 
@@ -37,17 +37,23 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [memRoles, setMemRoles] = useState<TenantRoles>({} as TenantRoles);
+  const loadingRef = useRef(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
     if (!user) {
       setTenants([]);
       setTenant(null);
       setIsOwner(false);
       setCanManage(false);
       setLoading(false);
+      loadingRef.current = false;
       return;
     }
+    
+    setLoading(true);
     
     try {
       const { data: mems, error } = await supabase
@@ -97,6 +103,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       setCanManage(false);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [user]);
 

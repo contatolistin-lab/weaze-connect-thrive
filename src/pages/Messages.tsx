@@ -22,6 +22,7 @@ export default function Messages() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [creatingThread, setCreatingThread] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,9 +55,18 @@ export default function Messages() {
         } else {
           const { data: t } = await supabase.from("message_threads").select("id").eq("tenant_id", tenant.id).eq("user_id", user.id).maybeSingle();
           if (t) setThreadId(t.id);
-          else {
-            const { data: nt } = await supabase.from("message_threads").insert({ tenant_id: tenant.id, user_id: user.id }).select("id").single();
-            if (nt) setThreadId(nt.id);
+          else if (!creatingThread) {
+            setCreatingThread(true);
+            const { data: nt, error: insertErr } = await supabase.from("message_threads").insert({ tenant_id: tenant.id, user_id: user.id }).select("id").single();
+            if (insertErr) {
+              if (insertErr.code === "23505") {
+                const { data: retryT } = await supabase.from("message_threads").select("id").eq("tenant_id", tenant.id).eq("user_id", user.id).maybeSingle();
+                if (retryT) setThreadId(retryT.id);
+              }
+            } else if (nt) {
+              setThreadId(nt.id);
+            }
+            setCreatingThread(false);
           }
         }
       } catch (err) { console.error(err); }
@@ -83,7 +93,9 @@ export default function Messages() {
         })
       .subscribe();
 
-    return () => { channel.unsubscribe(); supabase.removeChannel(channel); };
+    return () => { 
+      channel.unsubscribe(); 
+    };
   }, [threadId]);
 
   useEffect(() => {

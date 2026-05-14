@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,17 +39,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userState, setUserState] = useState<UserState | null>(null);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const [redirected, setRedirected] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       setSession(s);
       setUser(s?.user ?? null);
-      setRedirected(false); // Reset redirect state on auth change
+      setRedirected(false);
       if (!s?.user) {
         setAppRole(null);
         setUserState(null);
         setRedirectTo(null);
         setLoading(false);
+        initialized.current = false;
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -60,13 +62,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (!user) { 
-      setAppRole(null);
-      setLoading(false);
-      return; 
+    if (!user || initialized.current) {
+      if (!user) setLoading(false);
+      return;
     }
     
+    initialized.current = true;
     let cancelled = false;
+    
     (async () => {
       const { data: mems } = await supabase
         .from("memberships")
@@ -87,7 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       setAppRole(newRole);
       
-      // Set userState directly from memberships
       const isB2B = roles.includes("owner") || roles.includes("admin");
       setUserState({
         isB2B,
@@ -97,6 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       setLoading(false);
     })();
+    
     return () => { cancelled = true; };
   }, [user]);
 

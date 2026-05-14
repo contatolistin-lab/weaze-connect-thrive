@@ -31,6 +31,7 @@ export default function Members() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [sendingMessage, setSendingMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !isB2B || !tenant) {
@@ -68,7 +69,9 @@ export default function Members() {
   };
 
   const handleSendMessage = async (member: Member) => {
-    if (!user || !tenant) return;
+    if (!user || !tenant || sendingMessage) return;
+    
+    setSendingMessage(member.user_id);
     
     try {
       const { data: existingThread } = await supabase
@@ -88,10 +91,22 @@ export default function Members() {
           .single();
         
         if (createError) {
-          toast.error("Erro ao criar conversa");
-          return;
+          if (createError.code === "23505") {
+            const { data: retryThread } = await supabase
+              .from("message_threads")
+              .select("id")
+              .eq("tenant_id", tenant.id)
+              .eq("user_id", member.user_id)
+              .maybeSingle();
+            threadId = retryThread?.id;
+          } else {
+            toast.error("Erro ao criar conversa");
+            setSendingMessage(null);
+            return;
+          }
+        } else {
+          threadId = newThread?.id;
         }
-        threadId = newThread?.id;
       }
 
       if (threadId) {
@@ -101,6 +116,8 @@ export default function Members() {
       }
     } catch (err) {
       toast.error("Erro ao enviar mensagem");
+    } finally {
+      setSendingMessage(null);
     }
   };
 
@@ -203,9 +220,14 @@ export default function Members() {
                     <Button
                       onClick={() => handleSendMessage(member)}
                       size="sm"
-                      className="w-full mt-2 bg-[#630091] text-white hover:bg-[#52007a] rounded-xl"
+                      disabled={sendingMessage === member.user_id}
+                      className="w-full mt-2 bg-[#630091] text-white hover:bg-[#52007a] rounded-xl disabled:opacity-50"
                     >
-                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      {sendingMessage === member.user_id ? (
+                        <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 mr-1.5" />
+                      )}
                       Mensagem
                     </Button>
                   </div>
