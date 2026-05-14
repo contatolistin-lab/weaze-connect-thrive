@@ -243,19 +243,44 @@ export default function Groups() {
 
   const loadPosts = async (gId: string) => {
     setPostsLoading(true);
-    const { data, error } = await supabase
+    const { data: postsData, error: postsError } = await supabase
       .from("group_posts")
-      .select("*, profiles(name, avatar_url)")
+      .select("*")
       .eq("group_id", gId)
       .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false });
-    setPostsLoading(false);
-    if (error) {
+    
+    if (postsError) {
+      setPostsLoading(false);
       toast.error("Erro ao carregar discussões");
       setPosts([]);
-    } else {
-      setPosts(data || []);
+      return;
     }
+    
+    if (!postsData || postsData.length === 0) {
+      setPostsLoading(false);
+      setPosts([]);
+      return;
+    }
+    
+    const authorIds = [...new Set(postsData.map(p => p.author_id))];
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, name, avatar_url")
+      .in("id", authorIds);
+    
+    const profilesMap = (profilesData || []).reduce((acc: any, p) => {
+      acc[p.id] = p;
+      return acc;
+    }, {});
+    
+    const postsWithProfiles = postsData.map(p => ({
+      ...p,
+      profiles: profilesMap[p.author_id] || null
+    }));
+    
+    setPostsLoading(false);
+    setPosts(postsWithProfiles);
   };
 
   const createPost = async () => {
@@ -269,7 +294,7 @@ export default function Groups() {
         title: newPostTitle.trim(),
         content: newPostContent.trim() || null,
       })
-      .select("*, profiles(name, avatar_url)")
+      .select()
       .single();
     setSavingPost(false);
     if (error) {
@@ -277,7 +302,16 @@ export default function Groups() {
       return;
     }
     if (data) {
-      setPosts([data, ...posts]);
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", user.id)
+        .single();
+      const postWithProfile = {
+        ...data,
+        profiles: profileData || null
+      };
+      setPosts([postWithProfile, ...posts]);
       setShowPostModal(false);
       setNewPostTitle("");
       setNewPostContent("");
@@ -313,17 +347,43 @@ export default function Groups() {
     setCurrentPost(post);
     setShowRepliesModal(true);
     setRepliesLoading(true);
-    const { data, error } = await supabase
+    
+    const { data: repliesData, error: repliesError } = await supabase
       .from("group_replies")
-      .select("*, profiles(name, avatar_url)")
+      .select("*")
       .eq("post_id", post.id)
       .order("created_at", { ascending: true });
-    setRepliesLoading(false);
-    if (error) {
+    
+    if (repliesError) {
+      setRepliesLoading(false);
       setReplies([]);
-    } else {
-      setReplies(data || []);
+      return;
     }
+    
+    if (!repliesData || repliesData.length === 0) {
+      setRepliesLoading(false);
+      setReplies([]);
+      return;
+    }
+    
+    const authorIds = [...new Set(repliesData.map(r => r.author_id))];
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("id, name, avatar_url")
+      .in("id", authorIds);
+    
+    const profilesMap = (profilesData || []).reduce((acc: any, p) => {
+      acc[p.id] = p;
+      return acc;
+    }, {});
+    
+    const repliesWithProfiles = repliesData.map(r => ({
+      ...r,
+      profiles: profilesMap[r.author_id] || null
+    }));
+    
+    setRepliesLoading(false);
+    setReplies(repliesWithProfiles);
   };
 
   const createReply = async () => {
@@ -336,7 +396,7 @@ export default function Groups() {
         author_id: user.id,
         content: newReply.trim(),
       })
-      .select("*, profiles(name, avatar_url)")
+      .select()
       .single();
     setSavingReply(false);
     if (error) {
@@ -344,7 +404,16 @@ export default function Groups() {
       return;
     }
     if (data) {
-      setReplies([...replies, data]);
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", user.id)
+        .single();
+      const replyWithProfile = {
+        ...data,
+        profiles: profileData || null
+      };
+      setReplies([...replies, replyWithProfile]);
       setNewReply("");
       toast.success("Resposta enviada!");
     }
