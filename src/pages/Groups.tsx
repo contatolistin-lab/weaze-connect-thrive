@@ -595,10 +595,6 @@ export default function Groups() {
             <DialogDescription>Procure e adicione membros ao grupo "{selectedGroup?.name}"</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="relative">
-              <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="🔎 Procurar membro..." className="pr-10" />
-              {searching && <Loader2 className="h-4 w-4 absolute right-3 top-3 animate-spin text-gray-400" />}
-            </div>
             {membersLoading ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -624,7 +620,7 @@ export default function Groups() {
                 })}
               </div>
             ) : (
-              <p className="text-center text-gray-500 text-sm py-2">Nenhum membro encontrado</p>
+              <p className="text-center text-gray-500 text-sm py-2">Nenhum membro disponível</p>
             )}
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowMembersModal(false)} className="flex-1">Cancelar</Button>
