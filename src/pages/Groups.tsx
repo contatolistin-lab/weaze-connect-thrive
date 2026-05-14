@@ -601,6 +601,13 @@ export default function Groups() {
             <DialogDescription>Procure e adicione membros ao grupo "{selectedGroup?.name}"</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <input
+              type="text"
+              placeholder="Buscar membros..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#630091]"
+            />
             {membersLoading ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
