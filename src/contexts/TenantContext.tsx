@@ -91,35 +91,20 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       setMemRoles(roles);
       setTenants(list);
       
-      // Determine target tenant quickly
-      const justJoinedId = sessionStorage.getItem("just_joined_community");
-      const savedId = localStorage.getItem("weaze:active_tenant");
-      let targetId: string | null = justJoinedId || savedId || (list[0]?.id ?? null);
-      
-      // Validate targetId exists in list
-      if (!list.find(t => t.id === targetId)) {
-        targetId = list[0]?.id ?? null;
-      }
-      
-      if (targetId && roles[targetId]) {
-        const targetRole = roles[targetId];
-        setTenant(list.find(t => t.id === targetId)!);
-        setIsOwner(targetRole === "owner");
-        setCanManage(targetRole === "owner" || targetRole === "admin");
-        if (justJoinedId) {
-          sessionStorage.removeItem("just_joined_community");
-          localStorage.setItem("weaze:active_tenant", targetId);
-        }
-      } else if (list.length > 0) {
-        // Se não tem targetId válido mas tem tenants, pega o primeiro
+      // Force primeiro tenant se existir - priority máxima
+      if (list.length > 0) {
         const firstTenant = list[0];
+        const firstRole = roles[firstTenant.id];
         setTenant(firstTenant);
-        setIsOwner(roles[firstTenant.id] === "owner");
-        setCanManage(roles[firstTenant.id] === "owner" || roles[firstTenant.id] === "admin");
+        setIsOwner(firstRole === "owner");
+        setCanManage(firstRole === "owner" || firstRole === "admin");
+        localStorage.setItem("weaze:active_tenant", firstTenant.id);
+        console.log("TenantContext: forçando tenant:", firstTenant.id, "role:", firstRole);
       } else {
         setTenant(null);
         setIsOwner(false);
         setCanManage(false);
+        console.log("TenantContext: SEM TENANTS disponíveis");
       }
     } catch (err) {
       console.error("Erro ao carregar tenants:", err);

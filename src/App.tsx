@@ -131,37 +131,14 @@ const NeedsAccess = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
   const { tenant, tenants, loading: tenantLoading } = useTenant();
   
-  console.log("NeedsAccess: user:", user?.id, "loading:", loading, "tenantLoading:", tenantLoading, "tenants:", tenants.length, "tenant:", tenant?.id);
+  if (loading) return <Loading />;
   
-  if (loading || tenantLoading) return <Loading />;
-  
-  // Se não tem tenant mas tem tenants, usa o primeiro
-  const activeTenant = tenant || (tenants.length > 0 ? tenants[0] : null);
-  
-  console.log("NeedsAccess: activeTenant:", activeTenant?.id);
+  // Se ainda carregando tenant, deixa passar
+  if (tenantLoading) return children;
   
   if (!user) return <Navigate to="/auth" replace />;
   
-  // Se não tem tenant disponível, mostra mensagem
-  if (!activeTenant && tenants.length === 0) {
-    console.log("NeedsAccess: SEM TENANTS - mostrando mensagem");
-    return (
-      <div className="min-h-screen flex flex-col">
-        <TopBar />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Você ainda não participa de nenhuma comunidade.</p>
-            <Button onClick={() => window.location.href = '/communities'}>
-              Ver Comunidades
-            </Button>
-          </div>
-        </div>
-        <BottomNav />
-      </div>
-    );
-  }
-  
-  // Sem verificação de blocked para evitar travamento
+  // Permite acesso mesmo sem tenant - o componente que decide se mostra algo
   return children;
 };
 
