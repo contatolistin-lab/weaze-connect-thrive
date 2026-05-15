@@ -277,7 +277,6 @@ export default function FeedItem({ post, active }: { post: Post; active: boolean
   };
 
   const postCta = post.post_cta?.[0] ?? null;
-  console.log("CTA RECEBIDO:", postCta);
 
   return (
     <article className="relative h-[100dvh] w-full snap-start bg-foreground text-background overflow-hidden" onClick={onTap}>
