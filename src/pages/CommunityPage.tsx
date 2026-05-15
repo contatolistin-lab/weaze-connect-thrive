@@ -18,17 +18,10 @@ type PublicTenant = {
 
 export default function CommunityPage() {
   const { slug } = useParams<{ slug: string }>();
-  const location = useLocation();
   const navigate = useNavigate();
   const { user, isB2B } = useAuth();
   
-  const getSlugFromUrl = () => {
-    if (slug) return slug;
-    const params = new URLSearchParams(location.search);
-    return params.get("slug") || params.get("s") || "";
-  };
-  
-  const communitySlug = getSlugFromUrl();
+  const communitySlug = slug || "";
   const [tenant, setTenant] = useState<PublicTenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,7 +170,7 @@ export default function CommunityPage() {
           </div>
 
           <Button className="w-full bg-brand text-primary-foreground hover:opacity-90" asChild>
-            <a href={`/auth?redirect=/c?slug=${tenant.slug}`}>Entrar na comunidade</a>
+            <a href={`/auth?redirect=/c/${tenant.slug}`}>Entrar na comunidade</a>
           </Button>
         </div>
       );
