@@ -92,36 +92,47 @@ export default function Feed() {
   useEffect(() => {
     if (!tenant) return;
     (async () => {
-      // First check if there's a live CTA in posts
-      const { data: postsWithLiveCta } = await supabase
-        .from("post_cta")
-        .select("post_id, config_json")
-        .eq("tenant_id", tenant.id)
-        .eq("type", "live")
-        .limit(10);
-      
-      // Also check the lives table
+      // First check the lives table for active lives
       const { data: liveData } = await supabase
         .from("lives")
         .select("id, title, external_url, is_live")
         .eq("tenant_id", tenant.id)
-        .eq("is_live", true)
-        .limit(1)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(5);
       
-      // Also check for posts with live CTA that might have is_live in config
-      let ctaLiveUrl = null;
-      if (postsWithLiveCta && postsWithLiveCta.length > 0) {
-        for (const cta of postsWithLiveCta) {
-          const config = typeof cta.config_json === 'string' ? JSON.parse(cta.config_json) : cta.config_json;
-          if (config?.external_url && config?.is_live) {
-            ctaLiveUrl = config.external_url;
-            break;
+      // Check for live CTA in posts
+      const { data: liveCta } = await supabase
+        .from("post_cta")
+        .select("post_id, config_json")
+        .eq("tenant_id", tenant.id)
+        .eq("type", "live")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      
+      let liveUrl = null;
+      
+      // Priority 1: Check for active live in lives table
+      const activeLive = (liveData || []).find(l => l.is_live);
+      if (activeLive) {
+        liveUrl = activeLive.external_url;
+      }
+      
+      // Priority 2: Check for any live CTA (show even if not marked as live)
+      if (!liveUrl && liveCta && liveCta.length > 0) {
+        for (const cta of liveCta) {
+          try {
+            const config = typeof cta.config_json === 'string' ? JSON.parse(cta.config_json) : cta.config_json;
+            if (config?.external_url) {
+              liveUrl = config.external_url;
+              break;
+            }
+          } catch (e) {
+            console.error("Error parsing CTA config:", e);
           }
         }
       }
       
-      const liveUrl = (liveData as any)?.external_url || ctaLiveUrl;
+      console.log("Live check - tenant:", tenant.name, "has live:", !!liveUrl);
       setActiveLiveUrl(liveUrl);
     })();
   }, [tenant?.id]);
