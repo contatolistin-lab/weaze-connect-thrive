@@ -28,8 +28,7 @@ export default function Content() {
         {isB2B ? (
           <div className="grid gap-3">
             <ContentCard to="/create" icon={PlusSquare} title="Novo post" desc="Vídeo, imagem ou texto com CTA." />
-            <ContentCard to="/content/services" icon={Calendar} title="Serviços" desc="Cadastre serviços para agendamento." />
-            <ContentCard to="/content/events" icon={CalendarDays} title="Eventos" desc="Crie eventos com vagas limitadas." />
+            <ContentCard to="/content/agenda" icon={Calendar} title="Agenda" desc="Serviços e eventos para agendamento." />
             <ContentCard to="/content/lives" icon={Video} title="Lives" desc="Gerencie transmissões ao vivo." />
           </div>
         ) : (

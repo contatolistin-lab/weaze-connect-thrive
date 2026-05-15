@@ -13,22 +13,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Trash2 } from "lucide-react";
 
-export default function Content() {
+type ContentProps = {
+  type?: "services" | "events";
+};
+
+export default function Content({ type }: ContentProps) {
   const { tenant } = useTenant();
   const location = useLocation();
   const device = useDeviceType();
-  const [tab, setTab] = useState<string>("services");
+  const [tab, setTab] = useState<string>(type || "services");
   const [services, setServices] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
 
-  // Auto-select tab based on URL
+  // Auto-select tab based on URL or prop
   useEffect(() => {
     if (location.pathname.includes("/events")) {
       setTab("events");
-    } else {
+    } else if (location.pathname.includes("/services")) {
       setTab("services");
+    } else if (type) {
+      setTab(type);
     }
-  }, [location]);
+  }, [location, type]);
 
   // service form
   const [sName, setSName] = useState("");
