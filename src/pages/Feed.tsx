@@ -92,27 +92,37 @@ export default function Feed() {
   useEffect(() => {
     if (!tenant) return;
     (async () => {
-      console.log("Feed load - tenant:", tenant.name, tenant.id);
+      // First check if there's a live CTA in posts
+      const { data: postsWithLiveCta } = await supabase
+        .from("post_cta")
+        .select("post_id, config_json")
+        .eq("tenant_id", tenant.id)
+        .eq("type", "live")
+        .limit(10);
       
-      const [{ data: pinnedData }, { data: liveData, error: liveError }] = await Promise.all([
-        (supabase as any)
-          .from("posts")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .eq("is_pinned", true)
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from("lives")
-          .select("id, title, external_url")
-          .eq("tenant_id", tenant.id)
-          .eq("is_live", true)
-          .limit(1)
-          .maybeSingle()
-      ]);
-      console.log("Live query result:", liveData, "error:", liveError);
-      setPinnedPost((pinnedData as any) || null);
-      setActiveLiveUrl((liveData as any)?.external_url || null);
+      // Also check the lives table
+      const { data: liveData } = await supabase
+        .from("lives")
+        .select("id, title, external_url, is_live")
+        .eq("tenant_id", tenant.id)
+        .eq("is_live", true)
+        .limit(1)
+        .maybeSingle();
+      
+      // Also check for posts with live CTA that might have is_live in config
+      let ctaLiveUrl = null;
+      if (postsWithLiveCta && postsWithLiveCta.length > 0) {
+        for (const cta of postsWithLiveCta) {
+          const config = typeof cta.config_json === 'string' ? JSON.parse(cta.config_json) : cta.config_json;
+          if (config?.external_url && config?.is_live) {
+            ctaLiveUrl = config.external_url;
+            break;
+          }
+        }
+      }
+      
+      const liveUrl = (liveData as any)?.external_url || ctaLiveUrl;
+      setActiveLiveUrl(liveUrl);
     })();
   }, [tenant?.id]);
 
@@ -216,19 +226,18 @@ export default function Feed() {
       <TopBar />
       {/* Live indicator at top when there's an active live */}
       {activeLiveUrl && (
-        <a 
-          href={activeLiveUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="mx-3 mt-2 flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg animate-pulse hover:bg-red-500/20 transition"
+        <button 
+          type="button"
+          onClick={() => {
+            console.log("CLICK LIVE - URL:", activeLiveUrl);
+            window.open(activeLiveUrl, "_blank");
+          }}
+          className="mx-3 mt-2 flex items-center gap-2 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg animate-pulse hover:bg-red-500/20 transition w-full text-left"
         >
           <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
           <span className="text-sm font-semibold text-red-500">Há uma live acontecendo agora!</span>
           <span className="text-xs text-red-400 ml-auto">Assistir →</span>
-        </a>
-      )}
-      {!activeLiveUrl && tenant && (
-        <div className="hidden">Debug: activeLiveUrl is empty but tenant exists</div>
+        </button>
       )}
       {pinnedPost && (
         <button
