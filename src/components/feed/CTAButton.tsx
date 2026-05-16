@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import { track } from "@/lib/tracking";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -610,50 +611,136 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
 /* ===================== REGISTER (event) ===================== */
 function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
   const { user } = useAuth();
+  const [event, setEvent] = useState<any>(null);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && postId) {
+      supabase.from("event_cta").select("*").eq("post_id", postId).maybeSingle().then(({ data }) => setEvent(data));
+    }
+  }, [open, postId]);
+
   const c = cta.config_json ?? {};
-  const eventId: string | undefined = c.event_id;
   const fields: { key: string; label: string; required: boolean }[] =
     Array.isArray(c.fields) && c.fields.length > 0
       ? c.fields
       : [{ key: "name", label: "Nome", required: true }];
-
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const customFields = event?.custom_fields ?? [];
 
   const setVal = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }));
 
+  const formatDate = (d: string) => d ? new Date(d).toLocaleDateString("pt-BR") : "";
+  const formatTime = (t: string) => t || "";
+
   const send = async () => {
-    if (!eventId) { toast.error("Evento nao configurado"); return; }
+    if (!event) { toast.error("Evento não configurado"); return; }
     for (const f of fields) {
       if (f.required && !(values[f.key] ?? "").trim()) {
-        toast.error(`Campo obrigatorio: ${f.label}`); return;
+        toast.error(`Campo obrigatório: ${f.label}`); return;
       }
     }
     setLoading(true);
-    const [{ data: ev }, { count }] = await Promise.all([
-      supabase.from("events").select("capacity_limit").eq("id", eventId).maybeSingle(),
-      supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", eventId),
-    ]);
-    if (ev?.capacity_limit && (count ?? 0) >= ev.capacity_limit) {
-      toast.error("Inscricoes esgotadas"); setLoading(false); return;
+
+    if (event.max_participants) {
+      const { count } = await supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", event.id);
+      if ((count ?? 0) >= event.max_participants) {
+        toast.error("Inscrições esgotadas"); setLoading(false); return;
+      }
     }
+
     const payload: Record<string, string> = {};
     fields.forEach((f) => { payload[f.label] = (values[f.key] ?? "").trim(); });
+    customFields.forEach((cf: any) => { if (values[cf.name]) payload[cf.name] = values[cf.name]; });
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("name")
+      .eq("user_id", user?.id)
+      .maybeSingle();
+
+    const userName = values.name || profile?.name || user?.email?.split("@")[0] || "Usuário";
+
     const { error } = await supabase.from("event_registrations").insert({
-      event_id: eventId, user_id: user?.id ?? null,
-      payload_json: payload,
+      event_id: event.id,
+      post_id: postId,
+      tenant_id: tenantId,
+      user_id: user?.id ?? null,
+      name: values.name ?? null,
+      email: values.email ?? null,
+      phone: values.phone ?? null,
+      notes: values.notes ?? null,
+      answers: payload,
     });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "register", event_id: eventId } });
-    toast.success("Inscricao confirmada");
+    if (error) { 
+      if (error.code === "23505") {
+        toast.error("Você já está inscrito neste evento");
+      } else {
+        toast.error(error.message);
+      }
+      return; 
+    }
+
+    // Notify B2C user
+    await supabase.from("notifications").insert({
+      tenant_id: tenantId,
+      user_id: user?.id,
+      type: "event_registration_received",
+      title: "Inscrição recebida",
+      content: "Sua inscrição foi recebida. Em breve entraremos em contato.",
+      link: "/feed",
+    });
+
+    // Notify B2B owner
+    const { data: owners } = await supabase
+      .from("memberships")
+      .select("user_id")
+      .eq("tenant_id", tenantId)
+      .eq("role", "owner");
+
+    if (owners && owners.length > 0) {
+      let notificationContent = `Nova inscrição para: ${event.event_name}`;
+      notificationContent += `\nNome: ${values.name || "-"}`;
+      if (values.phone) notificationContent += `\nTelefone: ${values.phone}`;
+      if (values.email) notificationContent += `\nEmail: ${values.email}`;
+      
+      customFields.forEach((cf: any) => {
+        if (values[cf.name]) notificationContent += `\n${cf.name}: ${values[cf.name]}`;
+      });
+
+      for (const o of owners) {
+        if (o.user_id !== user?.id) {
+          await supabase.from("notifications").insert({
+            tenant_id: tenantId,
+            user_id: o.user_id,
+            type: "event_registration_pending",
+            title: "Nova inscrição recebida",
+            content: notificationContent,
+            link: "/notifications",
+          });
+        }
+      }
+    }
+
+    await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "register", event_id: event.id } });
+    toast.success("Inscrição recebida. Em breve entraremos em contato.");
     onClose();
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle className="font-display text-2xl">{cta.label}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl">{event?.event_name || cta.label}</DialogTitle>
+          {event && (
+            <div className="text-sm text-muted-foreground space-y-1">
+              {event.event_date && <p>{formatDate(event.event_date)} • {formatTime(event.event_time)}</p>}
+              {event.location && <p>{event.location}</p>}
+              {event.description && <p className="text-xs mt-2">{event.description}</p>}
+            </div>
+          )}
+        </DialogHeader>
         <div className="space-y-3">
           {fields.map((f) => (
             <div key={f.key}>
@@ -663,7 +750,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
               ) : (
                 <Input
                   id={`r-${f.key}`}
-                  type={f.key === "email" ? "email" : "text"}
+                  type={f.key === "email" ? "email" : f.key === "phone" ? "tel" : "text"}
                   value={values[f.key] ?? ""}
                   onChange={(e) => setVal(f.key, e.target.value)}
                   maxLength={120}
@@ -671,8 +758,20 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
               )}
             </div>
           ))}
+          {customFields.length > 0 && (
+            <>
+              <Separator className="my-2" />
+              <p className="text-sm font-medium">Informações adicionais</p>
+              {customFields.map((cf: any, idx: number) => (
+                <div key={idx}>
+                  <Label htmlFor={`cf-${idx}`}>{cf.name}</Label>
+                  <Input id={`cf-${idx}`} value={values[cf.name] ?? ""} onChange={(e) => setVal(cf.name, e.target.value)} maxLength={120} />
+                </div>
+              ))}
+            </>
+          )}
           <Button className="w-full bg-brand text-primary-foreground hover:opacity-90" onClick={send} disabled={loading}>
-            {loading ? "Inscrevendo…" : "Confirmar inscricao"}
+            {loading ? "Inscrevendo…" : "Participar"}
           </Button>
         </div>
       </DialogContent>

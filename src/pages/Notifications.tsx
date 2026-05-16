@@ -50,6 +50,25 @@ type BudgetRequest = {
   post_title?: string;
 };
 
+type EventRegistration = {
+  id: string;
+  event_id: string;
+  post_id: string;
+  tenant_id: string;
+  user_id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  answers: any;
+  status: string;
+  created_at: string;
+  event_name?: string;
+  event_date?: string;
+  event_time?: string;
+  location?: string;
+};
+
 type NotificationItem = {
   id: string;
   type: string;
@@ -67,6 +86,7 @@ export default function Notifications() {
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [appointments, setAppointments] = useState<AppointmentRequest[]>([]);
   const [budgetRequests, setBudgetRequests] = useState<BudgetRequest[]>([]);
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
@@ -205,6 +225,43 @@ export default function Notifications() {
         setBudgetRequests(enrichedBudgets);
       } else {
         setBudgetRequests([]);
+      }
+
+      // Load event registrations for B2B
+      const { data: events } = await supabase
+        .from("event_registrations")
+        .select("*")
+        .in("tenant_id", tenantIds)
+        .order("created_at", { ascending: false });
+
+      if (events && events.length > 0) {
+        const eventIds = events.map(e => e.event_id);
+        const eventUserIds = events.map(e => e.user_id);
+
+        const [{ data: eventCtas }, { data: profiles3 }] = await Promise.all([
+          supabase.from("event_cta").select("id, event_name, event_date, event_time, location").in("id", eventIds),
+          supabase.from("profiles").select("user_id, name, email").in("user_id", eventUserIds),
+        ]);
+
+        const eventMap: Record<string, any> = {};
+        (eventCtas || []).forEach((e: any) => { eventMap[e.id] = e; });
+
+        const profileMap3: Record<string, any> = {};
+        (profiles3 || []).forEach((p: any) => { profileMap3[p.user_id] = p; });
+
+        const enrichedEvents = events.map(e => ({
+          ...e,
+          name: profileMap3[e.user_id]?.name || e.name,
+          email: profileMap3[e.user_id]?.email || e.email,
+          event_name: eventMap[e.event_id]?.event_name || "Evento",
+          event_date: eventMap[e.event_id]?.event_date,
+          event_time: eventMap[e.event_id]?.event_time,
+          location: eventMap[e.event_id]?.location,
+        }));
+
+        setEventRegistrations(enrichedEvents);
+      } else {
+        setEventRegistrations([]);
       }
       
       const { data: notifs } = await supabase
@@ -359,6 +416,40 @@ export default function Notifications() {
 
     toast.success("Orçamento cancelado!");
     setBudgetRequests(prev => prev.map(b => b.id === budget.id ? { ...b, status: "cancelled" } : b));
+  };
+
+  const handleConfirmEventRegistration = async (registration: EventRegistration) => {
+    const { error } = await supabase.from("event_registrations").update({ status: "confirmed" }).eq("id", registration.id);
+    if (error) { toast.error("Erro ao confirmar"); return; }
+
+    await supabase.from("notifications").insert({
+      tenant_id: registration.tenant_id,
+      user_id: registration.user_id,
+      type: "event_registration_confirmed",
+      title: "Inscrição confirmada",
+      content: `Sua inscrição no evento "${registration.event_name}" foi confirmada!`,
+      link: "/feed",
+    });
+
+    toast.success("Inscrição confirmada!");
+    setEventRegistrations(prev => prev.map(r => r.id === registration.id ? { ...r, status: "confirmed" } : r));
+  };
+
+  const handleCancelEventRegistration = async (registration: EventRegistration) => {
+    const { error } = await supabase.from("event_registrations").update({ status: "cancelled" }).eq("id", registration.id);
+    if (error) { toast.error("Erro ao cancelar"); return; }
+
+    await supabase.from("notifications").insert({
+      tenant_id: registration.tenant_id,
+      user_id: registration.user_id,
+      type: "event_registration_cancelled",
+      title: "Inscrição cancelada",
+      content: `Sua inscrição no evento "${registration.event_name}" foi cancelada.`,
+      link: "/feed",
+    });
+
+    toast.success("Inscrição cancelada!");
+    setEventRegistrations(prev => prev.map(r => r.id === registration.id ? { ...r, status: "cancelled" } : r));
   };
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -599,8 +690,83 @@ export default function Notifications() {
               </div>
             )}
 
+            {/* Event Registrations */}
+            {eventRegistrations.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Inscrições em Eventos</h3>
+                {eventRegistrations.map(r => {
+                  const answers = typeof r.answers === 'object' ? r.answers : {};
+                  const answerKeys = Object.keys(answers).filter(k => !['Nome', 'Telefone', 'Email', 'Observação'].includes(k));
+                  return (
+                  <div key={r.id} className="bg-card border border-green-200 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{r.event_name || "Evento"}</p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {r.event_date ? new Date(r.event_date).toLocaleDateString("pt-BR") : ""} {r.event_time ? `• ${r.event_time}` : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        r.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                        r.status === "confirmed" ? "bg-green-100 text-green-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>
+                        {r.status === "pending" ? "Pendente" :
+                         r.status === "confirmed" ? "Confirmado" :
+                         "Cancelado"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1"><User className="h-3 w-3" /> {r.name || "Participante"}</div>
+                      {r.email && <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> {r.email}</div>}
+                      {r.phone && <div className="flex items-center gap-1"><span className="text-xs">📱</span> {r.phone}</div>}
+                    </div>
+                    {answerKeys.length > 0 && (
+                      <div className="bg-secondary/50 rounded-lg p-2 text-sm space-y-1">
+                        {answerKeys.map((key) => (
+                          <p key={key} className="text-muted-foreground">
+                            <span className="font-medium text-foreground">{key}:</span> {answers[key]}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {r.notes && (
+                      <div className="bg-secondary/50 rounded-lg p-2 text-sm">
+                        <p className="text-muted-foreground">{r.notes}</p>
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 pt-1">
+                      <Clock className="h-3 w-3" /> {formatDate(r.created_at)}
+                    </div>
+                    {r.status === "pending" && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" className="flex-1 gap-2" onClick={() => handleConfirmEventRegistration(r)}>
+                          <Check className="h-4 w-4" />Confirmar
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleCancelEventRegistration(r)}>
+                          <X className="h-4 w-4" />Cancelar
+                        </Button>
+                      </div>
+                    )}
+                    {r.status === "confirmed" && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleCancelEventRegistration(r)}>
+                          <X className="h-4 w-4" />Cancelar Inscrição
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )})}
+              </div>
+            )}
+
             {/* Empty state */}
-            {requests.length === 0 && appointments.length === 0 && budgetRequests.length === 0 && (
+            {requests.length === 0 && appointments.length === 0 && budgetRequests.length === 0 && eventRegistrations.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhuma solicitação pendente</p>
