@@ -39,8 +39,6 @@ export default function CommunityPage() {
     return params.get("slug") || params.get("s") || "";
   };
 
-  console.log("[CommunityPage] slug param:", slug, "communitySlug:", communitySlug);
-  
   const communitySlug = getSlugFromUrl();
   const [tenant, setTenant] = useState<PublicTenant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,14 +54,11 @@ export default function CommunityPage() {
     }
 
     (async () => {
-      console.log("[CommunityPage] Fetching tenant with slug:", communitySlug);
       const { data: tenantData, error: err } = await supabase
         .from("tenants")
         .select("id, name, slug, logo_url, bio, city")
         .eq("slug", communitySlug)
         .maybeSingle();
-
-      console.log("[CommunityPage] tenant result:", tenantData, "error:", err);
 
       if (err || !tenantData) {
         setError("Comunidade não encontrada");
@@ -93,6 +88,11 @@ export default function CommunityPage() {
         return;
       }
 
+      if (status === "blocked") {
+        setLoading(false);
+        return;
+      }
+
       const { data: mem } = await supabase
         .from("memberships")
         .select("id")
@@ -100,7 +100,24 @@ export default function CommunityPage() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!mem) {
+      if (mem) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: existingRequest } = await supabase
+        .from("community_requests")
+        .select("status")
+        .eq("tenant_id", tenantData.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingRequest?.status === "rejected") {
+        setLoading(false);
+        return;
+      }
+
+      if (!existingRequest || existingRequest.status === "pending") {
         await supabase.from("memberships").insert({
           tenant_id: tenantData.id,
           user_id: user.id,
@@ -123,8 +140,6 @@ export default function CommunityPage() {
     const result = await requestAccess(
       tenant.id,
       user.id,
-      user.user_metadata?.name || user.email?.split('@')[0] || "",
-      user.email || "",
     );
 
     if (result.success) {

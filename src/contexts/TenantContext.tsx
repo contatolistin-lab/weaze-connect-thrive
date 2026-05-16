@@ -74,6 +74,18 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
       sessionStorage.removeItem("weaze:pending_invite_slug");
     }
 
+    if (!targetTenant && list.length > 0) {
+      const activeTenantId = localStorage.getItem("weaze:active_tenant");
+      const activeTenant = list.find(t => t.id === activeTenantId);
+      if (activeTenant) {
+        targetTenant = activeTenant;
+        targetRole = roles[activeTenant.id];
+      } else {
+        targetTenant = list[0];
+        targetRole = roles[list[0].id];
+      }
+    }
+
     if (targetTenant && targetRole) {
       setTenant(targetTenant);
       setIsOwner(targetRole === "owner");

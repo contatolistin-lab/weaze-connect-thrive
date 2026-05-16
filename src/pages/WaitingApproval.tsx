@@ -120,9 +120,7 @@ export default function WaitingApproval() {
 
       if (request) {
         setStatus(request.status as "pending" | "approved" | "rejected");
-        // If already approved (old flow), create membership and redirect
-        if (request.status === "approved" || request.status === "pending") {
-          // Create membership automatically
+        if (request.status === "approved") {
           await supabase.from("memberships").insert({
             tenant_id: tenantData.id,
             user_id: user.id,
@@ -133,20 +131,31 @@ export default function WaitingApproval() {
           navigate("/feed", { replace: true });
           return;
         }
-      } else {
-        // No request exists - create membership directly (new flow)
-        const { error: membershipError } = await supabase
-          .from("memberships")
-          .insert({
-            tenant_id: tenantData.id,
-            user_id: user.id,
-            role: "member"
-          });
-        
-        if (membershipError) {
-          console.error("Error creating membership:", membershipError);
+        if (request.status === "rejected") {
+          setLoading(false);
+          return;
         }
-        
+      } else {
+        const { data: existingMembership } = await supabase
+          .from("memberships")
+          .select("id")
+          .eq("tenant_id", tenantData.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (existingMembership) {
+          localStorage.setItem("weaze:active_tenant", tenantData.id);
+          sessionStorage.setItem("just_joined_community", tenantData.id);
+          navigate("/feed", { replace: true });
+          return;
+        }
+
+        await supabase.from("memberships").insert({
+          tenant_id: tenantData.id,
+          user_id: user.id,
+          role: "member"
+        });
+
         localStorage.setItem("weaze:active_tenant", tenantData.id);
         sessionStorage.setItem("just_joined_community", tenantData.id);
         navigate("/feed", { replace: true });

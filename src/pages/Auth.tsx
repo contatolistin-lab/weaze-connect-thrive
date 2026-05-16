@@ -76,7 +76,11 @@ export default function Auth() {
     toast.success("Conta criada! Bem-vindo!");
 
     const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
-    nav(`/c/${pendingSlug}`, { replace: true });
+    if (pendingSlug) {
+      nav(`/c/${pendingSlug}`, { replace: true });
+    } else {
+      nav("/feed", { replace: true });
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -100,7 +104,11 @@ export default function Auth() {
     toast.success("Bem-vindo");
 
     const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
-    nav(`/c/${pendingSlug}`, { replace: true });
+    if (pendingSlug) {
+      nav(`/c/${pendingSlug}`, { replace: true });
+    } else {
+      nav("/feed", { replace: true });
+    }
   };
 
   return (
