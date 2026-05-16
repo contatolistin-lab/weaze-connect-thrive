@@ -125,23 +125,59 @@ function NewAppointmentDialog({ cta, postId, tenantId, open, onClose }: any) {
     if (!selectedTime || !user) return;
     setLoading(true);
 
-    console.log("[Appointment] postId:", postId, "ctaId:", cta.id);
+    console.log("[Appointment] postId:", postId, "ctaId:", cta.id, "config:", c);
 
-    const { data: appointmentCta, error: fetchError } = await supabase
+    let appointmentCtaId = null;
+
+    // Try to find existing appointment_cta
+    const { data: existingAppointment } = await supabase
       .from("appointment_cta")
       .select("id")
       .eq("post_id", postId)
       .maybeSingle();
 
-    if (!appointmentCta) {
-      console.log("[Appointment] fetchError:", fetchError);
-      toast.error(fetchError?.message || "Erro: agendamento não encontrado");
+    // If not found, create it based on config
+    if (!existingAppointment && c?.service_name) {
+      console.log("[Appointment] Creating new appointment_cta from config");
+      const { data: newAppointment, error: createError } = await supabase
+        .from("appointment_cta")
+        .insert({
+          post_id: postId,
+          tenant_id: tenantId,
+          service_name: c.service_name,
+          duration_minutes: c.duration_minutes || 60,
+          service_date: c.service_date,
+          available_times: c.available_times || [],
+          notes: c.notes || null,
+          max_bookings: c.max_bookings || 1,
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
+
+      if (createError) {
+        console.log("[Appointment] Create error:", createError);
+        toast.error("Erro ao criar agendamento");
+        setLoading(false);
+        return;
+      }
+
+      appointmentCtaId = newAppointment?.id;
+    } else {
+      appointmentCtaId = existingAppointment?.id;
+    }
+
+    if (!appointmentCtaId) {
+      console.log("[Appointment] No appointment ID found");
+      toast.error("Erro: agendamento não encontrado");
       setLoading(false);
       return;
     }
 
+    console.log("[Appointment] Using appointment ID:", appointmentCtaId);
+
     const { error } = await supabase.from("appointment_requests").insert({
-      appointment_id: appointmentCta.id,
+      appointment_id: appointmentCtaId,
       post_id: postId,
       tenant_id: tenantId,
       user_id: user.id,
