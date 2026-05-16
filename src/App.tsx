@@ -82,10 +82,15 @@ const WaitingApproval = lazy(() => import("./pages/WaitingApproval"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, loading } = useAuth();
-  const { loading: tenantLoading } = useTenant();
+  const { loading: tenantLoading, tenant } = useTenant();
 
-  if (loading || tenantLoading) return <Loading />;
+  if (!user && loading) return <Loading />;
   if (!user) return <Navigate to="/auth" replace />;
+
+  if (loading || tenantLoading) {
+    return <Loading />;
+  }
+
   return children;
 };
 
@@ -108,7 +113,7 @@ const B2BOnly = ({ children }: { children: JSX.Element }) => {
 };
 
 const NeedsTenant = ({ children }: { children: JSX.Element }) => {
-  const { loading } = useTenant();
+  const { loading, tenant } = useTenant();
   if (loading) return <Loading />;
   return children;
 };
