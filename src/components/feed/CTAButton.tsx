@@ -617,9 +617,16 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
 
   useEffect(() => {
     if (open && postId) {
-      supabase.from("event_cta").select("*").eq("post_id", postId).maybeSingle().then(({ data, error }) => {
+      supabase.rpc("get_event_by_post", { p_post_id: postId }).then(({ data, error }) => {
         console.log("[RegisterDialog] event_cta lookup:", postId, data, error);
-        setEvent(data);
+        if (error) {
+          console.error("[RegisterDialog] lookup error:", error);
+        }
+        if (data && data.length > 0) {
+          setEvent(data[0]);
+        }
+      }).catch((e) => {
+        console.error("[RegisterDialog] lookup catch:", e);
       });
     }
   }, [open, postId]);
@@ -664,43 +671,38 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
 
     const userName = values.name || profile?.name || user?.email?.split("@")[0] || "Usuário";
 
-    const insertData = {
-      event_id: event.id,
-      post_id: postId,
-      tenant_id: tenantId,
-      user_id: user?.id ?? null,
-      name: values.name ?? null,
-      email: values.email ?? null,
-      phone: values.phone ?? null,
-      notes: values.notes ?? null,
-    };
-
-    let error: any = null;
     let insertSuccess = false;
+    let error: any = null;
     
     try {
-      const result = await supabase.from("event_registrations").insert(insertData);
-      if (result.error) {
-        error = result.error;
-      } else {
+      const { data: regId, error: rpcError } = await supabase.rpc("create_event_registration", {
+        p_event_id: event.id,
+        p_post_id: postId,
+        p_tenant_id: tenantId,
+        p_user_id: user?.id ?? null,
+        p_name: values.name ?? null,
+        p_email: values.email ?? null,
+        p_phone: values.phone ?? null,
+        p_notes: values.notes ?? null,
+      });
+      
+      if (rpcError) {
+        error = rpcError;
+      } else if (regId) {
         insertSuccess = true;
+      } else {
+        error = { message: "Você já está inscrito neste evento" };
       }
     } catch (e: any) {
-      if (e.message?.includes("schema cache") || e.message?.includes("column") || e.message?.includes("event_cta") || e.message?.includes("event_registrations")) {
-        toast.error("Erro de configuração. Recarregue a página.");
-      } else {
-        error = e;
-      }
+      error = e;
     }
     
     setLoading(false);
     if (!insertSuccess) {
-      if (error?.code === "23505") {
+      if (error?.message?.includes("duplicate") || error?.code === "23505") {
         toast.error("Você já está inscrito neste evento");
-      } else if (error?.code === "23503") {
-        toast.error("Evento não encontrado. Recarregue a página.");
       } else if (error) {
-        toast.error(error.message);
+        toast.error(error.message || "Erro ao salvar");
       }
       return;
     }
