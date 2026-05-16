@@ -215,7 +215,19 @@ export default function CreatePost() {
         const f = REGISTER_FIELDS.find((x) => x.key === k)!;
         return { key: f.key, label: f.label, required: f.required };
       });
-      return { ok: true, config: { fields }, eventData: { event_name: eventName.trim(), description: eventDescription.trim() || null, event_date: eventDate || null, event_time: eventTime || null, location: eventLocation.trim() || null, max_participants: eventMaxParticipants ? parseInt(eventMaxParticipants) : null, custom_fields: eventCustomFields } };
+      return { ok: true, config: { 
+        fields, 
+        event_data: { 
+          event_name: eventName.trim(), 
+          description: eventDescription.trim() || null, 
+          event_date: eventDate || null, 
+          event_time: eventTime || null, 
+          location: eventLocation.trim() || null, 
+          max_participants: eventMaxParticipants ? parseInt(eventMaxParticipants) : null, 
+          custom_fields: eventCustomFields,
+          registrations: [] 
+        } 
+      } };
     }
     if (ctaType === "info") {
       if (infoMode === "external") {
@@ -326,22 +338,7 @@ if (ctaType !== "none") {
         if (appointmentErr) { toast.error(`Agendamento: ${appointmentErr.message}`); setLoading(false); return; }
       }
 
-      // Create event CTA if type is "register"
-      if (ctaType === "register" && ctaEventData) {
-        let eventErr = null;
-        try {
-          const { error: e } = await supabase.from("event_cta").insert({
-            post_id: post.id,
-            tenant_id: tenant.id,
-            ...ctaEventData,
-          });
-          eventErr = e;
-        } catch (e: any) {
-          console.error("Event CTA creation error:", e);
-          eventErr = e;
-        }
-        if (eventErr) { console.error("Event CTA error:", eventErr); toast.error(`Evento: ${eventErr.message || "Erro ao criar evento"}`); setLoading(false); return; }
-      }
+      // Event data is now stored directly in config_json
     }
 
     toast.success("Post publicado");

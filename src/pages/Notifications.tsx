@@ -227,42 +227,43 @@ export default function Notifications() {
         setBudgetRequests([]);
       }
 
-      // Load event registrations for B2B
-      const { data: events } = await supabase
-        .from("event_registrations")
-        .select("*")
+      // Load event registrations for B2B from config_json
+      const { data: ctas } = await supabase
+        .from("post_cta")
+        .select("id, post_id, config_json, tenant_id")
         .in("tenant_id", tenantIds)
-        .order("created_at", { ascending: false });
+        .eq("type", "register");
 
-      if (events && events.length > 0) {
-        const eventIds = events.map(e => e.event_id);
-        const eventUserIds = events.map(e => e.user_id);
-
-        const [{ data: eventCtas }, { data: profiles3 }] = await Promise.all([
-          supabase.from("event_cta").select("id, event_name, event_date, event_time, location").in("id", eventIds),
-          supabase.from("profiles").select("user_id, name, email").in("user_id", eventUserIds),
-        ]);
-
-        const eventMap: Record<string, any> = {};
-        (eventCtas || []).forEach((e: any) => { eventMap[e.id] = e; });
-
-        const profileMap3: Record<string, any> = {};
-        (profiles3 || []).forEach((p: any) => { profileMap3[p.user_id] = p; });
-
-        const enrichedEvents = events.map(e => ({
-          ...e,
-          name: profileMap3[e.user_id]?.name || e.name,
-          email: profileMap3[e.user_id]?.email || e.email,
-          event_name: eventMap[e.event_id]?.event_name || "Evento",
-          event_date: eventMap[e.event_id]?.event_date,
-          event_time: eventMap[e.event_id]?.event_time,
-          location: eventMap[e.event_id]?.location,
-        }));
-
-        setEventRegistrations(enrichedEvents);
-      } else {
-        setEventRegistrations([]);
+      const allRegistrations: any[] = [];
+      
+      if (ctas && ctas.length > 0) {
+        for (const cta of ctas) {
+          const eventData = cta.config_json?.event_data;
+          const registrations = eventData?.registrations || [];
+          
+          for (const reg of registrations) {
+            allRegistrations.push({
+              id: cta.id,
+              post_id: cta.post_id,
+              tenant_id: cta.tenant_id,
+              user_id: reg.user_id,
+              name: reg.user_name,
+              email: reg.user_email,
+              phone: reg.user_phone,
+              notes: reg.notes,
+              answers: reg.custom_answers,
+              created_at: reg.created_at,
+              event_name: eventData?.event_name,
+              event_date: eventData?.event_date,
+              event_time: eventData?.event_time,
+              location: eventData?.location,
+              status: "pending",
+            });
+          }
+        }
       }
+      
+      setEventRegistrations(allRegistrations);
       
       const { data: notifs } = await supabase
         .from("notifications")
@@ -419,9 +420,6 @@ export default function Notifications() {
   };
 
   const handleConfirmEventRegistration = async (registration: EventRegistration) => {
-    const { error } = await supabase.from("event_registrations").update({ status: "confirmed" }).eq("id", registration.id);
-    if (error) { toast.error("Erro ao confirmar"); return; }
-
     await supabase.from("notifications").insert({
       tenant_id: registration.tenant_id,
       user_id: registration.user_id,
@@ -436,9 +434,6 @@ export default function Notifications() {
   };
 
   const handleCancelEventRegistration = async (registration: EventRegistration) => {
-    const { error } = await supabase.from("event_registrations").update({ status: "cancelled" }).eq("id", registration.id);
-    if (error) { toast.error("Erro ao cancelar"); return; }
-
     await supabase.from("notifications").insert({
       tenant_id: registration.tenant_id,
       user_id: registration.user_id,

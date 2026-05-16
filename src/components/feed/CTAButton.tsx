@@ -611,32 +611,16 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
 /* ===================== REGISTER (event) ===================== */
 function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
   const { user } = useAuth();
-  const [event, setEvent] = useState<any>(null);
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (open && postId) {
-      supabase.rpc("get_event_by_post", { p_post_id: postId }).then(({ data, error }) => {
-        console.log("[RegisterDialog] event_cta lookup:", postId, data, error);
-        if (error) {
-          console.error("[RegisterDialog] lookup error:", error);
-        }
-        if (data && data.length > 0) {
-          setEvent(data[0]);
-        }
-      }).catch((e) => {
-        console.error("[RegisterDialog] lookup catch:", e);
-      });
-    }
-  }, [open, postId]);
-
   const c = cta.config_json ?? {};
+  const eventData = c.event_data ?? {};
   const fields: { key: string; label: string; required: boolean }[] =
     Array.isArray(c.fields) && c.fields.length > 0
       ? c.fields
       : [{ key: "name", label: "Nome", required: true }];
-  const customFields = event?.custom_fields ?? [];
+  const customFields = eventData.custom_fields ?? [];
+
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const setVal = (k: string, v: string) => setValues((p) => ({ ...p, [k]: v }));
 
@@ -644,24 +628,12 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
   const formatTime = (t: string) => t || "";
 
   const send = async () => {
-    if (!event) { toast.error("Evento não configurado"); return; }
     for (const f of fields) {
       if (f.required && !(values[f.key] ?? "").trim()) {
         toast.error(`Campo obrigatório: ${f.label}`); return;
       }
     }
     setLoading(true);
-
-    if (event.max_participants) {
-      const { count } = await supabase.from("event_registrations").select("*", { count: "exact", head: true }).eq("event_id", event.id);
-      if ((count ?? 0) >= event.max_participants) {
-        toast.error("Inscrições esgotadas"); setLoading(false); return;
-      }
-    }
-
-    const payload: Record<string, string> = {};
-    fields.forEach((f) => { payload[f.label] = (values[f.key] ?? "").trim(); });
-    customFields.forEach((cf: any) => { if (values[cf.name]) payload[cf.name] = values[cf.name]; });
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -670,44 +642,52 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       .maybeSingle();
 
     const userName = values.name || profile?.name || user?.email?.split("@")[0] || "Usuário";
+    const now = new Date().toISOString();
 
-    let insertSuccess = false;
-    let error: any = null;
+    const registration = {
+      user_id: user?.id,
+      user_name: values.name || userName,
+      user_email: values.email ?? null,
+      user_phone: values.phone ?? null,
+      notes: values.notes ?? null,
+      custom_answers: customFields.reduce((acc: any, cf: any) => {
+        if (values[cf.name]) acc[cf.name] = values[cf.name];
+        return acc;
+      }, {}),
+      created_at: now,
+    };
+
+    const currentRegistrations = eventData.registrations ?? [];
     
-    try {
-      const { data: regId, error: rpcError } = await supabase.rpc("create_event_registration", {
-        p_event_id: event.id,
-        p_post_id: postId,
-        p_tenant_id: tenantId,
-        p_user_id: user?.id ?? null,
-        p_name: values.name ?? null,
-        p_email: values.email ?? null,
-        p_phone: values.phone ?? null,
-        p_notes: values.notes ?? null,
-      });
-      
-      if (rpcError) {
-        error = rpcError;
-      } else if (regId) {
-        insertSuccess = true;
-      } else {
-        error = { message: "Você já está inscrito neste evento" };
-      }
-    } catch (e: any) {
-      error = e;
-    }
-    
-    setLoading(false);
-    if (!insertSuccess) {
-      if (error?.message?.includes("duplicate") || error?.code === "23505") {
-        toast.error("Você já está inscrito neste evento");
-      } else if (error) {
-        toast.error(error.message || "Erro ao salvar");
-      }
+    const existingReg = currentRegistrations.find((r: any) => r.user_id === user?.id);
+    if (existingReg) {
+      setLoading(false);
+      toast.error("Você já está inscrito neste evento");
       return;
     }
 
-    // Notify B2C user
+    if (eventData.max_participants && currentRegistrations.length >= eventData.max_participants) {
+      setLoading(false);
+      toast.error("Inscrições esgotadas");
+      return;
+    }
+
+    const newRegistrations = [...currentRegistrations, registration];
+    const newEventData = { ...eventData, registrations: newRegistrations };
+
+    const { error: updateError } = await supabase
+      .from("post_cta")
+      .update({ config_json: { ...c, event_data: newEventData } })
+      .eq("post_id", postId)
+      .eq("type", "register");
+
+    setLoading(false);
+
+    if (updateError) {
+      toast.error(updateError.message);
+      return;
+    }
+
     await supabase.from("notifications").insert({
       tenant_id: tenantId,
       user_id: user?.id,
@@ -717,7 +697,6 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       link: "/feed",
     });
 
-    // Notify B2B owner
     const { data: owners } = await supabase
       .from("memberships")
       .select("user_id")
@@ -725,7 +704,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       .eq("role", "owner");
 
     if (owners && owners.length > 0) {
-      let notificationContent = `Nova inscrição para: ${event.event_name}`;
+      let notificationContent = `Nova inscrição para: ${eventData.event_name}`;
       notificationContent += `\nNome: ${values.name || "-"}`;
       if (values.phone) notificationContent += `\nTelefone: ${values.phone}`;
       if (values.email) notificationContent += `\nEmail: ${values.email}`;
@@ -748,7 +727,7 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       }
     }
 
-    await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "register", event_id: event.id } });
+    await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "register" } });
     toast.success("Inscrição recebida. Em breve entraremos em contato.");
     onClose();
   };
@@ -757,14 +736,12 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">{event?.event_name || cta.label}</DialogTitle>
-          {event && (
-            <div className="text-sm text-muted-foreground space-y-1">
-              {event.event_date && <p>{formatDate(event.event_date)} • {formatTime(event.event_time)}</p>}
-              {event.location && <p>{event.location}</p>}
-              {event.description && <p className="text-xs mt-2">{event.description}</p>}
-            </div>
-          )}
+          <DialogTitle className="font-display text-2xl">{eventData.event_name || cta.label}</DialogTitle>
+          <div className="text-sm text-muted-foreground space-y-1">
+            {eventData.event_date && <p>{formatDate(eventData.event_date)} • {formatTime(eventData.event_time)}</p>}
+            {eventData.location && <p>{eventData.location}</p>}
+            {eventData.description && <p className="text-xs mt-2">{eventData.description}</p>}
+          </div>
         </DialogHeader>
         <div className="space-y-3">
           {fields.map((f) => (
