@@ -180,7 +180,7 @@ export default function CreatePost() {
       };
     }
     if (ctaType === "schedule") {
-      const isNewSystem = !serviceId;
+      const isNewSystem = scheduleServiceName.trim().length > 0;
       if (isNewSystem) {
         if (!scheduleServiceName.trim()) return { ok: false, error: "Nome do serviço obrigatório" };
         if (!scheduleDate) return { ok: false, error: "Data obrigatória" };
@@ -302,7 +302,8 @@ if (ctaType !== "none") {
 
       // Create appointment CTA if type is "schedule" with new system
       if (ctaType === "schedule" && ctaConfig?.type === "appointment") {
-        const { error: appointmentErr } = await supabase.from("appointment_cta").insert({
+        console.log("[CreatePost] Creating appointment_cta with config:", ctaConfig);
+        const { data: appointmentData, error: appointmentErr } = await supabase.from("appointment_cta").insert({
           post_id: post.id,
           tenant_id: tenant.id,
           service_name: ctaConfig.service_name,
@@ -312,7 +313,8 @@ if (ctaType !== "none") {
           notes: ctaConfig.notes,
           max_bookings: ctaConfig.max_bookings,
           created_by: user.id,
-        });
+        }).select();
+        console.log("[CreatePost] appointment_cta result:", appointmentData, "error:", appointmentErr);
         if (appointmentErr) { toast.error(`Agendamento: ${appointmentErr.message}`); setLoading(false); return; }
       }
     }

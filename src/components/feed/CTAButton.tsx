@@ -107,8 +107,10 @@ function NewAppointmentDialog({ cta, postId, tenantId, open, onClose }: any) {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  console.log("[NewAppointmentDialog] cta:", cta, "postId:", postId);
+
   const availableTimes: string[] = c.available_times ?? [];
-  const serviceName = c.service_name ?? "Serviço";
+  const serviceName = c.service_name ?? cta.label ?? "Serviço";
   const serviceDate = c.service_date ?? "";
   const duration = c.duration_minutes ?? 60;
   const notes = c.notes ?? "";
