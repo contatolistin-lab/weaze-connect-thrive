@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
 import { Button } from "@/components/ui/button";
-import { Bell, Check, X, User, Mail, Users, Clock, MessageSquare } from "lucide-react";
+import { Bell, Check, X, User, Mail, Users, Clock, MessageSquare, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 type PendingRequest = {
@@ -16,6 +16,22 @@ type PendingRequest = {
   profile_name?: string | null;
   profile_email?: string;
   tenant_name?: string;
+};
+
+type AppointmentRequest = {
+  id: string;
+  appointment_id: string;
+  post_id: string;
+  tenant_id: string;
+  user_id: string;
+  selected_time: string;
+  message: string | null;
+  status: string;
+  created_at: string;
+  profile_name?: string | null;
+  profile_email?: string;
+  service_name?: string;
+  service_date?: string;
 };
 
 type NotificationItem = {
@@ -33,6 +49,7 @@ export default function Notifications() {
   const { tenants } = useTenant();
   const navigate = useNavigate();
   const [requests, setRequests] = useState<PendingRequest[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentRequest[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
@@ -103,6 +120,41 @@ export default function Notifications() {
       } else {
         setRequests([]);
       }
+
+      // Load appointments for B2B
+      const { data: appts } = await supabase
+        .from("appointment_requests")
+        .select("*")
+        .in("tenant_id", tenantIds)
+        .order("created_at", { ascending: false });
+
+      if (appts && appts.length > 0) {
+        const apptUserIds = appts.map(a => a.user_id);
+        const apptIds = appts.map(a => a.appointment_id);
+
+        const [{ data: profiles }, { data: ctas }] = await Promise.all([
+          supabase.from("profiles").select("user_id, name, email").in("user_id", apptUserIds),
+          supabase.from("appointment_cta").select("id, service_name, service_date").in("id", apptIds),
+        ]);
+
+        const profileMap: Record<string, any> = {};
+        (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+
+        const ctaMap: Record<string, any> = {};
+        (ctas || []).forEach((c: any) => { ctaMap[c.id] = c; });
+
+        const enrichedAppts = appts.map(a => ({
+          ...a,
+          profile_name: profileMap[a.user_id]?.name || null,
+          profile_email: profileMap[a.user_id]?.email || "",
+          service_name: ctaMap[a.appointment_id]?.service_name || "Serviço",
+          service_date: ctaMap[a.appointment_id]?.service_date || "",
+        }));
+
+        setAppointments(enrichedAppts);
+      } else {
+        setAppointments([]);
+      }
       
       const { data: notifs } = await supabase
         .from("notifications")
@@ -133,6 +185,27 @@ export default function Notifications() {
     if (error) { toast.error("Erro ao recusar"); return; }
     toast.success("Solicitação recusada");
     setRequests(prev => prev.filter(r => r.id !== requestId));
+  };
+
+  const handleApproveAppointment = async (appt: AppointmentRequest) => {
+    const { error } = await supabase.from("appointment_requests").update({ status: "approved" }).eq("id", appt.id);
+    if (error) { toast.error("Erro ao aprovar"); return; }
+    toast.success("Agendamento aprovado!");
+    setAppointments(prev => prev.map(a => a.id === appt.id ? { ...a, status: "approved" } : a));
+  };
+
+  const handleCompleteAppointment = async (appt: AppointmentRequest) => {
+    const { error } = await supabase.from("appointment_requests").update({ status: "completed" }).eq("id", appt.id);
+    if (error) { toast.error("Erro ao concluir"); return; }
+    toast.success("Agendamento concluído!");
+    setAppointments(prev => prev.map(a => a.id === appt.id ? { ...a, status: "completed" } : a));
+  };
+
+  const handleCancelAppointment = async (appt: AppointmentRequest) => {
+    const { error } = await supabase.from("appointment_requests").update({ status: "cancelled" }).eq("id", appt.id);
+    if (error) { toast.error("Erro ao cancelar"); return; }
+    toast.success("Agendamento cancelado!");
+    setAppointments(prev => prev.map(a => a.id === appt.id ? { ...a, status: "cancelled" } : a));
   };
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -169,31 +242,104 @@ export default function Notifications() {
 
       <div className="max-w-xl mx-auto px-4 py-6">
         {activeTab === "requests" && isOwner ? (
-          <div className="space-y-4">
-            {requests.length === 0 ? (
+          <div className="space-y-6">
+            {/* Access Requests */}
+            {requests.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Solicitações de acesso</h3>
+                {requests.map(r => (
+                  <div key={r.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-brand/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-brand" />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{r.profile_name || "Usuário"}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" /> {r.profile_email || "-"}</p>
+                      </div>
+                    </div>
+                    {r.tenant_name && <p className="text-sm text-purple-600 font-medium">Comunidade: {r.tenant_name}</p>}
+                    <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {formatDate(r.created_at)}</div>
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" className="flex-1 gap-2" onClick={() => handleApprove(r)}><Check className="h-4 w-4" />Aprovar</Button>
+                      <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleReject(r.id)}><X className="h-4 w-4" />Recusar</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Appointments */}
+            {appointments.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">Agendamentos</h3>
+                {appointments.map(a => (
+                  <div key={a.id} className="bg-card border border-purple-200 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{a.service_name || "Serviço"}</p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {a.selected_time} • {a.service_date ? new Date(a.service_date).toLocaleDateString("pt-BR") : ""}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        a.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                        a.status === "approved" ? "bg-green-100 text-green-700" :
+                        a.status === "completed" ? "bg-blue-100 text-blue-700" :
+                        "bg-red-100 text-red-700"
+                      }`}>
+                        {a.status === "pending" ? "Pendente" :
+                         a.status === "approved" ? "Aprovado" :
+                         a.status === "completed" ? "Concluído" :
+                         "Cancelado"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1"><User className="h-3 w-3" /> {a.profile_name || "Cliente"}</div>
+                      <div className="flex items-center gap-1"><Mail className="h-3 w-3" /> {a.profile_email || "-"}</div>
+                    </div>
+                    {a.message && (
+                      <div className="bg-secondary/50 rounded-lg p-2 text-sm">
+                        <p className="text-muted-foreground">{a.message}</p>
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground flex items-center gap-1 pt-1">
+                      <Clock className="h-3 w-3" /> {formatDate(a.created_at)}
+                    </div>
+                    {a.status === "pending" && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" className="flex-1 gap-2" onClick={() => handleApproveAppointment(a)}>
+                          <Check className="h-4 w-4" />Aprovar
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleCancelAppointment(a)}>
+                          <X className="h-4 w-4" />Cancelar
+                        </Button>
+                      </div>
+                    )}
+                    {a.status === "approved" && (
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" className="w-full gap-2" onClick={() => handleCompleteAppointment(a)}>
+                          <Check className="h-4 w-4" />Concluir Agendamento
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {requests.length === 0 && appointments.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhuma solicitação pendente</p>
               </div>
-            ) : requests.map(r => (
-              <div key={r.id} className="bg-card border border-border rounded-2xl p-4 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-brand/10 flex items-center justify-center">
-                    <User className="h-5 w-5 text-brand" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{r.profile_name || "Usuário"}</p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" /> {r.profile_email || "-"}</p>
-                  </div>
-                </div>
-                {r.tenant_name && <p className="text-sm text-purple-600 font-medium">Comunidade: {r.tenant_name}</p>}
-                <div className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {formatDate(r.created_at)}</div>
-                <div className="flex gap-2 pt-2">
-                  <Button size="sm" className="flex-1 gap-2" onClick={() => handleApprove(r)}><Check className="h-4 w-4" />Aprovar</Button>
-                  <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleReject(r.id)}><X className="h-4 w-4" />Recusar</Button>
-                </div>
-              </div>
-            ))}
+            )}
           </div>
         ) : (
           <div className="space-y-3">
