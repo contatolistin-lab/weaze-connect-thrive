@@ -228,47 +228,60 @@ export default function Notifications() {
       }
 
       // Load event registrations for B2B from config_json
-      const { data: allCtas } = await supabase
+      const { data: allCtas, error: ctasError } = await supabase
         .from("post_cta")
-        .select("id, post_id, config_json, tenant_id, type")
-        .in("tenant_id", tenantIds);
+        .select("id, post_id, config_json, tenant_id, type");
+
+      console.log("[Notifications] Error:", ctasError);
+      console.log("[Notifications] All CTAs count:", allCtas?.length);
       
-      console.log("[Notifications] All CTAs:", allCtas?.map(c => ({ id: c.id, type: c.type, hasEventData: !!c.config_json?.event_data })));
-
-      const registerCtas = allCtas?.filter(c => c.type === "register") || [];
-      console.log("[Notifications] Register CTAs:", registerCtas);
-
       const allRegistrations: any[] = [];
       
-      for (const cta of registerCtas) {
-        const configJson = typeof cta.config_json === 'string' ? JSON.parse(cta.config_json) : cta.config_json;
-        const eventData = configJson?.event_data;
-        const registrations = eventData?.registrations || [];
-        
-        console.log("[Notifications] Event data for CTA", cta.id, ":", eventData, "registrations:", registrations);
-        
-        for (const reg of registrations) {
-          allRegistrations.push({
-            id: cta.id,
-            post_id: cta.post_id,
-            tenant_id: cta.tenant_id,
-            user_id: reg.user_id,
-            name: reg.user_name,
-            email: reg.user_email,
-            phone: reg.user_phone,
-            notes: reg.notes,
-            answers: reg.custom_answers,
-            created_at: reg.created_at,
-            event_name: eventData?.event_name,
-            event_date: eventData?.event_date,
-            event_time: eventData?.event_time,
-            location: eventData?.location,
-            status: "pending",
-          });
+      if (allCtas && allCtas.length > 0) {
+        for (const cta of allCtas) {
+          // Skip if tenant not in our list
+          if (tenantIds && tenantIds.length > 0 && !tenantIds.includes(cta.tenant_id)) {
+            continue;
+          }
+          
+          // Skip if not register type
+          if (cta.type !== "register") continue;
+          
+          let configJson = cta.config_json;
+          if (typeof configJson === "string") {
+            try { configJson = JSON.parse(configJson); } catch { continue; }
+          }
+          
+          if (!configJson) continue;
+          
+          const eventData = configJson.event_data;
+          if (!eventData || !eventData.registrations) continue;
+          
+          console.log("[Notifications] Found register CTA:", cta.id, "registrations:", eventData.registrations.length);
+          
+          for (const reg of eventData.registrations) {
+            allRegistrations.push({
+              id: cta.id + "_" + (reg.user_id || Math.random()),
+              post_id: cta.post_id,
+              tenant_id: cta.tenant_id,
+              user_id: reg.user_id,
+              name: reg.user_name || "Participante",
+              email: reg.user_email,
+              phone: reg.user_phone,
+              notes: reg.notes,
+              answers: reg.custom_answers,
+              created_at: reg.created_at,
+              event_name: eventData.event_name || "Evento",
+              event_date: eventData.event_date,
+              event_time: eventData.event_time,
+              location: eventData.location,
+              status: "pending",
+            });
+          }
         }
       }
       
-      console.log("[Notifications] All registrations:", allRegistrations);
+      console.log("[Notifications] Total event registrations found:", allRegistrations.length);
       setEventRegistrations(allRegistrations);
       
       const { data: notifs } = await supabase

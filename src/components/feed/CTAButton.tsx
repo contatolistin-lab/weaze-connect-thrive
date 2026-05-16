@@ -674,12 +674,17 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
 
     const newRegistrations = [...currentRegistrations, registration];
     const newEventData = { ...eventData, registrations: newRegistrations };
+    
+    console.log("[RegisterDialog] Saving registration to post_id:", postId);
+    console.log("[RegisterDialog] New event data:", newEventData);
 
     const { error: updateError } = await supabase
       .from("post_cta")
       .update({ config_json: { ...c, event_data: newEventData } })
       .eq("post_id", postId)
       .eq("type", "register");
+
+    console.log("[RegisterDialog] Update error:", updateError);
 
     setLoading(false);
 
