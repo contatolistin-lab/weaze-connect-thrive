@@ -20,7 +20,7 @@ const signupSchema = z.object({
 
 export default function Auth() {
   const nav = useNavigate();
-  const { loading: authLoading, user } = useAuth();
+  const { loading: authLoading, user, appRole } = useAuth();
   const [loading, setLoading] = useState(false);
   const [fromInvite, setFromInvite] = useState(false);
   const [inviteTenantName, setInviteTenantName] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export default function Auth() {
   }, []);
 
   useEffect(() => {
-    if (user && !authLoading && loading === false) {
+    if (user && !authLoading && loading === false && appRole !== null) {
       const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
       if (pendingSlug) {
         nav(`/c/${pendingSlug}`, { replace: true });
@@ -48,7 +48,7 @@ export default function Auth() {
         nav("/feed", { replace: true });
       }
     }
-  }, [user, authLoading, loading, nav]);
+  }, [user, authLoading, loading, appRole, nav]);
 
   if (authLoading) {
     return (
