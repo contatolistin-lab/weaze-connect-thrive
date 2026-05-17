@@ -127,6 +127,8 @@ export default function FeedItem({ post, active, onDelete }: { post: Post; activ
   const canDeletePost = canManage || (user && post.author_id === user.id);
   const canEditPost = canManage || (user && post.author_id === user.id);
   
+  console.log("[FeedItem] canEdit:", canEditPost, "canDelete:", canDeletePost, "author_id:", post.author_id, "user:", user?.id, "canManage:", canManage);
+  
   const showSocialActions = appRole !== "b2b" && appRole !== "admin";
 
   useEffect(() => {
