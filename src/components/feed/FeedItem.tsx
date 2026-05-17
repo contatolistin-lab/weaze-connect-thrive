@@ -124,10 +124,12 @@ export default function FeedItem({ post, active, onDelete }: { post: Post; activ
   const [savingDelete, setSavingDelete] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  const canDeletePost = canManage || (user && post.author_id === user.id);
-  const canEditPost = canManage || (user && post.author_id === user.id);
+  const isPostAuthor = user && post.author_id === user.id;
+  const canDeletePost = canManage || isPostAuthor;
+  const canEditPost = canManage || isPostAuthor;
   
-  console.log("[FeedItem] canEdit:", canEditPost, "canDelete:", canDeletePost, "author_id:", post.author_id, "user:", user?.id, "canManage:", canManage);
+  // Debug: log dos IDs para auditoria
+  console.log("[FeedItem Debug] post.author_id:", post.author_id, "user.id:", user?.id, "isPostAuthor:", isPostAuthor, "canManage:", canManage);
   
   const showSocialActions = appRole !== "b2b" && appRole !== "admin";
 
