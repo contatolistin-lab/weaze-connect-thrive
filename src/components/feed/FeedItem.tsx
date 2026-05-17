@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, MessageCircle, Share2, Volume2, VolumeX, MessageSquare, MessageSquareText, Play, Pencil } from "lucide-react";
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, MessageSquare, MessageSquareText, Play, Pencil, MoreVertical, Trash2 } from "lucide-react";
 import { track } from "@/lib/tracking";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
@@ -122,6 +122,7 @@ export default function FeedItem({ post, active, onDelete }: { post: Post; activ
   const [editContent, setEditContent] = useState(post.description || "");
   const [savingEdit, setSavingEdit] = useState(false);
   const [savingDelete, setSavingDelete] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const canDeletePost = canManage || (user && post.author_id === user.id);
   const canEditPost = canManage || (user && post.author_id === user.id);
@@ -493,15 +494,36 @@ export default function FeedItem({ post, active, onDelete }: { post: Post; activ
           </>
         )}
         {(canEditPost || canDeletePost) && (
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex flex-col items-center gap-1 relative">
             <button
-              onClick={(e) => { e.stopPropagation(); setShowEditDialog(true); }}
+              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
               className="flex flex-col items-center gap-1"
-              aria-label="Editar"
+              aria-label="Mais opções"
             >
-              <Pencil className="h-7 w-7 drop-shadow-md text-background" />
-              <span className="text-xs font-semibold drop-shadow-md">Editar</span>
+              <MoreVertical className="h-7 w-7 drop-shadow-md text-background" />
             </button>
+            {showMenu && (
+              <div className="absolute right-0 bottom-full mb-2 bg-card rounded-xl shadow-lg border border-border py-1 z-50 min-w-[140px]">
+                {canEditPost && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); setShowEditDialog(true); }}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-secondary flex items-center gap-2"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Editar postagem
+                  </button>
+                )}
+                {canDeletePost && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowMenu(false); setShowDeleteDialog(true); }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir postagem
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
