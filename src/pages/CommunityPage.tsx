@@ -22,13 +22,15 @@ export default function CommunityPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isB2B } = useAuth();
-  const { refresh } = useTenant();
+  const { refresh, selectTenant } = useTenant();
   
   const enterCommunity = async () => {
     if (tenant) {
       localStorage.setItem("weaze:pending_invite_slug", tenant.slug);
       sessionStorage.setItem("weaze:pending_invite_slug", tenant.slug);
       await refresh();
+      selectTenant(tenant.id);
+      localStorage.setItem("weaze:active_tenant", tenant.id);
       navigate("/feed", { replace: true });
     } else {
       navigate("/feed");

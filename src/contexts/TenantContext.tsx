@@ -77,12 +77,25 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     if (!targetTenant && list.length > 0) {
       const activeTenantId = localStorage.getItem("weaze:active_tenant");
       const activeTenant = list.find(t => t.id === activeTenantId);
-      if (activeTenant) {
+      if (activeTenant && roles[activeTenant.id]) {
         targetTenant = activeTenant;
         targetRole = roles[activeTenant.id];
       } else {
         targetTenant = list[0];
         targetRole = roles[list[0].id];
+        localStorage.setItem("weaze:active_tenant", list[0].id);
+      }
+    }
+
+    if (targetTenant && !roles[targetTenant.id]) {
+      if (list.length > 0) {
+        targetTenant = list[0];
+        targetRole = roles[list[0].id];
+        localStorage.setItem("weaze:active_tenant", list[0].id);
+      } else {
+        targetTenant = null;
+        targetRole = null;
+        localStorage.removeItem("weaze:active_tenant");
       }
     }
 
