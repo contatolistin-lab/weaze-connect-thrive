@@ -121,9 +121,12 @@ export default function GroupsPage() {
   };
 
   const handleSearchMembers = (query: string) => {
-    if (tenant && selectedGroup) {
-      searchMembers(tenant.id, selectedGroup.id, query);
+    if (!tenant?.id || !selectedGroup) {
+      console.log("[GroupsPage] Search blocked: tenant=", tenant?.id, "group=", selectedGroup?.id);
+      return;
     }
+    console.log("[GroupsPage] Searching members:", { query, tenantId: tenant.id, groupId: selectedGroup.id });
+    searchMembers(tenant.id, selectedGroup.id, query);
   };
 
   if (loading) {

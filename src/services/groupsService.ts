@@ -110,12 +110,19 @@ export const groupsService = {
     query: string,
     limit: number = 15
   ): Promise<{ data: MemberSearchResult[]; error: string | null }> {
-    if (query.length < 3) return { data: [], error: null };
+    console.log("[groupsService] searchMembers called:", { tenantId, groupId, query, length: query.length });
+    
+    if (query.length < 3) {
+      console.log("[groupsService] Query too short, skipping");
+      return { data: [], error: null };
+    }
 
     const { data: membersInGroup, error: groupError } = await supabase
       .from("group_members")
       .select("user_id")
       .eq("group_id", groupId);
+
+    console.log("[groupsService] Members in group:", membersInGroup?.length || 0, groupError);
 
     if (groupError) return { data: [], error: groupError.message };
 
@@ -128,11 +135,15 @@ export const groupsService = {
       .eq("is_active", true)
       .neq("role", "owner");
 
+    console.log("[groupsService] Memberships found:", membershipsData?.length || 0, memError);
+
     if (memError) return { data: [], error: memError.message };
 
     const availableUserIds = (membershipsData || [])
       .map((m) => m.user_id)
       .filter((id) => !excludedUserIds.includes(id));
+
+    console.log("[groupsService] Available user IDs:", availableUserIds.length);
 
     if (availableUserIds.length === 0) return { data: [], error: null };
 
@@ -141,6 +152,8 @@ export const groupsService = {
       .select("id, name, avatar_url")
       .in("id", availableUserIds)
       .ilike("name", `%${query}%`);
+
+    console.log("[groupsService] Profiles found:", profilesData?.length || 0, profileError);
 
     if (profileError) return { data: [], error: profileError.message };
 
@@ -152,6 +165,7 @@ export const groupsService = {
         avatar_url: p.avatar_url,
       }));
 
+    console.log("[groupsService] Final result:", result.length);
     return { data: result, error: null };
   },
 
