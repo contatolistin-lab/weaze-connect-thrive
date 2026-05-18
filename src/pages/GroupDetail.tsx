@@ -8,7 +8,10 @@ import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { ArrowLeft, Users, UserMinus } from "lucide-react";
+import { ArrowLeft, Users, UserPlus, UserMinus } from "lucide-react";
+import { AddMembersModal } from "@/components/groups/AddMembersModal";
+import { useGroupMembers } from "@/hooks/groups/useGroupMembers";
+import { groupsService } from "@/services/groupsService";
 
 type GroupMember = {
   id: string;
@@ -35,6 +38,16 @@ export default function GroupDetail() {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [showAddMembers, setShowAddMembers] = useState(false);
+
+  const {
+    searchResults,
+    searching,
+    loadMembers,
+    addMember,
+    searchMembers,
+    clearSearch,
+  } = useGroupMembers();
 
   useEffect(() => {
     if (!user || !canManage || !tenant || !groupId) {
@@ -48,47 +61,59 @@ export default function GroupDetail() {
     if (!groupId || !tenant) return;
     setLoading(true);
 
-    const { data: groupData, error: groupError } = await supabase
-      .from("groups")
-      .select("id, name, type")
-      .eq("id", groupId)
-      .single();
+    const result = await groupsService.getGroup(groupId);
+    setLoading(false);
 
-    if (groupError || !groupData) {
+    if (result.error || !result.data) {
       toast.error("Grupo não encontrado");
       navigate("/groups");
       return;
     }
-    setGroup(groupData);
+    setGroup(result.data);
+    loadMembers(groupId);
+  };
 
-    const { data: membersData, error: membersError } = await supabase
-      .from("group_members")
-      .select("*, profiles(name, avatar_url)")
-      .eq("group_id", groupId)
-      .order("created_at", { ascending: true });
-
-    setLoading(false);
-
-    if (membersError) {
-      toast.error("Erro ao carregar membros");
-      setMembers([]);
-    } else {
-      setMembers(membersData || []);
+  useEffect(() => {
+    if (groupId) {
+      const result = groupsService.getMembers(groupId);
+      result.then((res) => {
+        if (res.error) {
+          toast.error("Erro ao carregar membros: " + res.error);
+        } else {
+          setMembers(res.data);
+        }
+      });
     }
+  }, [groupId]);
+
+  const handleAddMember = async (userId: string) => {
+    if (!groupId || !user) return;
+    const result = await addMember(groupId, userId, user.id);
+    if (!result.success) {
+      toast.error(result.error || "Erro ao adicionar membro");
+    } else {
+      toast.success("Membro adicionado!");
+      setShowAddMembers(false);
+      clearSearch();
+      const res = await groupsService.getMembers(groupId);
+      if (!res.error) setMembers(res.data);
+    }
+  };
+
+  const handleSearchMembers = (query: string) => {
+    if (!tenant?.id || !groupId) return;
+    searchMembers(tenant.id, groupId, query);
   };
 
   const handleRemoveMember = async (memberId: string) => {
     if (!groupId) return;
     setRemovingId(memberId);
 
-    const { error } = await supabase
-      .from("group_members")
-      .delete()
-      .eq("id", memberId);
+    const result = await groupsService.removeMember(memberId);
 
     setRemovingId(null);
 
-    if (error) {
+    if (result.error) {
       toast.error("Erro ao remover membro");
     } else {
       toast.success("Membro removido");
@@ -129,6 +154,15 @@ export default function GroupDetail() {
           <span className="text-sm text-muted-foreground">
             {members.length} membro{members.length !== 1 ? "s" : ""}
           </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowAddMembers(true)}
+            className="ml-auto"
+          >
+            <UserPlus className="h-4 w-4 mr-1" />
+            Adicionar
+          </Button>
         </div>
 
         {members.length === 0 ? (
@@ -179,6 +213,22 @@ export default function GroupDetail() {
         )}
       </div>
       <BottomNav />
+
+      <AddMembersModal
+        open={showAddMembers}
+        onClose={() => {
+          setShowAddMembers(false);
+          clearSearch();
+        }}
+        tenantId={tenant?.id || ""}
+        groupId={groupId || ""}
+        onAddMember={handleAddMember}
+        onSearch={handleSearchMembers}
+        onClearSearch={clearSearch}
+        searchResults={searchResults}
+        searching={searching}
+        membersCount={members.length}
+      />
     </div>
   );
 }
