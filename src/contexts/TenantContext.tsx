@@ -51,8 +51,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     const { data: mems } = await supabase
       .from("memberships")
       .select("tenant_id, role, tenants(*)")
-      .eq("user_id", user.id)
-      .eq("is_approved", true);
+      .eq("user_id", user.id);
     const list = (mems ?? []).map((m: unknown) => (m as { tenants: Tenant })?.tenants).filter(Boolean) as Tenant[];
     const roles: TenantRoles = {} as TenantRoles;
     (mems ?? []).forEach((m: unknown) => {
