@@ -55,8 +55,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAppRole(null);
         setUserState(null);
         setRedirectTo(null);
-      }
-      if (sessionCheckComplete) {
+        setLoading(false);
+      } else if (sessionCheckComplete) {
         setLoading(false);
       }
     });
@@ -65,7 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       sessionCheckComplete = true;
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      setLoading(false);
+      if (!data.session) {
+        setLoading(false);
+      }
     });
     return () => { isMounted = false; sub.subscription.unsubscribe(); };
   }, []);
