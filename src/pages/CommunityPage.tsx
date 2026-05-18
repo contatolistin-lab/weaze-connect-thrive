@@ -24,9 +24,6 @@ export default function CommunityPage() {
   const { user, isB2B } = useAuth();
   const { refresh, selectTenant } = useTenant();
   
-  console.log("[CommunityPage] useParams slug:", slug);
-  console.log("[CommunityPage] location.pathname:", location.pathname);
-  
   const enterCommunity = async () => {
     if (tenant) {
       localStorage.setItem("weaze:pending_invite_slug", tenant.slug);
@@ -47,8 +44,6 @@ export default function CommunityPage() {
   };
 
   const communitySlug = getSlugFromUrl();
-  console.log("[CommunityPage] URL slug:", slug);
-  console.log("[CommunityPage] Final communitySlug:", communitySlug);
   const [tenant, setTenant] = useState<PublicTenant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,14 +58,11 @@ export default function CommunityPage() {
     }
 
     (async () => {
-      console.log("[CommunityPage] Querying for slug:", communitySlug);
       const { data: tenantData, error: err } = await supabase
         .from("tenants")
         .select("id, name, slug, logo_url, bio, city")
         .eq("slug", communitySlug)
         .maybeSingle();
-
-      console.log("[CommunityPage] Query result:", { tenantData, error: err });
 
       if (err || !tenantData) {
         setError("Comunidade não encontrada");
@@ -79,7 +71,6 @@ export default function CommunityPage() {
       }
 
       setTenant(tenantData);
-      console.log("[CommunityPage] Found tenant:", tenantData.name, tenantData.slug);
 
       // Sempre atualiza o pending invite slug para garantir que o login/Auth saiba qual comunidade o usuário está tentando acessar
       localStorage.setItem("weaze:pending_invite_slug", tenantData.slug);
@@ -177,26 +168,24 @@ export default function CommunityPage() {
     setRequesting(false);
   };
 
-  if (loading) {
+if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando comunidade...</p>
-          <p className="text-xs text-red-500 mt-4">DEBUG: slug = {communitySlug}</p>
         </div>
       </div>
     );
   }
 
-if (error || !tenant) {
+  if (error || !tenant) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center max-w-md px-4">
           <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h1 className="text-2xl font-bold mb-2">Comunidade não encontrada</h1>
           <p className="text-muted-foreground mb-6">{error || "Esta comunidade não existe ou foi removida."}</p>
-          <p className="text-xs text-red-500 mb-4">DEBUG: slug = {communitySlug}</p>
           <Button asChild>
             <a href="/">Ir para página inicial</a>
           </Button>
@@ -350,7 +339,6 @@ if (error || !tenant) {
             )}
           </div>
           <h1 className="text-3xl font-display font-bold mb-2">{tenant.name}</h1>
-          <p className="text-xs text-red-500 mb-2">DEBUG: slug={communitySlug} | tenant.slug={tenant.slug}</p>
           {tenant.bio && <p className="text-muted-foreground mb-2">{tenant.bio}</p>}
           {tenant.city && <p className="text-sm text-muted-foreground">{tenant.city}</p>}
         </div>
