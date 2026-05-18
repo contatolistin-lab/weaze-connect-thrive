@@ -28,6 +28,9 @@ export default function Landing() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/auth">Entrar</Link>
             </Button>
+            <Button asChild size="sm" className="bg-brand text-primary-foreground hover:opacity-90">
+              <Link to="/auth/b2b">Criar minha marca</Link>
+            </Button>
             <PWAInstallButton />
           </div>
         </div>
