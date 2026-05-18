@@ -1,6 +1,4 @@
--- Function to search members for groups
--- This handles the member search with proper permission checking
-
+-- Simplified member search function for groups
 CREATE OR REPLACE FUNCTION public.search_group_members(
   p_tenant_id uuid,
   p_group_id uuid,
@@ -16,17 +14,6 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- First verify user has access to this tenant
-  IF NOT EXISTS (
-    SELECT 1 FROM public.memberships
-    WHERE tenant_id = p_tenant_id
-    AND user_id = auth.uid()
-    AND role IN ('owner', 'admin')
-  ) THEN
-    RETURN;
-  END IF;
-
-  -- Get users already in the group
   RETURN QUERY
   SELECT 
     p.user_id,
