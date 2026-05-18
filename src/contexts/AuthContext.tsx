@@ -94,15 +94,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (isOwnerOrAdmin) {
           newRole = roles.includes("admin") ? "admin" : "b2b";
-        } else {
+        } else if (mems && mems.length > 0) {
           newRole = "b2c";
+        } else {
+          const accountType = (user as any)?.user_metadata?.account_type;
+          newRole = accountType === "b2b" ? "b2b" : "b2c";
         }
 
         setAppRole(newRole);
 
         const hasCommunity = isOwnerOrAdmin;
         setUserState({
-          isB2B: hasCommunity,
+          isB2B: newRole === "b2b" || newRole === "admin",
           hasCommunity,
           hasJoinedCommunities: mems && mems.length > 0,
         });
