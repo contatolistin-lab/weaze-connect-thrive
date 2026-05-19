@@ -40,77 +40,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userState, setUserState] = useState<UserState | null>(null);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const [redirected, setRedirected] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     
-    supabase.auth.getSession().then(({ data }) => {
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
       if (!isMounted) return;
+      
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      // Don't set loading false here - let second effect handle it
-    });
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
-      if (!isMounted) return;
-      setSession(s);
-      setUser(s?.user ?? null);
-      setRedirected(false);
-    });
-
-    return () => { isMounted = false; sub.subscription.unsubscribe(); };
-  }, []);
-
-  useEffect(() => {
-    if (!user) {
-      setAppRole(null);
-      setUserState(null);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
+      
+      if (!data.session) {
+        setLoading(false);
+        setInitialized(true);
+        return;
+      }
+      
       try {
         const { data: mems } = await supabase
           .from("memberships")
           .select("tenant_id, role")
-          .eq("user_id", user.id);
-
-        if (cancelled) return;
-
-        const roles = (mems ?? []).map((m) => m.role);
+          .eq("user_id", data.session.user.id);
+        
+        if (!isMounted) return;
+        
+        const roles = (mems ?? []).map((m: any) => m.role);
         const isOwnerOrAdmin = roles.includes("owner") || roles.includes("admin");
-
-        let newRole: AppRole | null = null;
-
-        if (isOwnerOrAdmin) {
-          newRole = roles.includes("admin") ? "admin" : "b2b";
-        } else if (mems && mems.length > 0) {
-          newRole = "b2c";
-        } else {
-          const accountType = (user as any)?.user_metadata?.account_type;
-          newRole = accountType === "b2b" ? "b2b" : "b2c";
-        }
-
+        const newRole: AppRole | null = isOwnerOrAdmin 
+          ? (roles.includes("admin") ? "admin" : "b2b") 
+          : (mems && mems.length > 0 ? "b2c" : "b2c");
+        
         setAppRole(newRole);
-
-        const hasCommunity = isOwnerOrAdmin;
         setUserState({
           isB2B: newRole === "b2b" || newRole === "admin",
-          hasCommunity,
+          hasCommunity: isOwnerOrAdmin,
           hasJoinedCommunities: mems && mems.length > 0,
         });
       } catch (err) {
         console.error("Error fetching memberships:", err);
       } finally {
-        if (!cancelled) {
+        if (isMounted) {
           setLoading(false);
+          setInitialized(true);
         }
       }
-    })();
-    return () => { cancelled = true; };
-  }, [user]);
+    };
+    
+    initAuth();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, s) => {
+      if (!isMounted) return;
+      setSession(s);
+      setUser(s?.user ?? null);
+      setRedirected(false);
+      
+      if (!s?.user) {
+        setAppRole(null);
+        setUserState(null);
+        setLoading(false);
+      }
+    });
+
+    return () => { isMounted = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   const refreshAppRole = useCallback(async () => {
     if (!user) return;
