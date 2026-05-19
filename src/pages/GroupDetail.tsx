@@ -41,6 +41,7 @@ export default function GroupDetail() {
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [groupLoaded, setGroupLoaded] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [showAddMembers, setShowAddMembers] = useState(false);
 
@@ -74,14 +75,13 @@ export default function GroupDetail() {
   }, [user, tenant, groupId, navigate]);
 
   useEffect(() => {
-    if (!loading && members.length > 0) {
-      const isMember = members.some(m => m.user_id === user?.id);
-      if (!isMember) {
-        toast.error("Você não é membro deste grupo");
-        navigate("/groups");
-      }
+    if (!groupLoaded || !members.length || !user) return;
+    const isMember = members.some(m => m.user_id === user.id);
+    if (!isMember) {
+      toast.error("Você não é membro deste grupo");
+      navigate("/groups");
     }
-  }, [loading, members, user, navigate]);
+  }, [groupLoaded, members, user, navigate]);
 
   const loadGroup = async () => {
     if (!groupId) return;
@@ -105,6 +105,7 @@ export default function GroupDetail() {
 
     await loadFeed();
     setLoading(false);
+    setGroupLoaded(true);
   };
 
   const loadFeed = async () => {
