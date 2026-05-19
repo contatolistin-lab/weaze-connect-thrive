@@ -239,20 +239,29 @@ export const groupsService = {
     if (!data || data.length === 0) return { data: [], error: null };
 
     const authorIds = [...new Set(data.map(p => p.author_id))];
+    console.log("[groupsService] getPosts authorIds:", authorIds);
+    
     const { data: profilesData } = await supabase
       .from("profiles")
       .select("id, name, avatar_url")
       .in("id", authorIds);
 
+    console.log("[groupsService] getPosts profilesData:", profilesData?.length || 0);
+
     const profilesMap: Record<string, { name: string | null; avatar_url: string | null }> = {};
-    (profilesData || []).forEach((p) => {
-      profilesMap[p.id] = { name: p.name, avatar_url: p.avatar_url };
-    });
+    
+    if (profilesData) {
+      profilesData.forEach((p) => {
+        profilesMap[p.id] = { name: p.name, avatar_url: p.avatar_url };
+      });
+    }
 
     const posts: GroupPost[] = data.map(p => ({
       ...p,
-      profiles: profilesMap[p.author_id] || null,
+      profiles: profilesMap[p.author_id] || { name: null, avatar_url: null },
     }));
+
+    console.log("[groupsService] getPosts final posts:", posts.length, posts.map(p => ({ id: p.id, name: p.profiles?.name })));
 
     return { data: posts, error: null };
   },
@@ -328,19 +337,23 @@ export const groupsService = {
     if (!data || data.length === 0) return { data: [], error: null };
 
     const authorIds = [...new Set(data.map(r => r.author_id))];
+    
     const { data: profilesData } = await supabase
       .from("profiles")
       .select("id, name, avatar_url")
       .in("id", authorIds);
 
     const profilesMap: Record<string, { name: string | null; avatar_url: string | null }> = {};
-    (profilesData || []).forEach((p) => {
-      profilesMap[p.id] = { name: p.name, avatar_url: p.avatar_url };
-    });
+    
+    if (profilesData) {
+      profilesData.forEach((p) => {
+        profilesMap[p.id] = { name: p.name, avatar_url: p.avatar_url };
+      });
+    }
 
     const replies: GroupReply[] = data.map(r => ({
       ...r,
-      profiles: profilesMap[r.author_id] || null,
+      profiles: profilesMap[r.author_id] || { name: null, avatar_url: null },
     }));
 
     return { data: replies, error: null };
