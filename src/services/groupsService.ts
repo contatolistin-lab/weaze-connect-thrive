@@ -284,18 +284,20 @@ export const groupsService = {
     if (error) return { data: null, error: error.message };
 
     if (data) {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("name, avatar_url")
-        .eq("id", authorId)
-        .single();
+      const { data: profileData } = await supabase.rpc("get_profiles_by_ids", {
+        p_user_ids: [authorId],
+      });
+
+      const profile = profileData && profileData.length > 0 
+        ? { name: profileData[0].name, avatar_url: profileData[0].avatar_url }
+        : { name: null, avatar_url: null };
 
       return {
         data: {
           ...data,
           is_pinned: false,
           updated_at: data.created_at,
-          profiles: profileData || null,
+          profiles: profile,
         } as GroupPost,
         error: null,
       };
@@ -372,16 +374,18 @@ export const groupsService = {
     if (error) return { data: null, error: error.message };
 
     if (data) {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("name, avatar_url")
-        .eq("id", authorId)
-        .single();
+      const { data: profileData } = await supabase.rpc("get_profiles_by_ids", {
+        p_user_ids: [authorId],
+      });
+
+      const profile = profileData && profileData.length > 0 
+        ? { name: profileData[0].name, avatar_url: profileData[0].avatar_url }
+        : { name: null, avatar_url: null };
 
       return {
         data: {
           ...data,
-          profiles: profileData || null,
+          profiles: profile,
         } as GroupReply,
         error: null,
       };
