@@ -40,45 +40,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userState, setUserState] = useState<UserState | null>(null);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const [redirected, setRedirected] = useState(false);
-  const tenantLoadingDone = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
-    let sessionCheckComplete = false;
     
+    supabase.auth.getSession().then(({ data }) => {
+      if (!isMounted) return;
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
+      setLoading(false);
+    });
+
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       if (!isMounted) return;
-      const hasSession = !!s?.user;
       setSession(s);
       setUser(s?.user ?? null);
       setRedirected(false);
-      if (!hasSession) {
-        setAppRole(null);
-        setUserState(null);
-        setRedirectTo(null);
-        tenantLoadingDone.current = true;
-        setLoading(false);
-      } else if (sessionCheckComplete && tenantLoadingDone.current) {
-        setLoading(false);
-      }
     });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!isMounted) return;
-      sessionCheckComplete = true;
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (!data.session) {
-        tenantLoadingDone.current = true;
-        setLoading(false);
-      }
-    });
+
     return () => { isMounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
   useEffect(() => {
     if (!user) {
       setAppRole(null);
-      tenantLoadingDone.current = true;
+      setUserState(null);
       setLoading(false);
       return;
     }
@@ -119,7 +105,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error fetching memberships:", err);
       } finally {
         if (!cancelled) {
-          tenantLoadingDone.current = true;
           setLoading(false);
         }
       }
@@ -187,7 +172,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setRedirectTo(null);
     setAppRole(null);
     setUserState(null);
-    tenantLoadingDone.current = false;
     await supabase.auth.signOut();
   };
 
