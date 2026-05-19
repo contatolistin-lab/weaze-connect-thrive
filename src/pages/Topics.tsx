@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { MessageCircle, Plus, Send, MoreVertical, Pencil, Trash2, X, Check, AtSign } from "lucide-react";
+import { MessageCircle, Plus, Send, MoreVertical, Pencil, Trash2, X, Check, AtSign, Pin, PinOff } from "lucide-react";
 import { awardPoints } from "@/lib/gamification";
 
 type Topic = {
@@ -36,6 +36,9 @@ type TopicMessage = {
   content: string;
   parent_id: string | null;
   created_at: string;
+  is_pinned?: boolean;
+  pinned_at?: string | null;
+  pinned_by?: string | null;
   profiles?: { name: string; avatar_url: string | null };
 };
 
@@ -85,6 +88,8 @@ export default function Topics() {
   const [deleteConfirmMsg, setDeleteConfirmMsg] = useState<TopicMessage | null>(null);
   const [deleteConfirmTopic, setDeleteConfirmTopic] = useState<Topic | null>(null);
   const [deletingTopic, setDeletingTopic] = useState(false);
+  const [pinnedCount, setPinnedCount] = useState(0);
+  const MAX_PINNED = 3;
 
   const loadTopics = async () => {
     if (!tenant) return;
@@ -165,10 +170,10 @@ export default function Topics() {
     setSelectedTopic(topic);
     setLoadingMessages(true);
     
-    // Buscar mensagens com campos específicos
+    // Buscar mensagens com campos específicos incluindo pinning
     const { data: msgs, error } = await supabase
       .from("topic_messages")
-      .select("id, topic_id, user_id, content, parent_id, created_at")
+      .select("id, topic_id, user_id, content, parent_id, created_at, is_pinned, pinned_at, pinned_by")
       .eq("topic_id", topic.id)
       .order("created_at", { ascending: true });
     
@@ -177,6 +182,10 @@ export default function Topics() {
       setLoadingMessages(false);
       return;
     }
+    
+    // Contar mensagens fixadas
+    const pinned = msgs.filter(m => m.is_pinned).length;
+    setPinnedCount(pinned);
     
     // Buscar profiles dos usuários que escreveram mensagens
     const userIds = [...new Set(msgs.map(m => m.user_id))];
@@ -306,6 +315,61 @@ export default function Topics() {
     setMessages(messages.filter(m => m.id !== deleteConfirmMsg.id));
     toast.success("Mensagem excluída!");
     setDeleteConfirmMsg(null);
+  };
+
+  const togglePinMessage = async (msg: TopicMessage) => {
+    if (!user || !canManage) return;
+    
+    if (msg.is_pinned) {
+      // Unpin the message
+      const { error } = await supabase
+        .from("topic_messages")
+        .update({ is_pinned: false, pinned_at: null, pinned_by: null })
+        .eq("id", msg.id);
+      
+      if (error) {
+        toast.error("Erro ao desafixar comentário");
+        return;
+      }
+      
+      setMessages(prev => prev.map(m => 
+        m.id === msg.id ? { ...m, is_pinned: false, pinned_at: null, pinned_by: null } : m
+      ));
+      setPinnedCount(prev => Math.max(0, prev - 1));
+      toast.success("Comentário removido dos fixados");
+    } else {
+      // Check limit
+      if (pinnedCount >= MAX_PINNED) {
+        toast.error(`Você atingiu o limite de ${MAX_PINNED} comentários fixados`);
+        return;
+      }
+      
+      // Pin the message
+      const { error } = await supabase
+        .from("topic_messages")
+        .update({ 
+          is_pinned: true, 
+          pinned_at: new Date().toISOString(), 
+          pinned_by: user.id 
+        })
+        .eq("id", msg.id);
+      
+      if (error) {
+        toast.error("Erro ao fixar comentário");
+        return;
+      }
+      
+      setMessages(prev => prev.map(m => 
+        m.id === msg.id ? { 
+          ...m, 
+          is_pinned: true, 
+          pinned_at: new Date().toISOString(), 
+          pinned_by: user.id 
+        } : m
+      ));
+      setPinnedCount(prev => prev + 1);
+      toast.success("Comentário fixado");
+    }
   };
 
   const confirmDeleteTopic = (topic: Topic) => {
@@ -541,13 +605,138 @@ export default function Topics() {
             <h2 className="text-base font-medium text-gray-900 flex-1 truncate">{selectedTopic.title || "Carregando..."}</h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+<div className="flex-1 overflow-y-auto p-4 space-y-4">
             {loadingMessages ? (
               <div className="text-center text-gray-500">Carregando...</div>
             ) : messages.length === 0 ? (
               <div className="text-center text-gray-400 mt-8">
                 <p>Seja o primeiro a participar!</p>
               </div>
+            ) : (
+              <>
+                {/* Pinned Comments Section */}
+                {(() => {
+                  const pinnedMessages = messages.filter(m => m.is_pinned && !m.parent_id);
+                  if (pinnedMessages.length === 0) return null;
+                  return (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Pin className="h-4 w-4 text-amber-600" />
+                        <span className="text-sm font-semibold text-amber-700">Comentários fixados</span>
+                      </div>
+                      <div className="space-y-2">
+                        {pinnedMessages.map(msg => (
+                          <div key={msg.id} className="bg-white rounded-lg p-3 border border-amber-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-medium text-amber-600">📌 Fixado</span>
+                              <span className="text-xs text-gray-500">{formatTime(msg.pinned_at)}</span>
+                            </div>
+                            <p className="text-sm text-gray-700">{msg.content}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-gray-500">@{msg.profiles?.name || "Usuário"}</span>
+                              {canManage && (
+                                <button 
+                                  onClick={() => togglePinMessage(msg)}
+                                  className="text-xs text-amber-600 hover:text-amber-800 flex items-center gap-1"
+                                >
+                                  <PinOff className="h-3 w-3" />
+                                  Desafixar
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Regular Messages */}
+                {(() => {
+                  const pinnedIds = new Set(messages.filter(m => m.is_pinned).map(m => m.id));
+                  const regularMessages = messages.filter(m => !pinnedIds.has(m.id) || m.parent_id);
+                  
+                  return regularMessages.map((msg) => {
+                    const isReply = msg.parent_id !== null;
+                    const parentMsg = isReply ? messages.find(m => m.id === msg.parent_id) : null;
+                    return (
+                      <div key={msg.id} className={`flex gap-3 ${isReply ? 'ml-6 border-l-2 border-purple-200 pl-3' : ''} ${msg.is_pinned ? 'border-2 border-amber-300 bg-amber-50 rounded-xl p-3' : ''}`}>
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={msg.profiles?.avatar_url || ""} />
+                          <AvatarFallback className="text-xs bg-gray-200 text-gray-600">{msg.profiles?.name?.[0]?.toUpperCase() || "?"}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                            <span className="text-sm font-medium text-gray-800">{msg.profiles?.name || "Usuário"}</span>
+                            {msg.is_pinned && (
+                              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <Pin className="h-3 w-3" /> Fixado
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-400">{formatTime(msg.created_at)}</span>
+                            {isReply && parentMsg && (
+                              <span className="text-xs text-purple-500">↳ Respondendo @{parentMsg.profiles?.name || "usuário"}</span>
+                            )}
+                            {msg.user_id !== user?.id && !isReply && (
+                              <button onClick={() => replyToMessage(msg)} className="text-xs text-purple-600 hover:text-purple-800 ml-2">Responder</button>
+                            )}
+                          </div>
+                          {editingMsgId === msg.id ? (
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                              <div className="flex items-center gap-1 mb-2 text-xs text-purple-600">
+                                <Pencil className="h-3 w-3" />
+                                <span>Editando mensagem</span>
+                              </div>
+                              <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm resize-none" rows={2} autoFocus onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveEditMessage(); } if (e.key === "Escape") cancelEditMessage(); }} />
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs text-gray-400">Enter para salvar, Esc para cancelar</span>
+                                <div className="flex gap-2">
+                                  <button onClick={cancelEditMessage} className="text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 px-3 py-1.5 rounded-md transition-colors">Cancelar</button>
+                                  <button onClick={saveEditMessage} disabled={!editContent.trim()} className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors disabled:opacity-50">Salvar</button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="bg-gray-100 rounded-lg p-3">
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                            </div>
+                          )}
+                          <div className="flex gap-2 mt-1">
+                            {canManage && !isReply && (
+                              <button 
+                                onClick={() => togglePinMessage(msg)} 
+                                className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors ${
+                                  msg.is_pinned 
+                                    ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-50' 
+                                    : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'
+                                }`}
+                              >
+                                {msg.is_pinned ? <PinOff className="h-3 w-3" /> : <Pin className="h-3 w-3" />}
+                                <span>{msg.is_pinned ? 'Desafixar' : 'Fixar'}</span>
+                              </button>
+                            )}
+                            {msg.user_id === user?.id && (
+                              <>
+                                <button onClick={() => startEditMessage(msg)} className="text-xs text-gray-400 hover:text-purple-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-purple-50 transition-colors">
+                                  <Pencil className="h-3 w-3" />
+                                  <span>Editar</span>
+                                </button>
+                                <button onClick={() => confirmDeleteMessage(msg)} className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                                  <Trash2 className="h-3 w-3" />
+                                  <span>Excluir</span>
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
             ) : (
               messages.map((msg) => {
                 const isReply = msg.parent_id !== null;
