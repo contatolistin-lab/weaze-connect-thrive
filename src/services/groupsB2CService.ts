@@ -88,11 +88,14 @@ export async function getMyGroupsWithPreview(userId: string) {
       const lastVisit = localStorage.getItem(getLastVisitKey(group.id));
       let unreadCount = 0;
       if (lastVisit) {
+        const parsed = new Date(lastVisit);
+        const isValid = !isNaN(parsed.getTime()) && parsed.getTime() > 0;
+        const since = isValid ? lastVisit : new Date(0).toISOString();
         const { count } = await supabase
           .from("group_posts")
           .select("*", { count: "exact", head: true })
           .eq("group_id", group.id)
-          .gt("created_at", lastVisit);
+          .gt("created_at", since);
         unreadCount = count || 0;
       }
 

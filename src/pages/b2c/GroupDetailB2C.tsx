@@ -42,6 +42,7 @@ export default function GroupDetailB2C() {
 
   useEffect(() => {
     if (!loading && group && user && groupId && !memberCheckDone) {
+      let timer: ReturnType<typeof setTimeout>;
       const checkMembership = async () => {
         const { data } = await supabase
           .from("group_members")
@@ -51,11 +52,12 @@ export default function GroupDetailB2C() {
           .maybeSingle();
         if (!data) {
           setRemoved(true);
-          setTimeout(() => navigate("/groups/b2c"), 2000);
+          timer = setTimeout(() => navigate("/groups/b2c"), 2000);
         }
         setMemberCheckDone(true);
       };
       checkMembership();
+      return () => clearTimeout(timer);
     }
   }, [loading, group, user, groupId, memberCheckDone, navigate]);
 
