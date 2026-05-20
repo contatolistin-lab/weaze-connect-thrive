@@ -16,32 +16,40 @@ BEGIN
   SELECT p.name INTO v_adder_name
   FROM public.profiles p WHERE p.user_id = NEW.added_by;
 
-  INSERT INTO public.notifications (
-    tenant_id,
-    user_id,
-    type,
-    title,
-    body,
-    priority,
-    data,
-    actor_id,
-    reference_id
-  ) VALUES (
-    v_tenant_id,
-    NEW.user_id,
-    'group_invite',
-    'Você foi adicionado ao grupo ' || COALESCE(v_group_name, 'desconhecido'),
-    COALESCE(v_adder_name, 'Alguém') || ' convidou você para participar',
-    'medium',
-    jsonb_build_object(
-      'group_id', NEW.group_id,
-      'group_name', v_group_name,
-      'group_type', v_group_type,
-      'added_by', NEW.added_by
-    ),
-    NEW.added_by,
-    NEW.group_id
-  );
+  IF NOT EXISTS (
+    SELECT 1 FROM public.notifications
+    WHERE user_id = NEW.user_id
+      AND type = 'group_invite'
+      AND reference_id = NEW.group_id
+      AND created_at > now() - interval '24 hours'
+  ) THEN
+    INSERT INTO public.notifications (
+      tenant_id,
+      user_id,
+      type,
+      title,
+      body,
+      priority,
+      data,
+      actor_id,
+      reference_id
+    ) VALUES (
+      v_tenant_id,
+      NEW.user_id,
+      'group_invite',
+      'Você foi adicionado ao grupo ' || COALESCE(v_group_name, 'desconhecido'),
+      COALESCE(v_adder_name, 'Alguém') || ' convidou você para participar',
+      'medium',
+      jsonb_build_object(
+        'group_id', NEW.group_id,
+        'group_name', v_group_name,
+        'group_type', v_group_type,
+        'added_by', NEW.added_by
+      ),
+      NEW.added_by,
+      NEW.group_id
+    );
+  END IF;
 
   RETURN NEW;
 END;

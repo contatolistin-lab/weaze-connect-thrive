@@ -3,6 +3,7 @@ import {
   getGroupDetail,
   getGroupMembersCount,
   getGroupPosts,
+  canCreateGroupPost,
   createGroupPost,
   B2CGroup,
   B2CGroupPost,
@@ -15,6 +16,8 @@ export function useB2CGroupDetail(groupId: string | null) {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [canPost, setCanPost] = useState(true);
+  const [postError, setPostError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!groupId) return;
@@ -47,9 +50,19 @@ export function useB2CGroupDetail(groupId: string | null) {
     setPosts(postsResult.data || []);
   }, [groupId]);
 
+  const checkCanPost = useCallback(async (userId: string) => {
+    if (!groupId) return;
+    const result = await canCreateGroupPost(groupId, userId);
+    setCanPost(result.allowed);
+    if (!result.allowed) setPostError(result.reason || null);
+    else setPostError(null);
+  }, [groupId]);
+
   const sendPost = useCallback(
     async (authorId: string, content: string) => {
       if (!groupId) return { success: false, error: "Grupo não definido" };
+      const permission = await canCreateGroupPost(groupId, authorId);
+      if (!permission.allowed) return { success: false, error: permission.reason || "Sem permissão" };
       setSending(true);
       const result = await createGroupPost(groupId, authorId, content);
       setSending(false);
@@ -62,5 +75,5 @@ export function useB2CGroupDetail(groupId: string | null) {
     [groupId]
   );
 
-  return { group, membersCount, posts, loading, sending, error, load, sendPost };
+  return { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost };
 }

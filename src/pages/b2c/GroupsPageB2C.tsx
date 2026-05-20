@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import TopBar from "@/components/layout/TopBar";
-import { Loader2, Folder, ChevronRight, Users } from "lucide-react";
+import { Loader2, Folder, ChevronRight, Users, MessageSquare } from "lucide-react";
 import { useB2CGroups } from "@/hooks/groups/useB2CGroups";
 
 export default function GroupsPageB2C() {
@@ -38,7 +38,7 @@ export default function GroupsPageB2C() {
               onClick={() => navigate(`/groups/member/${group.id}`)}
               style={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 gap: 12,
                 padding: 16,
                 background: "#fff",
@@ -48,6 +48,7 @@ export default function GroupsPageB2C() {
                 cursor: "pointer",
                 textAlign: "left",
                 width: "100%",
+                position: "relative",
               }}
             >
               <div
@@ -65,26 +66,65 @@ export default function GroupsPageB2C() {
                 <Users size={22} color={group.type === "internal" ? "#0891b2" : "#7c3aed"} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontWeight: 600, color: "#333", fontSize: 15, marginBottom: 2 }}>{group.name}</p>
-                <span
-                  style={{
-                    fontSize: 11,
-                    padding: "2px 8px",
-                    borderRadius: 10,
-                    background: group.type === "internal" ? "#e8f4f8" : "#f0e6ff",
-                    color: group.type === "internal" ? "#0891b2" : "#7c3aed",
-                    fontWeight: 500,
-                    display: "inline-block",
-                  }}
-                >
-                  {group.type === "internal" ? "Interno" : "Privado"}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                  <p style={{ fontWeight: 600, color: "#333", fontSize: 15 }}>{group.name}</p>
+                  <span
+                    style={{
+                      fontSize: 10,
+                      padding: "1px 6px",
+                      borderRadius: 8,
+                      background: group.type === "internal" ? "#e8f4f8" : "#f0e6ff",
+                      color: group.type === "internal" ? "#0891b2" : "#7c3aed",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {group.type === "internal" ? "Interno" : "Privado"}
+                  </span>
+                </div>
+                {group.last_preview ? (
+                  <p style={{ fontSize: 13, color: "#666", lineHeight: 1.3, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {group.last_author_name ? (
+                      <><strong style={{ fontWeight: 500 }}>{group.last_author_name}</strong>: {group.last_preview}</>
+                    ) : (
+                      group.last_preview
+                    )}
+                  </p>
+                ) : (
+                  <p style={{ fontSize: 13, color: "#aaa", marginTop: 4 }}>Nenhuma atividade ainda</p>
+                )}
+                {group.last_activity && (
+                  <span style={{ fontSize: 11, color: "#999", marginTop: 2, display: "block" }}>
+                    {formatGroupTime(group.last_activity)}
+                  </span>
+                )}
               </div>
-              <ChevronRight size={18} color="#bbb" />
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                <ChevronRight size={16} color="#ccc" />
+                {group.unread_count > 0 && (
+                  <span style={{ background: "#d81e62", color: "#fff", fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 10, minWidth: 18, textAlign: "center", lineHeight: "14px" }}>
+                    {group.unread_count > 9 ? "9+" : group.unread_count}
+                  </span>
+                )}
+              </div>
             </button>
           ))}
         </div>
       )}
     </div>
   );
+}
+
+function formatGroupTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "agora";
+  if (minutes < 60) return `há ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `há ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "ontem";
+  if (days < 7) return `há ${days} dias`;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }

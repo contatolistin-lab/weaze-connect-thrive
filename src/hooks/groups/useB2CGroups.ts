@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
-import { getMyGroups, B2CGroup } from "@/services/groupsB2CService";
+import { getMyGroupsWithPreview, B2CGroupWithPreview } from "@/services/groupsB2CService";
 
 export function useB2CGroups(userId: string | null) {
-  const [groups, setGroups] = useState<B2CGroup[]>([]);
+  const [groups, setGroups] = useState<B2CGroupWithPreview[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -10,7 +10,7 @@ export function useB2CGroups(userId: string | null) {
     if (!userId) return;
     setLoading(true);
     setError(null);
-    const result = await getMyGroups(userId);
+    const result = await getMyGroupsWithPreview(userId);
     setLoading(false);
     if (result.error) {
       setError(result.error);

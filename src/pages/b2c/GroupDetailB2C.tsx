@@ -2,31 +2,23 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useB2CGroupDetail } from "@/hooks/groups/useB2CGroupDetail";
+import { markGroupVisited } from "@/services/groupsB2CService";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft, Send, Users } from "lucide-react";
 
-const ONBOARDING_KEY = "group_b2c_onboarding_seen";
-
-function getOnboardingSeen(): Record<string, boolean> {
-  try {
-    return JSON.parse(localStorage.getItem(ONBOARDING_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function markOnboardingSeen(groupId: string) {
-  const seen = getOnboardingSeen();
-  seen[groupId] = true;
-  localStorage.setItem(ONBOARDING_KEY, JSON.stringify(seen));
+function getOnboardingKey(groupId: string) {
+  return `group_onboarding_${groupId}`;
 }
 
 export default function GroupDetailB2C() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { group, membersCount, posts, loading, sending, error, load, sendPost } = useB2CGroupDetail(groupId || null);
+  const { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost } = useB2CGroupDetail(groupId || null);
   const [inputText, setInputText] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [memberCheckDone, setMemberCheckDone] = useState(false);
+  const [removed, setRemoved] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -34,13 +26,38 @@ export default function GroupDetailB2C() {
   }, [load]);
 
   useEffect(() => {
+    if (group && user && groupId) {
+      checkCanPost(user.id);
+      if (groupId) markGroupVisited(groupId);
+    }
+  }, [group, user, groupId, checkCanPost]);
+
+  useEffect(() => {
     if (group && groupId) {
-      const seen = getOnboardingSeen();
-      if (!seen[groupId]) {
+      if (!localStorage.getItem(getOnboardingKey(groupId))) {
         setShowOnboarding(true);
       }
     }
   }, [group, groupId]);
+
+  useEffect(() => {
+    if (!loading && group && user && groupId && !memberCheckDone) {
+      const checkMembership = async () => {
+        const { data } = await supabase
+          .from("group_members")
+          .select("id")
+          .eq("group_id", groupId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (!data) {
+          setRemoved(true);
+          setTimeout(() => navigate("/groups/b2c"), 2000);
+        }
+        setMemberCheckDone(true);
+      };
+      checkMembership();
+    }
+  }, [loading, group, user, groupId, memberCheckDone, navigate]);
 
   async function handleSend() {
     if (!inputText.trim() || !user || sending) return;
@@ -64,6 +81,15 @@ export default function GroupDetailB2C() {
       <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5", flexDirection: "column", gap: 12 }}>
         <p style={{ color: "#e53e3e" }}>{error}</p>
         <button onClick={() => navigate(-1)} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#630091", color: "#fff", cursor: "pointer" }}>Voltar</button>
+      </div>
+    );
+  }
+
+  if (removed) {
+    return (
+      <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5", flexDirection: "column", gap: 12 }}>
+        <p style={{ color: "#e53e3e", fontSize: 16 }}>Você não faz mais parte deste grupo</p>
+        <p style={{ color: "#888", fontSize: 13 }}>Redirecionando...</p>
       </div>
     );
   }
@@ -99,7 +125,7 @@ export default function GroupDetailB2C() {
             <button
               onClick={() => {
                 setShowOnboarding(false);
-                if (groupId) markOnboardingSeen(groupId);
+                if (groupId) localStorage.setItem(getOnboardingKey(groupId), "true");
               }}
               style={{ padding: "8px 24px", borderRadius: 8, border: "none", background: "#fff", color: "#630091", fontWeight: 600, cursor: "pointer", fontSize: 14 }}
             >
@@ -135,6 +161,11 @@ export default function GroupDetailB2C() {
         )}
       </div>
 
+      {!canPost && postError && (
+        <div style={{ padding: "8px 16px", background: "#fff3e0", borderTop: "1px solid #ffe0b2", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "#e65100" }}>{postError}</p>
+        </div>
+      )}
       <div style={{ padding: "12px 16px", borderTop: "1px solid #eee", background: "#fff", flexShrink: 0, display: "flex", gap: 8, alignItems: "center" }}>
         <input
           ref={inputRef}
@@ -142,14 +173,14 @@ export default function GroupDetailB2C() {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          placeholder="Digite sua mensagem..."
-          disabled={sending}
-          style={{ flex: 1, padding: "10px 14px", borderRadius: 20, border: "1px solid #e0e0e0", fontSize: 14, outline: "none", height: 40, background: "#fafafa" }}
+          placeholder={canPost ? "Digite sua mensagem..." : "Você não pode publicar neste grupo"}
+          disabled={sending || !canPost}
+          style={{ flex: 1, padding: "10px 14px", borderRadius: 20, border: "1px solid #e0e0e0", fontSize: 14, outline: "none", height: 40, background: canPost ? "#fafafa" : "#f0f0f0" }}
         />
         <button
           onClick={handleSend}
-          disabled={!inputText.trim() || sending}
-          style={{ width: 40, height: 40, borderRadius: "50%", background: inputText.trim() && !sending ? "#630091" : "#ccc", border: "none", cursor: inputText.trim() && !sending ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+          disabled={!inputText.trim() || sending || !canPost}
+          style={{ width: 40, height: 40, borderRadius: "50%", background: inputText.trim() && !sending && canPost ? "#630091" : "#ccc", border: "none", cursor: inputText.trim() && !sending && canPost ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
         >
           {sending ? <Loader2 className="h-4 w-4 animate-spin" color="#fff" /> : <Send size={16} color="#fff" />}
         </button>
