@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function BottomNav() {
   const { pathname } = useLocation();
-  const { isB2B, user, appRole } = useAuth();
+  const { isB2B, isB2C, user, appRole } = useAuth();
   const { isOwner, canManage } = useTenant();
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLAnchorElement>(null);
@@ -27,6 +27,7 @@ export default function BottomNav() {
     ...(showAdminItems ? [{ to: "/metrics", icon: BarChart3, label: "Métricas" }] : []),
     ...(showAdminItems ? [{ to: "/members", icon: Users, label: "Membros" }] : []),
     ...(showAdminItems ? [{ to: "/groups", icon: Folder, label: "Grupos" }] : []),
+    ...(!showAdminItems && isB2C ? [{ to: "/groups/b2c", icon: Folder, label: "Grupos" }] : []),
     { to: "/profile", icon: User, label: "Perfil" },
   ];
 

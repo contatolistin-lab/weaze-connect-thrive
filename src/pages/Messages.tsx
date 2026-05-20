@@ -341,6 +341,8 @@ export default function Messages() {
                                   <button onClick={() => confirmDelete(m.id)} style={{ padding: "2px 8px", borderRadius: 6, border: "none", background: "rgba(255,255,255,0.25)", color: "#fff", cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", gap: 2 }}><Trash2 size={10} /> Excluir</button>
                                 </div>
                               )}
+                            </>
+                          )}
                         </div>
                       </div>
                     );

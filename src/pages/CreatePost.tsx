@@ -25,7 +25,8 @@ const REGISTER_FIELDS = [
   { key: "custom", label: "Campo personalizado", required: false },
 ];
 
-const MAX_VIDEO_DURATION = 120; // 2 minutes in seconds
+const MAX_VIDEO_DURATION = 180; // 3 minutes in seconds
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const VIDEO_ASPECT_RATIO = "9:16";
 const VIDEO_RESOLUTION = "1080x1920";
 const IMAGE_ASPECT_RATIO = "4:5";
@@ -109,28 +110,45 @@ export default function CreatePost() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    if (f.size > MAX_FILE_SIZE) {
+      toast.error(`Arquivo muito grande. Máximo permitido: ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+      e.target.value = "";
+      return;
+    }
     
     // Validate video duration
     if (type === "video") {
       const video = document.createElement("video");
       video.preload = "metadata";
       video.onloadedmetadata = () => {
+        URL.revokeObjectURL(video.src);
         if (video.duration > MAX_VIDEO_DURATION) {
           toast.error(`Vídeo deve ter no máximo ${MAX_VIDEO_DURATION / 60} minuto(s)`);
+          e.target.value = "";
           return;
         }
         setFile(f);
+      };
+      video.onerror = () => {
+        toast.error("Não foi possível ler o vídeo. Tente outro arquivo.");
+        e.target.value = "";
       };
       video.src = URL.createObjectURL(f);
     } else if (type === "image") {
       // Validate image aspect ratio will be done on preview
       const img = new Image();
       img.onload = () => {
+        URL.revokeObjectURL(img.src);
         const ratio = img.width / img.height;
         if (Math.abs(ratio - 1) > 0.1) { // Allow small tolerance
           toast.warning("Imagem recomendada 4:5 (vertical)");
         }
         setFile(f);
+      };
+      img.onerror = () => {
+        toast.error("Não foi possível ler a imagem. Tente outro arquivo.");
+        e.target.value = "";
       };
       img.src = URL.createObjectURL(f);
     } else {
@@ -141,7 +159,10 @@ export default function CreatePost() {
   const uploadFile = async (f: File): Promise<string> => {
     const ext = f.name.split(".").pop();
     const path = `${tenant!.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("public").upload(path, f);
+    const { error } = await supabase.storage.from("public").upload(path, f, {
+      upsert: true,
+      contentType: f.type,
+    });
     if (error) throw error;
     const { data: { publicUrl } } = supabase.storage.from("public").getPublicUrl(path);
     return publicUrl;
@@ -418,7 +439,7 @@ if (ctaType !== "none") {
                     <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
                       <p className="font-medium text-foreground">Especificações técnicas:</p>
                       <p>• Proporção: 9:16 (vertical)</p>
-                      <p>• Duração máxima: 2 minutos</p>
+                      <p>• Duração máxima: {MAX_VIDEO_DURATION / 60} minutos</p>
                       <p>• Resolução recomendada: 1080x1920px</p>
                     </div>
                   )}

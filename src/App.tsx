@@ -76,6 +76,8 @@ const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const Topics = lazy(() => import("./pages/Topics"));
 
 const Notifications = lazy(() => import("./pages/Notifications"));
+const GroupsPageB2C = lazy(() => import("./pages/b2c/GroupsPageB2C"));
+const GroupDetailB2C = lazy(() => import("./pages/b2c/GroupDetailB2C"));
 const Lives = lazy(() => import("./pages/admin/Lives"));
 const InviteLinks = lazy(() => import("./pages/admin/InviteLinks"));
 const Offline = lazy(() => import("./pages/Offline"));
@@ -182,6 +184,8 @@ const App = () => (
                     <Route path="/requests" element={<Protected><Requests /></Protected>} />
                     <Route path="/members" element={<Protected><Members /></Protected>} />
                     <Route path="/groups" element={<Protected><GroupsPage /></Protected>} />
+                    <Route path="/groups/b2c" element={<Protected><GroupsPageB2C /></Protected>} />
+                    <Route path="/groups/member/:groupId" element={<Protected><GroupDetailB2C /></Protected>} />
                     <Route path="/groups/:groupId" element={<Protected><GroupDetail /></Protected>} />
                     <Route path="/profile" element={<Protected><Profile /></Protected>} />
                     <Route path="/offline" element={<Offline />} />

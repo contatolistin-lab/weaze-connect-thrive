@@ -774,6 +774,7 @@ export default function Notifications() {
             ) : [...notifications].reverse().map(n => {
               const isJoinRequest = n.type === "join_request";
               const isTopicReply = n.type === "topic_reply";
+              const isGroupInvite = n.type === "group_invite";
               return (
               <div
                 key={n.id}
@@ -781,9 +782,11 @@ export default function Notifications() {
                 className={`bg-card border rounded-2xl p-4 ${isJoinRequest ? "border-purple-200" : isTopicReply ? "border-blue-200 hover:bg-blue-50 cursor-pointer" : "border-border"}`}
               >
                 <div className="flex items-start gap-3">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${isJoinRequest ? "bg-purple-100" : isTopicReply ? "bg-blue-100" : "bg-brand/10"}`}>
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ${isJoinRequest ? "bg-purple-100" : isGroupInvite ? "bg-green-100" : isTopicReply ? "bg-blue-100" : "bg-brand/10"}`}>
                     {isJoinRequest ? (
                       <Users className="h-4 w-4 text-purple-600" />
+                    ) : isGroupInvite ? (
+                      <Users className="h-4 w-4 text-green-600" />
                     ) : isTopicReply ? (
                       <MessageSquare className="h-4 w-4 text-blue-600" />
                     ) : (
@@ -806,8 +809,21 @@ export default function Notifications() {
                         <span className="font-medium">{n.data.user_name}</span> {n.data.user_email ? `(${n.data.user_email})` : ""}
                       </p>
                     )}
-                    {n.data?.tenant_name && !isTopicReply && (
+                    {n.data?.tenant_name && !isTopicReply && !isGroupInvite && (
                       <p className="text-xs text-purple-600 mt-0.5">{n.data.tenant_name}</p>
+                    )}
+                    {isGroupInvite && n.data?.group_name && (
+                      <p className="text-xs text-green-600 font-medium mt-0.5">Grupo: {n.data.group_name}</p>
+                    )}
+                    {isGroupInvite && n.data?.group_id && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="mt-2 gap-1 text-xs h-7"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/groups/member/${n.data.group_id}`); }}
+                      >
+                        <Users className="h-3 w-3" /> Ver grupo
+                      </Button>
                     )}
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {formatDate(n.created_at)}
