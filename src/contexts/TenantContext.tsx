@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 
@@ -39,8 +39,13 @@ const [loading, setLoading] = useState(true);
   const [memRoles, setMemRoles] = useState<TenantRoles>({} as TenantRoles);
   const [manualSelectionPending, setManualSelectionPending] = useState(false);
   const [manualSelectedTenantId, setManualSelectedTenantId] = useState<string | null>(null);
+  const lastLoadedUserId = useRef<string | null>(null);
 
   const load = useCallback(async (): Promise<void> => {
+    const uid = user?.id ?? null;
+    if (uid === lastLoadedUserId.current) return;
+    lastLoadedUserId.current = uid;
+
     setLoading(true);
     if (!user) {
       setTenants([]);
@@ -69,7 +74,6 @@ const [loading, setLoading] = useState(true);
     let targetRole: "owner" | "admin" | "member" | null = null;
 
     const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
-    console.log("[TenantContext] pendingSlug:", pendingSlug, "list:", list.map(t => t.slug));
     const pendingTenant = list.find(t => t.slug === pendingSlug);
 
     if (pendingTenant) {
@@ -152,7 +156,6 @@ if (targetTenant && targetRole) {
       setIsOwner(targetRole === "owner");
       setCanManage(targetRole === "owner" || targetRole === "admin");
       localStorage.setItem("weaze:active_tenant", targetTenant.id);
-      console.log("[TenantContext] Selected tenant:", targetTenant.name, targetTenant.id);
     } else {
       setTenant(null);
       setIsOwner(false);
@@ -166,6 +169,11 @@ if (targetTenant && targetRole) {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+
+  const refresh = useCallback(async () => {
+    lastLoadedUserId.current = null;
+    return load();
+  }, [load]);
 
   const selectTenant = useCallback((id: string, isManual: boolean = false) => {
     const t = tenants.find((x) => x.id === id);
@@ -183,7 +191,7 @@ if (targetTenant && targetRole) {
   }, [tenants, memRoles]);
 
   return (
-    <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, loading, selectTenant, refresh: load }}>
+    <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, loading, selectTenant, refresh }}>
       {children}
     </Ctx.Provider>
   );
