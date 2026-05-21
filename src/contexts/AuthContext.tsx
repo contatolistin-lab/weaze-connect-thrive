@@ -102,32 +102,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setRedirected(false);
 
       if (s?.user) {
-        setLoading(true);
-        try {
-          const { data: mems } = await supabase
-            .from("memberships")
-            .select("tenant_id, role")
-            .eq("user_id", s.user.id);
+        if (_evt === "SIGNED_IN") {
+          setLoading(true);
+          try {
+            const { data: mems } = await supabase
+              .from("memberships")
+              .select("tenant_id, role")
+              .eq("user_id", s.user.id);
 
-          if (!isMounted) return;
+            if (!isMounted) return;
 
-          const roles = (mems ?? []).map((m: any) => m.role);
-          const isOwnerOrAdmin = roles.includes("owner") || roles.includes("admin");
-          const newRole: AppRole | null = isOwnerOrAdmin
-            ? (roles.includes("admin") ? "admin" : "b2b")
-            : "b2c";
+            const roles = (mems ?? []).map((m: any) => m.role);
+            const isOwnerOrAdmin = roles.includes("owner") || roles.includes("admin");
+            const newRole: AppRole | null = isOwnerOrAdmin
+              ? (roles.includes("admin") ? "admin" : "b2b")
+              : "b2c";
 
-          setAppRole(newRole);
-          setUserState({
-            isB2B: newRole === "b2b" || newRole === "admin",
-            hasCommunity: isOwnerOrAdmin,
-            hasJoinedCommunities: mems && mems.length > 0,
-          });
-        } catch (err) {
-          console.error("Error fetching memberships on auth change:", err);
-          if (isMounted) setAppRole("b2c");
-        } finally {
-          if (isMounted) setLoading(false);
+            setAppRole(newRole);
+            setUserState({
+              isB2B: newRole === "b2b" || newRole === "admin",
+              hasCommunity: isOwnerOrAdmin,
+              hasJoinedCommunities: mems && mems.length > 0,
+            });
+          } catch (err) {
+            console.error("Error fetching memberships on auth change:", err);
+            if (isMounted) setAppRole("b2c");
+          } finally {
+            if (isMounted) setLoading(false);
+          }
         }
       } else {
         setAppRole(null);
