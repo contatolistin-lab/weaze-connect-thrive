@@ -172,10 +172,9 @@ if (targetTenant && targetRole) {
     } catch (err) {
       console.error("[TenantContext] Error loading tenants:", err);
     } finally {
-      if (loadId !== activeLoadRef.current) return;
       setLoading(false);
     }
-  }, [user?.id, initializing]);
+  }, [user]);
 
   useEffect(() => { load(); }, [load]);
 
