@@ -13,7 +13,7 @@ import { Sparkles, Plus, Play, Video } from "lucide-react";
 const PAGE = 8;
 
 export default function Feed() {
-  const { tenant, loading: tLoading, tenants } = useTenant();
+  const { tenant, loading: tLoading } = useTenant();
   const { user, isB2B } = useAuth();
   const [searchParams] = useSearchParams();
   const nav = useNavigate();
@@ -25,23 +25,9 @@ export default function Feed() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const [feedReady, setFeedReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const initialized = useRef(false);
-
-  useEffect(() => {
-    if (!tLoading && tenant && tenants.length > 0) {
-      const isNewJoin = tenants.some(t => t.id === tenant.id);
-      if (isNewJoin) {
-        setFeedReady(true);
-      } else if (initialized.current) {
-        setFeedReady(true);
-      }
-    } else if (tLoading) {
-      setFeedReady(false);
-    }
-  }, [tLoading, tenant, tenants]);
 
   const loadPosts = useCallback(async (offset = 0) => {
     if (!tenant || loading || done) return;
@@ -203,7 +189,7 @@ export default function Feed() {
     return () => io.disconnect();
   }, [posts.length]);
 
-  if (tLoading || (!feedReady && !initialLoadDone)) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (tLoading || !initialLoadDone) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
 
   // B2B sem tenant → criar marca
   if (!tenant && isB2B) {

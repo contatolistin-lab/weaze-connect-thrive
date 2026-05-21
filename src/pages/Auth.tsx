@@ -52,7 +52,7 @@ export default function Auth() {
     }
   }, [user, authLoading, initializing, loading, appRole, tenantLoading, nav]);
 
-  if (initializing || authLoading) {
+  if (initializing || authLoading || (user && (appRole === null || tenantLoading))) {
     return (
       <main className="min-h-screen bg-background grid place-items-center">
         <div className="flex flex-col items-center gap-3">
@@ -61,16 +61,6 @@ export default function Auth() {
         </div>
       </main>
     );
-  }
-
-  if (user) {
-    const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
-    if (pendingSlug) {
-      nav(`/c/${pendingSlug}`, { replace: true });
-    } else {
-      nav("/feed", { replace: true });
-    }
-    return null;
   }
 
   const handleSignup = async (e: React.FormEvent) => {
