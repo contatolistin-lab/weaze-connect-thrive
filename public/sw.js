@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weaze-v47';
+const CACHE_NAME = 'weaze-v48';
 
 const PRECACHE_URLS = [
   '/',

@@ -99,11 +99,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!isMounted) return;
 
       if (_evt === "INITIAL_SESSION" || _evt === "TOKEN_REFRESHED") {
-        if (!s?.user) {
+        if (s?.user) {
+          setSession(s);
+          setUser(s.user);
+        } else {
           setAppRole(null);
           setUserState(null);
-          setLoading(false);
         }
+        setLoading(false);
+        setInitializing(false);
+        setInitialized(true);
         return;
       }
 
