@@ -156,20 +156,14 @@ export async function getGroupPosts(groupId: string) {
   return { data: posts, error: null };
 }
 
-export async function canCreateGroupPost(groupId: string, userId: string): Promise<{ allowed: boolean; reason?: string }> {
+export async function canCreateGroupPost(groupId: string, _userId: string): Promise<{ allowed: boolean; reason?: string }> {
   const { data: group } = await supabase
     .from("groups")
-    .select("type, created_by")
+    .select("id")
     .eq("id", groupId)
     .single();
 
   if (!group) return { allowed: false, reason: "Grupo não encontrado" };
-
-  if (group.type === "internal") return { allowed: true };
-
-  if (group.type === "private" && group.created_by !== userId) {
-    return { allowed: false, reason: "Você não possui permissão para publicar neste grupo" };
-  }
 
   return { allowed: true };
 }
