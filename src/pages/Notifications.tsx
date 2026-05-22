@@ -77,6 +77,7 @@ type NotificationItem = {
   data: any;
   created_at: string;
   actor_id: string | null;
+  body?: string;
   content?: string;
 };
 
@@ -288,8 +289,8 @@ export default function Notifications() {
       user_id: appt.user_id,
       type: "appointment_approved",
       title: "Agendamento aprovado!",
-      content: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi aprovado!`,
-      link: "/feed",
+      body: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi aprovado!`,
+      data: { link: "/feed" },
     });
 
     toast.success("Agendamento aprovado!");
@@ -312,8 +313,8 @@ export default function Notifications() {
       user_id: appt.user_id,
       type: "appointment_completed",
       title: "Agendamento concluído!",
-      content: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi concluído.`,
-      link: "/feed",
+      body: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi concluído.`,
+      data: { link: "/feed" },
     });
 
     toast.success("Agendamento concluído!");
@@ -336,8 +337,8 @@ export default function Notifications() {
       user_id: appt.user_id,
       type: "appointment_cancelled",
       title: "Agendamento cancelado",
-      content: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi cancelado.`,
-      link: "/feed",
+      body: `Seu agendamento para: ${serviceName} no dia ${formattedDate} às ${appt.selected_time} foi cancelado.`,
+      data: { link: "/feed" },
     });
 
     toast.success("Agendamento cancelado!");
@@ -353,8 +354,8 @@ export default function Notifications() {
       user_id: budget.user_id,
       type: "budget_contacted",
       title: "Estamos entrando em contato",
-      content: "Estamos entrando em contato com você.",
-      link: "/feed",
+      body: "Estamos entrando em contato com você.",
+      data: { link: "/feed" },
     });
 
     toast.success("Marcado como contactado!");
@@ -370,8 +371,8 @@ export default function Notifications() {
       user_id: budget.user_id,
       type: "budget_completed",
       title: "Solicitação concluída",
-      content: "Sua solicitação foi concluída.",
-      link: "/feed",
+      body: "Sua solicitação foi concluída.",
+      data: { link: "/feed" },
     });
 
     toast.success("Orçamento concluído!");
@@ -387,8 +388,8 @@ export default function Notifications() {
       user_id: budget.user_id,
       type: "budget_cancelled",
       title: "Solicitação encerrada",
-      content: "Sua solicitação foi encerrada.",
-      link: "/feed",
+      body: "Sua solicitação foi encerrada.",
+      data: { link: "/feed" },
     });
 
     toast.success("Orçamento cancelado!");
@@ -404,8 +405,8 @@ export default function Notifications() {
       user_id: registration.user_id,
       type: "event_registration_confirmed",
       title: "Inscrição confirmada",
-      content: `Sua inscrição no evento "${registration.event_name}" foi confirmada!`,
-      link: "/feed",
+      body: `Sua inscrição no evento "${registration.event_name}" foi confirmada!`,
+      data: { link: "/feed" },
     });
 
     toast.success("Inscrição confirmada!");
@@ -421,8 +422,8 @@ export default function Notifications() {
       user_id: registration.user_id,
       type: "event_registration_cancelled",
       title: "Inscrição cancelada",
-      content: `Sua inscrição no evento "${registration.event_name}" foi cancelada.`,
-      link: "/feed",
+      body: `Sua inscrição no evento "${registration.event_name}" foi cancelada.`,
+      data: { link: "/feed" },
     });
 
     toast.success("Inscrição cancelada!");
@@ -781,7 +782,7 @@ export default function Notifications() {
                 onClick={() => {
                   if (isTopicReply && n.data?.topic_id) navigate(`/conversas/${n.data.topic_id}`);
                   else if (isGroupInvite && n.data?.group_id) navigate(`/groups/member/${n.data.group_id}`);
-                  else if (n.link) navigate(n.link);
+                  else if (n.data?.link) navigate(n.data.link);
                 }}
                 className={`bg-card border rounded-2xl p-4 ${isJoinRequest ? "border-purple-200" : isTopicReply ? "border-blue-200 hover:bg-blue-50 cursor-pointer" : isGroupInvite ? "border-green-200 hover:bg-green-50 cursor-pointer" : "border-border"}`}
               >
@@ -799,10 +800,10 @@ export default function Notifications() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{n.title}</p>
-                    {n.content && (
-                      <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{n.content}</p>
+                    {n.body && (
+                      <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{n.body}</p>
                     )}
-                    {!n.content && n.data?.group_name && (
+                    {!n.body && n.data?.group_name && (
                       <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{n.data.group_name}</p>
                     )}
                     {isTopicReply && n.data?.topic_title && (

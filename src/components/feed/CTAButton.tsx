@@ -257,8 +257,8 @@ function NewAppointmentDialog({ cta, postId, tenantId, open, onClose }: any) {
       user_id: user.id,
       type: "appointment_pending",
       title: "Solicitação enviada",
-      content: `Seu agendamento para ${serviceName} no dia ${formatDate(serviceDate)} às ${selectedTime} foi enviado. Aguarde a confirmação.`,
-      link: "/feed",
+      body: `Seu agendamento para ${serviceName} no dia ${formatDate(serviceDate)} às ${selectedTime} foi enviado. Aguarde a confirmação.`,
+      data: { link: "/feed" },
     });
 
     const { data: owners } = await supabase
@@ -283,8 +283,8 @@ function NewAppointmentDialog({ cta, postId, tenantId, open, onClose }: any) {
             user_id: o.user_id,
             type: "appointment_pending",
             title: "Nova solicitação de agendamento",
-            content: `${userName} solicitou agendamento para ${serviceName} às ${selectedTime}`,
-            link: `/requests`,
+            body: `${userName} solicitou agendamento para ${serviceName} às ${selectedTime}`,
+            data: { link: "/requests" },
           });
         }
       }
@@ -594,8 +594,8 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
             user_id: o.user_id,
             type: "budget_pending",
             title: "Nova solicitação de orçamento",
-            content: `${name.trim()} enviou uma solicitação de orçamento.\n\nServiço: ${cta.label || "Serviço"}\n\nMensagem: ${message.trim()}\n\nTelefone: ${phone.trim() || "Não informado"}`,
-            link: "/notifications",
+            body: `${name.trim()} enviou uma solicitação de orçamento.\n\nServiço: ${cta.label || "Serviço"}\n\nMensagem: ${message.trim()}\n\nTelefone: ${phone.trim() || "Não informado"}`,
+            data: { link: "/notifications" },
           });
         }
       }
@@ -607,8 +607,8 @@ function QuoteDialog({ cta, postId, tenantId, open, onClose }: any) {
       user_id: user.id,
       type: "budget_received",
       title: "Solicitação recebida",
-      content: "Sua solicitação de orçamento foi recebida. Em breve entraremos em contato.",
-      link: "/feed",
+      body: "Sua solicitação de orçamento foi recebida. Em breve entraremos em contato.",
+      data: { link: "/feed" },
     });
 
     await track({ tenantId, postId, ctaId: cta.id, action: "conversion", metadata: { intent: "quote" } });
@@ -759,8 +759,8 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
       user_id: user?.id,
       type: "event_registration_received",
       title: "Inscrição recebida",
-      content: "Sua inscrição foi recebida. Em breve entraremos em contato.",
-      link: "/feed",
+      body: "Sua inscrição foi recebida. Em breve entraremos em contato.",
+      data: { link: "/feed" },
     });
 
     const { data: owners } = await supabase
@@ -786,8 +786,8 @@ function RegisterDialog({ cta, postId, tenantId, open, onClose }: any) {
             user_id: o.user_id,
             type: "event_registration_pending",
             title: "Nova inscrição recebida",
-            content: notificationContent,
-            link: "/notifications",
+            body: notificationContent,
+            data: { link: "/notifications" },
           });
         }
       }
