@@ -154,7 +154,9 @@ export default function Feed() {
     })();
   }, [tenant?.id]);
 
-  // Initial load only
+  // Initial load only — initialLoadDone is set to true SYNCHRONOUSLY
+  // so "Carregando..." never gets stuck waiting on loadPosts.
+  // Posts populate asynchronously in the background.
   useEffect(() => {
     if (!tenant) {
       setInitialLoadDone(true);
@@ -163,10 +165,8 @@ export default function Feed() {
     doneRef.current = false;
     loadingRef.current = false;
     setPosts([]); setDone(false); setActiveIdx(0);
-    setInitialLoadDone(false);
-    loadPosts(0).finally(() => {
-      setInitialLoadDone(true);
-    });
+    setInitialLoadDone(true);
+    loadPosts(0);
   }, [tenant?.id, loadPosts]);
 
   // Refresh on query param
