@@ -113,13 +113,23 @@ export default function Notifications() {
       setIsOwner(hasOwnership);
       
       if (!hasOwnership) {
-        const { data: notifs } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(30);
+        const tenantIds = (mems || []).map(m => m.tenant_id).filter(Boolean);
+        const [{ data: notifs }, { data: events }, { data: appts }, { data: budgets }] = await Promise.all([
+          supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(30),
+          tenantIds.length > 0
+            ? supabase.from("event_registrations").select("*").eq("user_id", user.id).in("tenant_id", tenantIds).order("created_at", { ascending: false })
+            : { data: [] },
+          tenantIds.length > 0
+            ? supabase.from("appointment_requests").select("*").eq("user_id", user.id).in("tenant_id", tenantIds).order("created_at", { ascending: false })
+            : { data: [] },
+          tenantIds.length > 0
+            ? supabase.from("budget_requests").select("*").eq("user_id", user.id).in("tenant_id", tenantIds).order("created_at", { ascending: false })
+            : { data: [] },
+        ]);
         setNotifications(notifs || []);
+        setEventRegistrations(events || []);
+        setAppointments(appts || []);
+        setBudgetRequests(budgets || []);
         setLoading(false);
         return;
       }
@@ -766,7 +776,123 @@ export default function Notifications() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-6">
+            {/* B2C: Event Registrations */}
+            {eventRegistrations.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold text-muted-foreground">Inscrições em Eventos</h3>
+                <div className="space-y-3">
+                  {eventRegistrations.map(r => (
+                    <div key={r.id} className="bg-card border border-green-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{r.event_name || "Evento"}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {r.event_date ? new Date(r.event_date).toLocaleDateString("pt-BR") : ""} {r.event_time ? `• ${r.event_time}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          r.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                          r.status === "confirmed" ? "bg-green-100 text-green-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {r.status === "pending" ? "Aguardando confirmação" :
+                           r.status === "confirmed" ? "Confirmado" :
+                           "Cancelado"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* B2C: Appointment Requests */}
+            {appointments.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold text-muted-foreground">Agendamentos</h3>
+                <div className="space-y-3">
+                  {appointments.map(a => (
+                    <div key={a.id} className="bg-card border border-purple-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                            <Calendar className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{a.service_name || "Serviço"}</p>
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {a.selected_time} • {a.service_date ? new Date(a.service_date).toLocaleDateString("pt-BR") : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          a.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                          a.status === "approved" ? "bg-green-100 text-green-700" :
+                          a.status === "completed" ? "bg-blue-100 text-blue-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {a.status === "pending" ? "Aguardando aprovação" :
+                           a.status === "approved" ? "Aprovado" :
+                           a.status === "completed" ? "Concluído" :
+                           "Cancelado"}
+                        </span>
+                      </div>
+                      {a.message && (
+                        <p className="text-sm text-muted-foreground">{a.message}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* B2C: Budget Requests */}
+            {budgetRequests.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold text-muted-foreground">Orçamentos</h3>
+                <div className="space-y-3">
+                  {budgetRequests.map(b => (
+                    <div key={b.id} className="bg-card border border-blue-200 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Mail className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{b.name || "Orçamento"}</p>
+                            <p className="text-sm text-muted-foreground">{b.email || "-"}</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          b.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                          b.status === "contacted" ? "bg-green-100 text-green-700" :
+                          b.status === "completed" ? "bg-blue-100 text-blue-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {b.status === "pending" ? "Aguardando contato" :
+                           b.status === "contacted" ? "Em contato" :
+                           b.status === "completed" ? "Concluído" :
+                           "Cancelado"}
+                        </span>
+                      </div>
+                      {b.message && (
+                        <p className="text-sm text-muted-foreground">{b.message}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Notifications */}
+            <h3 className="text-sm font-semibold text-muted-foreground">Notificações</h3>
+            <div className="space-y-3">
             {notifications.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -847,6 +973,7 @@ export default function Notifications() {
               </div>
               );
             })}
+            </div>
           </div>
         )}
       </div>
