@@ -94,16 +94,18 @@ const InviteLinks = lazy(() => import("./pages/admin/InviteLinks"));
 const Offline = lazy(() => import("./pages/Offline"));
 const InviteLanding = lazy(() => import("./pages/InviteLanding"));
 const WaitingApproval = lazy(() => import("./pages/WaitingApproval"));
+const BlockedPage = lazy(() => import("./pages/BlockedPage"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, loading: authLoading, initializing, isB2C, appRole } = useAuth();
-  const { loading: tenantLoading, tenant } = useTenant();
+  const { loading: tenantLoading, tenant, blocked } = useTenant();
 
   if (initializing) return <Loading />;
   if (authLoading) return <Loading />;
   if (!user) return <Navigate to="/auth" replace />;
   if (user && appRole === null) return <Loading />;
   if (tenantLoading) return <Loading />;
+  if (blocked) return <Navigate to="/blocked" replace />;
   if (!tenant) {
     if (isB2C) {
       return children;
@@ -206,6 +208,7 @@ const App = () => (
                     <Route path="/groups/:groupId" element={<Protected><GroupDetail /></Protected>} />
                     <Route path="/profile" element={<Protected><Profile /></Protected>} />
                     <Route path="/offline" element={<Offline />} />
+                    <Route path="/blocked" element={<BlockedPage />} />
                     <Route path="*" element={<Navigate to="/feed" replace />} />
                   </Routes>
                 </AppEntrance>

@@ -19,13 +19,14 @@ type TenantCtx = {
   tenants: Tenant[];
   isOwner: boolean;
   canManage: boolean;
+  blocked: boolean;
   loading: boolean;
   selectTenant: (id: string) => void;
   refresh: () => Promise<void>;
 };
 
 const Ctx = createContext<TenantCtx>({
-  tenant: null, tenants: [], isOwner: false, canManage: false, loading: true,
+  tenant: null, tenants: [], isOwner: false, canManage: false, blocked: false, loading: true,
   selectTenant: () => {}, refresh: async () => {},
 });
 
@@ -37,6 +38,8 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
   const [canManage, setCanManage] = useState(false);
 const [loading, setLoading] = useState(true);
   const [memRoles, setMemRoles] = useState<TenantRoles>({} as TenantRoles);
+  const [blocked, setBlocked] = useState(false);
+  const [memActive, setMemActive] = useState<Record<string, boolean>>({});
   const [manualSelectionPending, setManualSelectionPending] = useState(false);
   const [manualSelectedTenantId, setManualSelectedTenantId] = useState<string | null>(null);
   const lastLoadedUserId = useRef<string | null>(null);
@@ -55,22 +58,26 @@ const [loading, setLoading] = useState(true);
       setTenant(null);
       setIsOwner(false);
       setCanManage(false);
+      setBlocked(false);
       setLoading(false);
       return;
     }
     try {
     const { data: mems } = await supabase
       .from("memberships")
-      .select("tenant_id, role, tenants(*)")
+      .select("tenant_id, role, is_active, tenants(*)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     const list = (mems ?? []).map((m: unknown) => (m as { tenants: Tenant })?.tenants).filter(Boolean) as Tenant[];
     const roles: TenantRoles = {} as TenantRoles;
+    const activeMap: Record<string, boolean> = {};
     (mems ?? []).forEach((m: unknown) => {
-      const membership = m as { tenant_id: string; role: "owner" | "admin" | "member" };
+      const membership = m as { tenant_id: string; role: "owner" | "admin" | "member"; is_active: boolean };
       roles[membership.tenant_id] = membership.role;
+      activeMap[membership.tenant_id] = membership.is_active;
     });
     setMemRoles(roles);
+    setMemActive(activeMap);
     setTenants(list);
 
     let targetTenant: Tenant | null = null;
@@ -154,6 +161,10 @@ const [loading, setLoading] = useState(true);
       setManualSelectedTenantId(null);
     }
 
+    const isAdminOrOwner = targetRole === "owner" || targetRole === "admin";
+    const membershipActive = targetTenant ? activeMap[targetTenant.id] : undefined;
+    setBlocked(!!targetTenant && !isAdminOrOwner && membershipActive === false);
+
 if (targetTenant && targetRole) {
       setTenant(targetTenant);
       setIsOwner(targetRole === "owner");
@@ -163,6 +174,7 @@ if (targetTenant && targetRole) {
       setTenant(null);
       setIsOwner(false);
       setCanManage(false);
+      setBlocked(false);
     }
     } catch (err) {
       console.error("[TenantContext] Error loading tenants:", err);
@@ -182,19 +194,21 @@ if (targetTenant && targetRole) {
     const t = tenants.find((x) => x.id === id);
     if (!t) return;
     const role = memRoles[id];
+    const isAdminOrOwner = role === "owner" || role === "admin";
     setTenant(t);
     setIsOwner(role === "owner");
-    setCanManage(role === "owner" || role === "admin");
+    setCanManage(isAdminOrOwner);
+    setBlocked(!isAdminOrOwner && memActive[id] === false);
     localStorage.setItem("weaze:active_tenant", id);
     localStorage.setItem("weaze:last_active_tenant", id);
     if (isManual) {
       setManualSelectionPending(true);
       setManualSelectedTenantId(id);
     }
-  }, [tenants, memRoles]);
+  }, [tenants, memRoles, memActive]);
 
   return (
-    <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, loading, selectTenant, refresh }}>
+      <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, blocked, loading, selectTenant, refresh }}>
       {children}
     </Ctx.Provider>
   );

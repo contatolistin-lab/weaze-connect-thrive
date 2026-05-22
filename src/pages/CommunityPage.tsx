@@ -315,6 +315,23 @@ if (loading) {
       );
     }
 
+    if (accessStatus === "blocked") {
+      return (
+        <div className="bg-orange-50 rounded-3xl border border-orange-200 p-6 space-y-4 shadow-soft">
+          <div className="flex items-center gap-3 text-orange-700">
+            <XCircle className="h-8 w-8" />
+            <h2 className="font-semibold text-lg">Acesso Bloqueado</h2>
+          </div>
+          <p className="text-orange-800">
+            Você não tem acesso a <strong>{tenant.name}</strong>.
+          </p>
+          <p className="text-sm text-orange-600">
+            Para mais informações, entre em contato com o administrador da comunidade.
+          </p>
+        </div>
+      );
+    }
+
     if (accessStatus === "approved") {
       return (
         <div className="bg-green-50 rounded-3xl border border-green-200 p-6 space-y-4 shadow-soft">
