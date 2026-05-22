@@ -50,7 +50,9 @@ const [loading, setLoading] = useState(true);
       if (!user) setLoading(false);
       return;
     }
+    const prev = lastLoadedUserId.current;
     lastLoadedUserId.current = uid;
+    console.log("[TenantContext] LOADING => true", { prev, uid });
 
     setLoading(true);
     if (!user) {
@@ -179,11 +181,15 @@ if (targetTenant && targetRole) {
     } catch (err) {
       console.error("[TenantContext] Error loading tenants:", err);
     } finally {
+      console.log("[TenantContext] LOADING => false");
       setLoading(false);
     }
   }, [user]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    console.log("[TenantContext] effect triggered, calling load()");
+    load();
+  }, [load]);
 
   const refresh = useCallback(async () => {
     lastLoadedUserId.current = null;

@@ -31,8 +31,10 @@ export default function Feed() {
   const doneRef = useRef(false);
 
   const loadPosts = useCallback(async (offset = 0) => {
+    console.log("[Feed] loadPosts called", { offset, hasTenant: !!tenant, loadingRef: loadingRef.current, doneRef: doneRef.current });
     if (!tenant || loadingRef.current || doneRef.current) return;
     loadingRef.current = true;
+    console.log("[Feed] Setting loading true");
     setLoading(true);
 
     try {
@@ -209,7 +211,10 @@ export default function Feed() {
     return () => io.disconnect();
   }, [posts.length]);
 
-  if (tLoading || !initialLoadDone) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  if (tLoading || !initialLoadDone) {
+    console.log("[Feed] Carregando... tLoading:", tLoading, "initialLoadDone:", initialLoadDone);
+    return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  }
 
   // B2B sem tenant → criar marca
   if (!tenant && isB2B) {
