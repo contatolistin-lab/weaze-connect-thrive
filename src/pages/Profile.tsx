@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 export default function Profile() {
   const { user, signOut, isB2B, appRole } = useAuth();
-  const { tenant, isOwner, canManage } = useTenant();
+  const { tenant, isOwner, canManage, refresh } = useTenant();
 
   const nav = useNavigate();
   
@@ -120,8 +120,14 @@ export default function Profile() {
       state: state.trim() || null,
       country: country.trim() || null,
     }).eq("user_id", user.id);
+    if (error) { setLoading(false); toast.error(error.message); return; }
+
+    if (tenant && (isOwner || canManage)) {
+      await supabase.from("tenants").update({ name: name.trim() }).eq("id", tenant.id);
+      await refresh();
+    }
+
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
     toast.success("Perfil atualizado");
   };
 
