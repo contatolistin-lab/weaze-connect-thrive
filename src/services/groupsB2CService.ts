@@ -215,3 +215,60 @@ export async function deleteGroupPost(postId: string) {
 
   return { error: error?.message || null };
 }
+
+export type B2CGroupReply = {
+  id: string;
+  post_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  profiles?: { name: string | null; avatar_url: string | null };
+};
+
+export async function getGroupPostReplies(postId: string): Promise<{ data: B2CGroupReply[] | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from("group_replies")
+    .select("*")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+
+  if (error) return { data: null, error: error.message };
+
+  const replies = data as B2CGroupReply[];
+  const authorIds = [...new Set(replies.map(r => r.author_id))];
+  if (authorIds.length > 0) {
+    const { data: profiles } = await supabase
+      .rpc("get_profiles_by_ids", { p_user_ids: authorIds });
+    const profileMap = Object.fromEntries(
+      (profiles as { user_id: string; name: string; avatar_url: string | null }[] | null)?.map(p => [p.user_id, { name: p.name, avatar_url: p.avatar_url }]) || []
+    );
+    for (const reply of replies) {
+      reply.profiles = profileMap[reply.author_id] || null;
+    }
+  }
+
+  return { data: replies, error: null };
+}
+
+export async function createGroupPostReply(postId: string, authorId: string, content: string): Promise<{ data: B2CGroupReply | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from("group_replies")
+    .insert({
+      post_id: postId,
+      author_id: authorId,
+      content: content.trim(),
+    })
+    .select()
+    .single();
+
+  if (error) return { data: null, error: error.message };
+
+  const reply = data as B2CGroupReply;
+  const { data: profileData } = await supabase
+    .rpc("get_profiles_by_ids", { p_user_ids: [authorId] });
+  const profile = (profileData && profileData.length > 0)
+    ? { name: profileData[0].name, avatar_url: profileData[0].avatar_url }
+    : null;
+
+  return { data: { ...reply, profiles: profile }, error: null };
+}

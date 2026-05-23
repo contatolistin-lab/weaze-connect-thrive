@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   getGroupDetail,
   getGroupMembersCount,
@@ -9,6 +9,9 @@ import {
   deleteGroupPost,
   B2CGroup,
   B2CGroupPost,
+  B2CGroupReply,
+  getGroupPostReplies,
+  createGroupPostReply,
 } from "@/services/groupsB2CService";
 
 export function useB2CGroupDetail(groupId: string | null) {
@@ -20,6 +23,14 @@ export function useB2CGroupDetail(groupId: string | null) {
   const [error, setError] = useState<string | null>(null);
   const [canPost, setCanPost] = useState(true);
   const [postError, setPostError] = useState<string | null>(null);
+
+  const [replies, setReplies] = useState<Record<string, B2CGroupReply[]>>({});
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [repliesLoading, setRepliesLoading] = useState<Record<string, boolean>>({});
+  const [sendingReply, setSendingReply] = useState(false);
+
+  const repliesRef = useRef(replies);
+  useEffect(() => { repliesRef.current = replies; }, [replies]);
 
   const load = useCallback(async () => {
     if (!groupId) return;
@@ -93,5 +104,35 @@ export function useB2CGroupDetail(groupId: string | null) {
     return { success: true };
   }, []);
 
-  return { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost, editPost, removePost };
+  const openReplies = useCallback(async (postId: string) => {
+    if (repliesRef.current[postId]) {
+      setReplyingTo(postId);
+      return;
+    }
+
+    setRepliesLoading(prev => ({ ...prev, [postId]: true }));
+    setReplyingTo(postId);
+
+    const result = await getGroupPostReplies(postId);
+    if (!result.error && result.data) {
+      setReplies(prev => ({ ...prev, [postId]: result.data }));
+    }
+    setRepliesLoading(prev => ({ ...prev, [postId]: false }));
+  }, []);
+
+  const sendReply = useCallback(async (postId: string, authorId: string, content: string) => {
+    if (!content.trim()) return { success: false, error: "Conteúdo vazio" };
+
+    setSendingReply(true);
+    const result = await createGroupPostReply(postId, authorId, content.trim());
+    setSendingReply(false);
+
+    if (result.error) return { success: false, error: result.error };
+    if (result.data) {
+      setReplies(prev => ({ ...prev, [postId]: [...(prev[postId] || []), result.data!] }));
+    }
+    return { success: true };
+  }, []);
+
+  return { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost, editPost, removePost, replies, replyingTo, repliesLoading, sendingReply, openReplies, sendReply };
 }

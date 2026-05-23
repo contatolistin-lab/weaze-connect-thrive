@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useB2CGroupDetail } from "@/hooks/groups/useB2CGroupDetail";
 import { markGroupVisited } from "@/services/groupsB2CService";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Send, Users, Pencil, Trash2, X, Check } from "lucide-react";
+import { Loader2, ArrowLeft, Send, Users, Pencil, Trash2, X, Check, CornerDownRight } from "lucide-react";
 
 function getOnboardingKey(groupId: string) {
   return `group_onboarding_${groupId}`;
@@ -14,7 +14,7 @@ export default function GroupDetailB2C() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost, editPost, removePost } = useB2CGroupDetail(groupId || null);
+  const { group, membersCount, posts, loading, sending, error, canPost, postError, load, sendPost, checkCanPost, editPost, removePost, replies, replyingTo, repliesLoading, sendingReply, openReplies, sendReply } = useB2CGroupDetail(groupId || null);
   const [inputText, setInputText] = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [memberCheckDone, setMemberCheckDone] = useState(false);
@@ -22,6 +22,7 @@ export default function GroupDetailB2C() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const [newReply, setNewReply] = useState("");
 
   useEffect(() => {
     load();
@@ -46,16 +47,18 @@ export default function GroupDetailB2C() {
     if (!loading && group && user && groupId && !memberCheckDone) {
       let timer: ReturnType<typeof setTimeout>;
       const checkMembership = async () => {
-        const { data } = await supabase
-          .from("group_members")
-          .select("id")
-          .eq("group_id", groupId)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (!data) {
-          setRemoved(true);
-          timer = setTimeout(() => navigate("/groups/b2c"), 2000);
-        }
+        try {
+          const { data } = await supabase
+            .from("group_members")
+            .select("id")
+            .eq("group_id", groupId)
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (!data) {
+            setRemoved(true);
+            timer = setTimeout(() => navigate("/groups/b2c"), 2000);
+          }
+        } catch { /* ignore */ }
         setMemberCheckDone(true);
       };
       checkMembership();
@@ -65,22 +68,28 @@ export default function GroupDetailB2C() {
 
   async function handleSend() {
     if (!inputText.trim() || !user || sending) return;
-    const result = await sendPost(user.id, inputText.trim());
-    if (result.success) {
-      setInputText("");
-      if (inputRef.current) inputRef.current.focus();
-    }
+    try {
+      const result = await sendPost(user.id, inputText.trim());
+      if (result.success) {
+        setInputText("");
+        if (inputRef.current) inputRef.current.focus();
+      }
+    } catch { /* ignore */ }
   }
 
   async function handleEditPost(postId: string) {
     if (!editText.trim()) return;
-    await editPost(postId, editText.trim());
-    setEditingPostId(null);
-    setEditText("");
+    try {
+      await editPost(postId, editText.trim());
+      setEditingPostId(null);
+      setEditText("");
+    } catch { /* ignore */ }
   }
 
   async function handleDeletePost(postId: string) {
-    await removePost(postId);
+    try {
+      await removePost(postId);
+    } catch { /* ignore */ }
   }
 
   function startEditing(post: { id: string; content: string | null }) {
@@ -91,6 +100,14 @@ export default function GroupDetailB2C() {
   function cancelEditing() {
     setEditingPostId(null);
     setEditText("");
+  }
+
+  async function handleSendReply(postId: string) {
+    if (!user || !newReply.trim() || sendingReply) return;
+    const result = await sendReply(postId, user.id, newReply.trim());
+    if (result.success) {
+      setNewReply("");
+    }
   }
 
   if (loading && !group) {
@@ -207,6 +224,55 @@ export default function GroupDetailB2C() {
                     </div>
                   ) : (
                     <p style={{ fontSize: 14, lineHeight: 1.5, color: "#444", wordBreak: "break-word", whiteSpace: "pre-wrap" }}>{post.content}</p>
+                  )}
+
+                  <button
+                    onClick={() => openReplies(post.id)}
+                    style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#888", marginTop: 8, padding: 0 }}
+                  >
+                    <CornerDownRight size={14} />
+                    Responder
+                    {(replies[post.id]?.length || 0) > 0 && ` (${replies[post.id].length})`}
+                  </button>
+
+                  {replyingTo === post.id && (
+                    <div style={{ marginTop: 10, paddingLeft: 12, borderLeft: "2px solid #e0e0e0" }}>
+                      {repliesLoading[post.id] ? (
+                        <div style={{ display: "flex", justifyContent: "center", padding: 8 }}>
+                          <Loader2 className="h-4 w-4 animate-spin" color="#999" />
+                        </div>
+                      ) : !replies[post.id] || replies[post.id].length === 0 ? (
+                        <p style={{ fontSize: 12, color: "#999" }}>Nenhuma resposta ainda</p>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {replies[post.id].map(reply => (
+                            <div key={reply.id} style={{ background: "#f5f5f5", borderRadius: 8, padding: "8px 10px" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                                <span style={{ fontSize: 11, fontWeight: 500, color: "#555" }}>{reply.profiles?.name || "Usuário"}</span>
+                                <span style={{ fontSize: 10, color: "#aaa" }}>{formatTime(reply.created_at)}</span>
+                              </div>
+                              <p style={{ fontSize: 13, color: "#444", lineHeight: 1.4, wordBreak: "break-word", whiteSpace: "pre-wrap" }}>{reply.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                        <input
+                          value={newReply}
+                          onChange={(e) => setNewReply(e.target.value)}
+                          placeholder="Escrever resposta..."
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSendReply(post.id); } }}
+                          style={{ flex: 1, padding: "6px 10px", borderRadius: 16, border: "1px solid #e0e0e0", fontSize: 13, outline: "none" }}
+                        />
+                        <button
+                          onClick={() => handleSendReply(post.id)}
+                          disabled={sendingReply || !newReply.trim()}
+                          style={{ width: 32, height: 32, borderRadius: "50%", background: newReply.trim() && !sendingReply ? "#630091" : "#ccc", border: "none", cursor: newReply.trim() && !sendingReply ? "pointer" : "default", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                        >
+                          {sendingReply ? <Loader2 className="h-3 w-3 animate-spin" color="#fff" /> : <Send size={12} color="#fff" />}
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {isAuthor && editingPostId !== post.id && (
