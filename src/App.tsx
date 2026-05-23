@@ -192,6 +192,8 @@ const App = () => (
                     <Route path="/metrics/users" element={<Protected><AdminUsers /></Protected>} />
                     
                     <Route path="/metrics/tenants" element={<Protected><AdminTenants /></Protected>} />
+                    <Route path="/metrics/content" element={<Protected><AdminContent /></Protected>} />
+                    <Route path="/metrics/invites" element={<Protected><InviteLinks /></Protected>} />
                     <Route path="/admin" element={<Protected><AdminGlobal /></Protected>} />
                     <Route path="/create" element={<Protected><CreatePost /></Protected>} />
                     
