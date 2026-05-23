@@ -6,9 +6,9 @@ import { useTenant } from "@/contexts/TenantContext";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
-import { Loader2, MessageCircle, User, MapPin, Check, X, Users } from "lucide-react";
+import { Loader2, MessageCircle, User, MapPin, Check, X, Users, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { toggleMemberActive, getTenantMembers } from "@/lib/communityAccess";
+import { toggleMemberActive, getTenantMembers, removeMember } from "@/lib/communityAccess";
 
 type Member = {
   user_id: string;
@@ -31,6 +31,7 @@ export default function Members() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user || !canManage || !tenant) {
@@ -64,6 +65,22 @@ export default function Members() {
       setMembers(prev => prev.map(m => m.user_id === member.user_id ? { ...m, is_active: newStatus } : m));
     } else {
       toast.error(result.error || "Erro ao atualizar");
+    }
+  };
+
+  const handleRemoveMember = async (member: Member) => {
+    if (!user || !tenant) return;
+    if (!window.confirm(`Tem certeza que deseja excluir ${member.profiles?.name || "este membro"}?`)) return;
+
+    setRemoving(member.user_id);
+    const result = await removeMember(member.user_id, tenant.id, user.id);
+    setRemoving(null);
+
+    if (result.success) {
+      toast.success("Membro removido");
+      setMembers(prev => prev.filter(m => m.user_id !== member.user_id));
+    } else {
+      toast.error(result.error || "Erro ao remover");
     }
   };
 
@@ -198,6 +215,18 @@ export default function Members() {
                       <MessageCircle className="h-4 w-4 mr-1.5" />
                       Mensagem
                     </Button>
+
+                    <button
+                      onClick={() => handleRemoveMember(member)}
+                      disabled={removing === member.user_id}
+                      className="w-full mt-2 py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 border border-red-200 transition-all"
+                    >
+                      {removing === member.user_id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <><Trash2 className="h-4 w-4" /> Excluir</>
+                      )}
+                    </button>
                   </div>
                 </div>
               );

@@ -200,6 +200,44 @@ export const toggleMemberActive = async (
   return { success: true };
 };
 
+export const removeMember = async (
+  memberUserId: string,
+  tenantId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error?: string }> => {
+  const { data: membership } = await supabase
+    .from("memberships")
+    .select("role")
+    .eq("user_id", adminUserId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!membership || !["owner", "admin"].includes(membership.role)) {
+    return { success: false, error: "Não autorizado" };
+  }
+
+  const { data: targetMembership } = await supabase
+    .from("memberships")
+    .select("role")
+    .eq("user_id", memberUserId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!targetMembership || targetMembership.role === "owner") {
+    return { success: false, error: "Não é possível remover este membro" };
+  }
+
+  const { error } = await supabase
+    .from("memberships")
+    .delete()
+    .eq("user_id", memberUserId)
+    .eq("tenant_id", tenantId);
+
+  if (error) return { success: false, error: error.message };
+
+  return { success: true };
+};
+
 export const getTenantMembers = async (
   tenantId: string,
   adminUserId: string
