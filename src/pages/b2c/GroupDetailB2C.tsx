@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useB2CGroupDetail } from "@/hooks/groups/useB2CGroupDetail";
 import { markGroupVisited } from "@/services/groupsB2CService";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Send, Users, Pencil, Trash2, X, Check, CornerDownRight } from "lucide-react";
+import { Loader2, ArrowLeft, Send, Users, Pencil, Trash2, X, Check, CornerDownRight, Pin } from "lucide-react";
 
 function getOnboardingKey(groupId: string) {
   return `group_onboarding_${groupId}`;
@@ -198,6 +198,12 @@ export default function GroupDetailB2C() {
                     <span style={{ fontSize: 13, fontWeight: 500, color: "#333" }}>{post.profiles?.name || "Usuário"}</span>
                     <span style={{ fontSize: 11, color: "#aaa", marginLeft: "auto" }}>{formatTime(post.created_at)}</span>
                   </div>
+
+                  {post.is_pinned && (
+                    <div style={{ fontSize: 11, color: "#630091", fontWeight: 500, marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}>
+                      <Pin size={12} /> Mensagem fixada
+                    </div>
+                  )}
 
                   {editingPostId === post.id ? (
                     <div>

@@ -15,6 +15,7 @@ export type B2CGroupPost = {
   group_id: string;
   author_id: string;
   content: string | null;
+  is_pinned: boolean;
   created_at: string;
   profiles?: { name: string | null; avatar_url: string | null };
 };
@@ -136,7 +137,8 @@ export async function getGroupPosts(groupId: string) {
     .from("group_posts")
     .select("*")
     .eq("group_id", groupId)
-    .order("created_at", { ascending: false });
+    .order("is_pinned", { ascending: false })
+    .order("created_at", { ascending: true });
 
   if (error) return { data: null as B2CGroupPost[] | null, error: error.message };
 
