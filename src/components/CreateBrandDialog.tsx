@@ -41,7 +41,7 @@ export default function CreateBrandDialog({ open, onOpenChange, onCreated }: Pro
     if (!logoFile) return null;
     try {
       const ext = logoFile.name.split(".").pop();
-      const path = `logos/${tenantId}.${ext}`;
+      const path = `${tenantId}/logo.${ext}`;
       const { error } = await supabase.storage.from("public").upload(path, logoFile, { upsert: true });
       if (error) { toast.error(`Erro ao upload: ${error.message}`); return null; }
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);

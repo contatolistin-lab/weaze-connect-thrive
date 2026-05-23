@@ -64,7 +64,7 @@ export default function Profile() {
     if (!avatarFile || !user) return null;
     try {
       const ext = avatarFile.name.split(".").pop();
-      const path = `avatars/${user.id}.${ext}`;
+      const path = `${user.id}/avatar.${ext}`;
       const { error } = await supabase.storage.from("public").upload(path, avatarFile, { upsert: true });
       if (error) { toast.error(`Erro ao upload: ${error.message}`); return null; }
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
@@ -79,7 +79,7 @@ export default function Profile() {
     if (!tenantLogoFile || !tenant) return false;
     try {
       const ext = tenantLogoFile.name.split(".").pop();
-      const path = `logos/${tenant.id}.${ext}`;
+      const path = `${tenant.id}/logo.${ext}`;
       const { error } = await supabase.storage.from("public").upload(path, tenantLogoFile, { upsert: true });
       if (error) { toast.error(`Erro ao upload: ${error.message}`); return false; }
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);

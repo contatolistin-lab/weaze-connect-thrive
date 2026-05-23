@@ -70,7 +70,7 @@ export default function CommentsSheet({
     setUploading(true);
     try {
       const ext = image.name.split(".").pop() ?? "jpg";
-      const path = `comments/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${tenantId}/comments/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("public").upload(path, image, { upsert: true });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from("public").getPublicUrl(path);
