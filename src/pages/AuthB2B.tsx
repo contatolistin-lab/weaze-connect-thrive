@@ -24,6 +24,12 @@ export default function AuthB2B() {
   const [signup, setSignup] = useState({ name: "", email: "", password: "" });
   const [login, setLogin] = useState({ email: "", password: "" });
 
+  useEffect(() => {
+    if (user) {
+      nav("/feed", { replace: true });
+    }
+  }, [user, nav]);
+
   if (initializing || authLoading) {
     return (
       <main className="min-h-screen bg-background grid place-items-center">
@@ -34,12 +40,6 @@ export default function AuthB2B() {
       </main>
     );
   }
-
-  useEffect(() => {
-    if (user) {
-      nav("/feed", { replace: true });
-    }
-  }, [user, nav]);
 
   if (user) return null;
 
