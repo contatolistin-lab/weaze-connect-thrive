@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const isOwnerOrAdmin = roles.includes("owner") || roles.includes("admin");
           const newRole: AppRole | null = isOwnerOrAdmin 
             ? (roles.includes("admin") ? "admin" : "b2b") 
-            : (mems && mems.length > 0 ? "b2c" : "b2c");
+            : (data.session.user.user_metadata?.account_type === "b2b" ? "b2b" : "b2c");
           
           setAppRole(newRole);
           setUserState({
@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const isOwnerOrAdmin = roles.includes("owner") || roles.includes("admin");
             const newRole: AppRole | null = isOwnerOrAdmin
               ? (roles.includes("admin") ? "admin" : "b2b")
-              : "b2c";
+              : (s.user.user_metadata?.account_type === "b2b" ? "b2b" : "b2c");
 
             setAppRole(newRole);
             setUserState({
@@ -210,7 +210,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (isOwnerOrAdmin) {
         newRole = roles.includes("admin") ? "admin" : "b2b";
       } else {
-        newRole = "b2c";
+        newRole = (user?.user_metadata?.account_type === "b2b" ? "b2b" : "b2c");
       }
 
       setAppRole(newRole);

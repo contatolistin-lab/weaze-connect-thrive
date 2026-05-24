@@ -65,7 +65,7 @@ export default function AuthB2B() {
 
     setLoading(false);
     toast.success("Conta criada! Agora crie sua marca.");
-    nav("/feed", { replace: true });
+    nav("/communities", { replace: true });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
