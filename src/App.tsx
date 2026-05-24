@@ -124,29 +124,13 @@ const Protected = ({ children }: { children: JSX.Element }) => {
   const { loading: tenantLoading, tenant, blocked } = useTenant();
   const tenantEverLoaded = useRef(false);
   const appRoleStuckRef = useRef<number>(0);
-  const [appRoleDebounce, setAppRoleDebounce] = useState(true);
-  const hadValidRole = useRef(false);
 
   if (!tenantLoading) tenantEverLoaded.current = true;
-  if (user && appRole !== null) hadValidRole.current = true;
-
-  useEffect(() => {
-    if (appRole === null && hadValidRole.current) {
-      setAppRoleDebounce(true);
-      const t = setTimeout(() => setAppRoleDebounce(false), 2_000);
-      return () => clearTimeout(t);
-    } else {
-      setAppRoleDebounce(false);
-    }
-  }, [appRole]);
 
   if (initializing) return <Loading />;
   if (authLoading) return <Loading />;
   if (!user) return <Navigate to="/auth" replace />;
   if (user && appRole === null) {
-    if (hadValidRole.current && appRoleDebounce) {
-      return <>{children}</>;
-    }
     if (appRoleStuckRef.current === 0) {
       appRoleStuckRef.current = Date.now();
     } else if (Date.now() - appRoleStuckRef.current > 10_000) {
