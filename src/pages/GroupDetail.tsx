@@ -596,7 +596,7 @@ export default function GroupDetail() {
         tenantId={tenant?.id || ""}
         groupId={groupId || ""}
         onAddMember={handleAddMember}
-        onSearch={handleSearchMembers}
+        onSearch={searchMembers}
         onClearSearch={clearSearch}
         searchResults={searchResults}
         searching={searching}
