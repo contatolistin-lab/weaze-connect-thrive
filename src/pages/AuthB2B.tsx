@@ -26,7 +26,7 @@ export default function AuthB2B() {
 
   useEffect(() => {
     if (user) {
-      nav("/communities", { replace: true });
+      nav("/feed", { replace: true });
     }
   }, [user, nav]);
 
@@ -69,8 +69,8 @@ export default function AuthB2B() {
     }
 
     setLoading(false);
-    toast.success("Conta criada! Agora crie sua marca.");
-    nav("/communities", { replace: true });
+    toast.success("Conta criada! Bem-vindo ao Weaze.");
+    nav("/feed", { replace: true });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
