@@ -15,7 +15,7 @@ const features = [
   { icon: Megaphone, title: "CTAs", desc: "Comprar, agendar, orçamento, inscrição" },
   { icon: Calendar, title: "Serviços", desc: "Agendamentos com horários" },
   { icon: ClipboardCheck, title: "Eventos", desc: "Inscrições em eventos" },
-  { icon: ExternalLink, title: "Lives", desc: "Transmissões ao vivo" },
+  { icon: ExternalLink, title: "Links", desc: "Links externos no feed" },
   { icon: MessageSquare, title: "Conversas", desc: "Chat da comunidade" },
   { icon: Users, title: "Membros", desc: "Lista e gestão" },
   { icon: BarChart3, title: "Dados", desc: "Métricas e funil" },
