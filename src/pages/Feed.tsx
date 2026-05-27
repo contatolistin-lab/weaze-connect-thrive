@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import FeedItem, { Post } from "@/components/feed/FeedItem";
 import TopBar from "@/components/layout/TopBar";
 import BottomNav from "@/components/layout/BottomNav";
+import FeedLayout from "@/components/layout/FeedLayout";
 import CreateBrandDialog from "@/components/CreateBrandDialog";
 import { Sparkles, Plus, Play, Video } from "lucide-react";
 
@@ -247,8 +248,9 @@ export default function Feed() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-background">
-      <TopBar />
+    <FeedLayout>
+      <div className="h-[100dvh] md:h-full flex flex-col">
+        <div className="md:hidden"><TopBar /></div>
       {/* Live indicator at top when there's an active live */}
       {activeLiveUrl && (
         <button
@@ -307,7 +309,8 @@ export default function Feed() {
         {loading && <div className="py-6 text-center text-muted-foreground text-sm">Carregando…</div>}
       </div>
       
-      <BottomNav />
-    </div>
+      <div className="md:hidden"><BottomNav /></div>
+      </div>
+    </FeedLayout>
   );
 }
