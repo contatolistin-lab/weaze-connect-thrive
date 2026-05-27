@@ -6,6 +6,7 @@ import LiveSocialProof from "@/components/LiveSocialProof";
 import {
   HeroSection,
   ProblemSection,
+  ConnectionSection,
   SolutionSection,
   HowItWorksSection,
   ProductSection,
@@ -38,6 +39,7 @@ export default function Landing() {
 
       <HeroSection />
       <ProblemSection />
+      <ConnectionSection />
       <SolutionSection />
       <section id="como-funciona">
         <HowItWorksSection />
