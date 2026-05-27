@@ -156,21 +156,19 @@ export default function HeroSection() {
           <motion.div
             className="relative mt-12 lg:mt-0"
           >
-            <motion.div
+            <div
               className="absolute -inset-8 rounded-[3rem] opacity-60 blur-2xl"
               style={{
                 background:
                   "linear-gradient(135deg, rgba(99,0,145,0.4), rgba(216,30,98,0.4))",
               }}
-              animate={{ opacity: [0.4, 0.7, 0.4] }}
-              transition={{ duration: 4, repeat: Infinity }}
             />
 
             <motion.div
               className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-white/40 bg-white mx-auto max-w-[280px] sm:max-w-md lg:max-w-none"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ y: [0, -10, 0], opacity: 1 }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
               <img
                 src={heroMockup}
