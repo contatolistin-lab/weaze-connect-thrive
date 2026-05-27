@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Video, Image, MessageSquare, Calendar, Users, BarChart3, Bell, Megaphone, Sparkles, ClipboardCheck, ExternalLink } from "lucide-react";
+import { Check, Video, Image, MessageSquare, Calendar, Users, BarChart3, Bell, Megaphone, Sparkles, ClipboardCheck } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -15,7 +15,7 @@ const features = [
   { icon: Megaphone, title: "CTAs", desc: "Comprar, agendar, orçamento, inscrição" },
   { icon: Calendar, title: "Serviços", desc: "Agendamentos com horários" },
   { icon: ClipboardCheck, title: "Eventos", desc: "Inscrições em eventos" },
-  { icon: ExternalLink, title: "Links", desc: "Links externos no feed" },
+  { icon: Video, title: "Lives", desc: "Adicione link para lives" },
   { icon: MessageSquare, title: "Conversas", desc: "Chat da comunidade" },
   { icon: Users, title: "Membros", desc: "Lista e gestão" },
   { icon: BarChart3, title: "Dados", desc: "Métricas e funil" },
