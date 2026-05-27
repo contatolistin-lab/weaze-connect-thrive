@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import heroMockup from "@/assets/landing-hero-mockup.jpg";
 
 const fadeInUp = {
@@ -77,69 +76,6 @@ export default function HeroSection() {
               Feed, mensagens, agenda e dados em um único app com a sua marca.
               Pare de depender de algoritmos - construa um ativo que é só seu.
             </motion.p>
-
-            <motion.div
-              variants={fadeInUp}
-              className="flex flex-wrap gap-4 mb-12"
-            >
-              <Link to="/auth">
-                <motion.button
-                  className="group relative inline-flex items-center gap-2 text-white px-8 py-4 rounded-full font-semibold overflow-hidden"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #630091 0%, #d81e62 100%)",
-                    boxShadow:
-                      "0 10px 40px -10px rgba(99, 0, 145, 0.6), 0 4px 12px -2px rgba(216, 30, 98, 0.3)",
-                  }}
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <span className="relative z-10">Começar agora</span>
-                  <ArrowRight className="relative z-10 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-[#d81e62] to-[#630091] opacity-0 group-hover:opacity-100 transition-opacity"
-                  />
-                </motion.button>
-              </Link>
-
-              <a href="#como-funciona">
-                <motion.button
-                  className="inline-flex items-center gap-2 bg-white text-[#1a1a1a] border-2 border-[#1a1a1a]/10 hover:border-[#630091]/30 px-8 py-4 rounded-full font-medium transition-colors"
-                  whileHover={{ scale: 1.03, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Play className="h-4 w-4 text-[#630091] fill-[#630091]" />
-                  Ver como funciona
-                </motion.button>
-              </a>
-            </motion.div>
-
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-center gap-6 pt-6 border-t border-[#1a1a1a]/8"
-            >
-              <div className="flex -space-x-2">
-                {[
-                  "from-[#630091] to-[#8b2091]",
-                  "from-[#8b2091] to-[#d81e62]",
-                  "from-[#d81e62] to-[#ff5a8a]",
-                  "from-[#630091] to-[#d81e62]",
-                ].map((g, i) => (
-                  <div
-                    key={i}
-                    className={`w-9 h-9 rounded-full bg-gradient-to-br ${g} ring-2 ring-white`}
-                  />
-                ))}
-              </div>
-              <div className="text-sm">
-                <div className="font-semibold text-[#1a1a1a]">
-                  Marcas reais, comunidades ativas
-                </div>
-                <div className="text-[#6a6a6a] text-xs">
-                  Creators, coaches, e-commerces e mais
-                </div>
-              </div>
-            </motion.div>
           </div>
 
           {/* RIGHT - mockup */}
