@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "username": "weaze-dev",
+  "instructions": ["AGENTS.md"],
+  "model": "anthropic/claude-sonnet-4-6",
+  "small_model": "anthropic/claude-haiku-3-5",
+  "command": {
+    "dev": { "description": "Start Vite dev server", "prompt": "Run `npm run dev` to start the development server." },
+    "build": { "description": "Build the project", "prompt": "Run `npm run build` to build for production." },
+    "test": { "description": "Run tests", "prompt": "Run `npm run test` to execute tests with Vitest." },
+    "lint": { "description": "Lint the codebase", "prompt": "Run `npm run lint` to check for lint issues." }
+  }
+}
