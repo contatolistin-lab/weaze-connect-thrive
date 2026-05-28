@@ -24,19 +24,7 @@ export default function Feed() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-
-  // Safety timeout: impede "Carregando…" eterno. Desliga-se após a primeira
-  // resolução de initialLoadDone, evitando reset não-intencional do estado.
-  const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (initialLoadDone) {
-      if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
-      return;
-    }
-    safetyTimerRef.current = setTimeout(() => setInitialLoadDone(true), 25_000);
-    return () => { if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current); };
-  }, [initialLoadDone]);
+  const [initialLoadDone, setInitialLoadDone] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const loadingRef = useRef(false);
