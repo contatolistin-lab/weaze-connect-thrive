@@ -122,64 +122,42 @@ const CommunityCreate = lazy(() => import("./pages/auth/CommunityCreate"));
 const CommunityFeedEmpty = lazy(() => import("./pages/CommunityFeedEmpty"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
-  const { user, loading: authLoading, initializing, appRole, refreshAppRole } = useAuth();
-  const { loading: tenantLoading, tenant, blocked, realLoadDone } = useTenant();
-  const [forceRender, setForceRender] = useState(false);
-  const appRoleStuckRef = useRef<number>(0);
-  const appRoleFallbackRef = useRef(false);
-  const everReadyRef = useRef(false);
+  const { user } = useAuth();
+  const { tenant, blocked } = useTenant();
   const userIdRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setForceRender(true), 30_000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (forceRender) return children;
-
-  // Critical guards — always enforce even after everReady
-  if (!user) {
-    everReadyRef.current = false;
-    userIdRef.current = null;
-    return <Navigate to="/auth" replace />;
-  }
+  // Redireciona se não há usuário
+  if (!user) return <Navigate to="/auth" replace />;
   if (blocked) return <Navigate to="/blocked" replace />;
 
-  // Detect user change — reset everReady only when a different user logs in
+  // Detecta troca de usuário para resetar lazy imports internos
   if (user.id !== userIdRef.current) {
-    everReadyRef.current = false;
     userIdRef.current = user.id;
   }
 
-  // After first successful render, skip all non-critical guards entirely
-  if (everReadyRef.current) return children;
-
-  // Auth guards — only on first pass
-  if (initializing) return <Loading />;
-  if (authLoading) return <Loading />;
-  if (appRole === null) {
-    if (appRoleStuckRef.current === 0) {
-      appRoleStuckRef.current = Date.now();
-    } else if (Date.now() - appRoleStuckRef.current > 10_000) {
-      if (!appRoleFallbackRef.current) {
-        appRoleFallbackRef.current = true;
-        refreshAppRole();
-      }
-      everReadyRef.current = true;
-      return children;
-    }
-    return <Loading />;
-  }
-  appRoleStuckRef.current = 0;
-  appRoleFallbackRef.current = false;
-
-  // Tenant guards — only on first pass
-  if (tenantLoading && !realLoadDone) return <Loading />;
-  if (!realLoadDone) return <Loading />;
-
-  everReadyRef.current = true;
   return children;
 };
+
+// GlobalLoader — carrega auth + tenant e bloqueia as rotas até tudo estar pronto.
+// Usa ref (nunca resetada) para que, depois da primeira resolução,
+// re-renders causados por login/token refresh NUNCA mostrem Loading de novo.
+function GlobalLoader({ children }: { children: React.ReactNode }) {
+  const { user, loading, initializing, appRole } = useAuth();
+  const { loading: tLoading, realLoadDone } = useTenant();
+  const readyRef = useRef(false);
+
+  // readyRef NUNCA é resetado — uma vez true, sempre true
+  if (!readyRef.current) {
+    const authDone = !initializing && !loading;
+    const tenantDone = !user || (user && appRole !== null && realLoadDone);
+    if (authDone && tenantDone) {
+      readyRef.current = true;
+    }
+  }
+
+  if (!readyRef.current) return <Loading />;
+  return <>{children}</>;
+}
 
 const B2BOnly = ({ children }: { children: JSX.Element }) => {
   const { user, loading, initializing, isB2B } = useAuth();
@@ -231,6 +209,7 @@ const App = () => (
           <Suspense fallback={<Loading />}>
             <AuthProvider>
               <TenantProvider>
+                <GlobalLoader>
                 <OnboardingTour />
                 <AppEntrance>
                   <Routes>
@@ -284,6 +263,7 @@ const App = () => (
                     <Route path="*" element={<Navigate to="/feed" replace />} />
                   </Routes>
                 </AppEntrance>
+                </GlobalLoader>
               </TenantProvider>
             </AuthProvider>
           </Suspense>

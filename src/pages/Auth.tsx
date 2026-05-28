@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTenant } from "@/contexts/TenantContext";
 import { Users, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const signupSchema = z.object({
 export default function Auth() {
   const nav = useNavigate();
   const { loading: authLoading, initializing, user, appRole } = useAuth();
+  const { loading: tLoading, realLoadDone } = useTenant();
   const [loading, setLoading] = useState(false);
   const [fromInvite, setFromInvite] = useState(false);
   const [inviteTenantName, setInviteTenantName] = useState<string | null>(null);
@@ -39,8 +41,8 @@ export default function Auth() {
     }
   }, []);
 
-  // Efeito de redirect imediato — sem Navigate, sem null render
-  const shouldRedirect = user && !authLoading && !initializing && appRole !== null;
+  // Só redireciona quando auth + tenant estiverem prontos — evita Feed renderizar sem tenant
+  const shouldRedirect = user && !authLoading && !initializing && appRole !== null && !tLoading && realLoadDone;
   const redirectTo = (() => {
     if (!shouldRedirect) return null;
     const slug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
@@ -57,7 +59,8 @@ export default function Auth() {
   }, [redirectTo, nav]);
 
   // Loading idêntico ao de App.tsx — fixed inset-0, sem flash
-  if (redirectTo || initializing || authLoading || (user && appRole === null)) {
+  const waitingTenant = user && appRole !== null && (tLoading || !realLoadDone);
+  if (redirectTo || initializing || authLoading || (user && appRole === null) || waitingTenant) {
     return (
       <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
         <div className="flex flex-col items-center gap-3">
