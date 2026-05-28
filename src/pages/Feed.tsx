@@ -26,18 +26,31 @@ export default function Feed() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Safety timeout: impede "Carregando…" eterno
+  const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (initialLoadDone) return;
+    loadTimeoutRef.current = setTimeout(() => setInitialLoadDone(true), 25_000);
+    return () => { if (loadTimeoutRef.current) clearTimeout(loadTimeoutRef.current); };
+  }, [initialLoadDone]);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const loadingRef = useRef(false);
   const doneRef = useRef(false);
 
   const loadPosts = useCallback(async (offset = 0) => {
-    if (!tenant || loadingRef.current || doneRef.current) return;
+    if (!tenant || doneRef.current) {
+      loadingRef.current = false;
+      setLoading(false);
+      setInitialLoadDone(true);
+      return;
+    }
+    if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
 
     try {
-      // Fetch posts
       const { data, error } = await supabase
         .from("posts")
         .select("id, tenant_id, author_id, type, media_url, thumbnail_url, description, created_at")
@@ -45,7 +58,7 @@ export default function Feed() {
         .order("created_at", { ascending: false })
         .range(offset, offset + PAGE - 1);
 
-      if (error) return;
+      if (error) throw error;
 
       if (!data || data.length === 0) {
         doneRef.current = true;
@@ -54,7 +67,6 @@ export default function Feed() {
         return;
       }
 
-      // Fetch CTAs for all posts
       const postIds = data.map(p => p.id);
 
       let ctas: any[] = [];
@@ -66,7 +78,6 @@ export default function Feed() {
         ctas = ctasData || [];
       }
 
-      // Map CTAs to posts
       const ctaMap: Record<string, any> = {};
       ctas.forEach((c: any) => {
         ctaMap[c.post_id] = c;

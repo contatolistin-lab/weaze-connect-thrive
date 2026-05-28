@@ -28,7 +28,7 @@ type TenantCtx = {
 
 const Ctx = createContext<TenantCtx>({
   tenant: null, tenants: [], isOwner: false, canManage: false, blocked: false, loading: true, realLoadDone: false,
-  selectTenant: () => {}, refresh: async (_uid?: string) => {},
+  selectTenant: () => {}, refresh: async (_uid?: string) => {}, realLoadDone: false,
 });
 
 export const TenantProvider = ({ children }: { children: ReactNode }) => {
@@ -43,9 +43,9 @@ const [loading, setLoading] = useState(true);
   const [memActive, setMemActive] = useState<Record<string, boolean>>({});
   const [manualSelectionPending, setManualSelectionPending] = useState(false);
   const [manualSelectedTenantId, setManualSelectedTenantId] = useState<string | null>(null);
+  const [realLoadDone, setRealLoadDone] = useState(false);
   const lastLoadedUserId = useRef<string | null>(null);
   const loadingRef = useRef(false);
-  const realLoadDoneRef = useRef(false);
 
   const load = useCallback(async (overrideUserId?: string): Promise<void> => {
     const uid = overrideUserId ?? user?.id ?? null;
@@ -53,6 +53,7 @@ const [loading, setLoading] = useState(true);
       if (uid === null) {
         loadingRef.current = false;
         setLoading(false);
+        setRealLoadDone(true);
       }
       return;
     }
@@ -60,10 +61,12 @@ const [loading, setLoading] = useState(true);
     if (!uid) {
       loadingRef.current = false;
       setLoading(false);
+      setRealLoadDone(true);
       return;
     }
     loadingRef.current = true;
     setLoading(true);
+    setRealLoadDone(false);
 
     const safetyTimeout = setTimeout(() => {
       if (loadingRef.current) {
@@ -186,7 +189,7 @@ if (targetTenant && targetRole) {
       setCanManage(false);
       setBlocked(false);
     }
-      realLoadDoneRef.current = true;
+      setRealLoadDone(true);
     } catch (err) {
       console.error("[TenantContext] Error loading tenants:", err);
     } finally {
@@ -221,7 +224,7 @@ if (targetTenant && targetRole) {
   }, [tenants, memRoles, memActive]);
 
   return (
-      <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, blocked, loading, realLoadDone: realLoadDoneRef.current, selectTenant, refresh }}>
+      <Ctx.Provider value={{ tenant, tenants, isOwner, canManage, blocked, loading, realLoadDone, selectTenant, refresh }}>
       {children}
     </Ctx.Provider>
   );

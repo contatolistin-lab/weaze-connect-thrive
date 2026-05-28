@@ -152,7 +152,6 @@ const Protected = ({ children }: { children: JSX.Element }) => {
   }
   appRoleStuckRef.current = 0;
   appRoleFallbackRef.current = false;
-  if (user && !realLoadDone && !tenantLoading && !tenant) return <Loading />;
   if (tenantLoading && !realLoadDone) return <Loading />;
   if (blocked) return <Navigate to="/blocked" replace />;
   if (!tenant) {
