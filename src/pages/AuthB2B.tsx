@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,20 +24,20 @@ export default function AuthB2B() {
   const [signup, setSignup] = useState({ name: "", email: "", password: "" });
   const [login, setLogin] = useState({ email: "", password: "" });
 
-  if (user && !initializing && !authLoading) return <Navigate to="/feed" replace />;
+  const shouldRedirect = user && !initializing && !authLoading;
 
   useEffect(() => {
-    if (user) nav("/feed", { replace: true });
-  }, [user, nav]);
+    if (shouldRedirect) nav("/feed", { replace: true });
+  }, [shouldRedirect, nav]);
 
-  if (initializing || authLoading) {
+  if (shouldRedirect || initializing || authLoading) {
     return (
-      <main className="min-h-screen bg-background grid place-items-center">
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-t-brand border-brand/20 rounded-full animate-spin" />
           <span className="text-sm text-muted-foreground">Carregando...</span>
         </div>
-      </main>
+      </div>
     );
   }
 

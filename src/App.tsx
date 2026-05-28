@@ -73,7 +73,7 @@ const VisibilityGuard = () => {
 };
 
 const Loading = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
+  <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
     <div className="flex flex-col items-center gap-3">
       <div className="w-8 h-8 border-3 border-t-brand border-brand/20 rounded-full animate-spin" />
       <span className="text-sm text-muted-foreground">Carregando...</span>

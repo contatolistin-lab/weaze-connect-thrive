@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,34 +39,32 @@ export default function Auth() {
     }
   }, []);
 
-  // Redirect at render level — antes do Loading para evitar flash da UI de auth
-  const isLoggedIn = user && !authLoading && !initializing && appRole !== null;
-  const redirectPath = (() => {
-    if (!isLoggedIn) return null;
-    const pendingSlug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
-    if (pendingSlug) return `/c/${pendingSlug}`;
-    const pendingShare = localStorage.getItem("weaze:pending_share");
-    if (pendingShare) {
-      try { const { tenantId, postId } = JSON.parse(pendingShare); return `/compartilhar/${tenantId}/${postId}`; } catch {}
+  // Efeito de redirect imediato — sem Navigate, sem null render
+  const shouldRedirect = user && !authLoading && !initializing && appRole !== null;
+  const redirectTo = (() => {
+    if (!shouldRedirect) return null;
+    const slug = localStorage.getItem("weaze:pending_invite_slug") || sessionStorage.getItem("weaze:pending_invite_slug");
+    if (slug) return `/c/${slug}`;
+    const share = localStorage.getItem("weaze:pending_share");
+    if (share) {
+      try { const { tenantId, postId } = JSON.parse(share); return `/compartilhar/${tenantId}/${postId}`; } catch {}
     }
     return "/feed";
   })();
 
   useEffect(() => {
-    if (!isLoggedIn) return;
-    if (redirectPath) nav(redirectPath, { replace: true });
-  }, [isLoggedIn, redirectPath, nav]);
+    if (redirectTo) nav(redirectTo, { replace: true });
+  }, [redirectTo, nav]);
 
-  if (redirectPath) return <Navigate to={redirectPath} replace />;
-
-  if (initializing || authLoading || (user && appRole === null)) {
+  // Loading idêntico ao de App.tsx — fixed inset-0, sem flash
+  if (redirectTo || initializing || authLoading || (user && appRole === null)) {
     return (
-      <main className="min-h-screen bg-background grid place-items-center">
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-t-brand border-brand/20 rounded-full animate-spin" />
           <span className="text-sm text-muted-foreground">Carregando...</span>
         </div>
-      </main>
+      </div>
     );
   }
 

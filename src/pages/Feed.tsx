@@ -218,7 +218,15 @@ export default function Feed() {
     }
   }, [initialLoadDone]);
 
-  if (!initialLoadDone) return <div className="grid h-screen place-items-center text-muted-foreground">Carregando…</div>;
+  // Loading visualmente idêntico ao de App.tsx e Auth.tsx — zero flash
+  if (!initialLoadDone) return (
+    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 border-3 border-t-brand border-brand/20 rounded-full animate-spin" />
+        <span className="text-sm text-muted-foreground">Carregando...</span>
+      </div>
+    </div>
+  );
 
   // B2B sem tenant → criar marca
   if (!tenant && isB2B) {
