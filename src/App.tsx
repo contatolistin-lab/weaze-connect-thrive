@@ -123,41 +123,13 @@ const CommunityFeedEmpty = lazy(() => import("./pages/CommunityFeedEmpty"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user } = useAuth();
-  const { tenant, blocked } = useTenant();
-  const userIdRef = useRef<string | null>(null);
+  const { blocked } = useTenant();
 
-  // Redireciona se não há usuário
   if (!user) return <Navigate to="/auth" replace />;
   if (blocked) return <Navigate to="/blocked" replace />;
 
-  // Detecta troca de usuário para resetar lazy imports internos
-  if (user.id !== userIdRef.current) {
-    userIdRef.current = user.id;
-  }
-
   return children;
 };
-
-// GlobalLoader — carrega auth + tenant e bloqueia as rotas até tudo estar pronto.
-// Usa ref (nunca resetada) para que, depois da primeira resolução,
-// re-renders causados por login/token refresh NUNCA mostrem Loading de novo.
-function GlobalLoader({ children }: { children: React.ReactNode }) {
-  const { user, loading, initializing, appRole } = useAuth();
-  const { loading: tLoading, realLoadDone } = useTenant();
-  const readyRef = useRef(false);
-
-  // readyRef NUNCA é resetado — uma vez true, sempre true
-  if (!readyRef.current) {
-    const authDone = !initializing && !loading;
-    const tenantDone = !user || (user && appRole !== null && realLoadDone);
-    if (authDone && tenantDone) {
-      readyRef.current = true;
-    }
-  }
-
-  if (!readyRef.current) return <Loading />;
-  return <>{children}</>;
-}
 
 const B2BOnly = ({ children }: { children: JSX.Element }) => {
   const { user, loading, initializing, isB2B } = useAuth();
@@ -209,7 +181,6 @@ const App = () => (
           <Suspense fallback={<Loading />}>
             <AuthProvider>
               <TenantProvider>
-                <GlobalLoader>
                 <OnboardingTour />
                 <AppEntrance>
                   <Routes>
@@ -263,7 +234,6 @@ const App = () => (
                     <Route path="*" element={<Navigate to="/feed" replace />} />
                   </Routes>
                 </AppEntrance>
-                </GlobalLoader>
               </TenantProvider>
             </AuthProvider>
           </Suspense>
