@@ -46,7 +46,7 @@ function Feed() {
       <div className="mx-auto max-w-md min-h-dvh relative bg-black">
         <header className="absolute top-0 inset-x-0 z-30 pt-3 px-4 safe-pt">
           <div className="flex items-center justify-between">
-            <WeazeLogo size="sm" variant="white" />
+            <WeazeLogo size="sm" />
             <FeedBell />
           </div>
         </header>

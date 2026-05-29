@@ -121,7 +121,7 @@ function LandingPage() {
               <div className="relative h-full w-full rounded-[34px] overflow-hidden bg-gradient-to-br from-orange-500 via-pink-500 to-purple-700">
                 <div className="absolute inset-0 flex flex-col justify-between p-5 text-white">
                   <div className="flex items-center justify-between">
-                    <WeazeLogo size="sm" variant="white" />
+                    <WeazeLogo size="sm" />
                     <Play size={20} />
                   </div>
                   <div className="text-7xl text-center">👟</div>

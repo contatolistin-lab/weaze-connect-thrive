@@ -25,7 +25,7 @@ function B2BDashboard() {
         {/* Top */}
         <header className="bg-brand-gradient text-white px-5 pt-5 pb-8 rounded-b-3xl shadow-brand">
           <div className="flex items-center justify-between">
-            <WeazeLogo size="sm" variant="white" />
+            <WeazeLogo size="sm" />
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold tracking-widest bg-white/15 px-2 py-1 rounded-full">
                 FOR BRANDS

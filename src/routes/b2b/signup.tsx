@@ -31,7 +31,7 @@ function B2BSignup() {
       </header>
       <div className="relative flex-1 flex flex-col px-6 pt-6 pb-8 max-w-md mx-auto w-full">
         <div className="text-white">
-          <WeazeLogo size="lg" variant="white" />
+          <WeazeLogo size="lg" />
           <p className="mt-3 text-xs font-semibold tracking-widest uppercase opacity-80">
             WEAZE FOR BRANDS
           </p>
