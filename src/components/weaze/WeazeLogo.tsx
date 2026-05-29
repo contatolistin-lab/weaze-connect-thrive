@@ -6,10 +6,10 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: { h: 36 },
-  md: { h: 52 },
-  lg: { h: 72 },
-  xl: { h: 100 },
+  sm: { h: 52 },
+  md: { h: 72 },
+  lg: { h: 100 },
+  xl: { h: 140 },
 };
 
 export function WeazeLogo({ size = "md", to = "/" }: LogoProps) {
