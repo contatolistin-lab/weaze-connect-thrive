@@ -22,6 +22,9 @@ export interface MockPost {
   shares: number;
   mediaColor: string;
   emoji: string;
+  mediaType?: "image" | "video" | "external";
+  mediaUrl?: string;
+  mediaPreview?: string;
 }
 
 export const communities: MockCommunity[] = [
@@ -617,3 +620,13 @@ export const topActive: MockRankingUser[] = [
   { id: "u9", name: "Beatriz Rocha", avatar: "B", score: 720, badge: "👑 Rainha" },
   { id: "u10", name: "Gabriel Martins", avatar: "G", score: 650, badge: "🏆 Campeão" },
 ];
+
+export const userPosts: MockPost[] = [];
+
+export function addUserPost(post: MockPost) {
+  userPosts.unshift(post);
+}
+
+export function getAllPosts(): MockPost[] {
+  return [...userPosts, ...posts];
+}

@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Youtube } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
-import { posts as mockPosts } from "@/lib/mock-data";
+import { getAllPosts } from "@/lib/mock-data";
 import { FeedSkeleton } from "@/components/weaze/Skeleton";
 
 export const Route = createFileRoute("/feed")({
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/feed")({
 function Feed() {
   const [tab, setTab] = useState<"foryou" | "following">("foryou");
   const [loading, setLoading] = useState(true);
+  const allPosts = getAllPosts();
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 500);
     return () => clearTimeout(t);
@@ -48,12 +49,14 @@ function Feed() {
           </div>
         ) : (
           <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
-            {mockPosts.map((p) => (
+            {allPosts.map((p) => (
               <PostCard key={p.id} post={p} />
             ))}
-            {mockPosts.map((p) => (
-              <PostCard key={p.id + "b"} post={p} />
-            ))}
+            {allPosts.length === 0 && (
+              <div className="h-dvh grid place-items-center text-white/50 text-sm">
+                Nenhuma postagem ainda.
+              </div>
+            )}
           </div>
         )}
 
@@ -63,24 +66,67 @@ function Feed() {
   );
 }
 
-function PostCard({ post }: { post: (typeof mockPosts)[number] }) {
+function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState(true);
+  const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
+
   return (
     <article
-      className={`snap-start-always relative h-dvh w-full bg-gradient-to-br ${post.mediaColor}`}
+      className={`snap-start-always relative h-dvh w-full ${!hasRealMedia ? `bg-gradient-to-br ${post.mediaColor}` : "bg-black"}`}
       onClick={() => setPlaying((p) => !p)}
     >
-      <div className="absolute inset-0 grid place-items-center text-[180px] select-none opacity-90">
-        {post.emoji}
-      </div>
+      {hasRealMedia ? (
+        post.mediaType === "video" ? (
+          <video
+            src={post.mediaUrl}
+            className="absolute inset-0 h-full w-full object-cover"
+            loop
+            playsInline
+            onClick={(e) => { e.stopPropagation(); setPlaying((p) => !p); }}
+          />
+        ) : (
+          <img
+            src={post.mediaUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )
+      ) : (
+        <div className="absolute inset-0 grid place-items-center text-[180px] select-none opacity-90">
+          {post.emoji}
+        </div>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
-      {!playing && (
+      {!playing && hasRealMedia && (
         <div className="absolute inset-0 grid place-items-center">
           <span className="h-20 w-20 grid place-items-center rounded-full bg-white/20 backdrop-blur">
             <Play size={32} className="text-white" />
           </span>
+        </div>
+      )}
+
+      {post.mediaType === "external" && post.mediaUrl && (
+        <div className="absolute inset-0 grid place-items-center">
+          {post.mediaPreview ? (
+            <img
+              src={post.mediaPreview}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className={`absolute inset-0 bg-gradient-to-br ${post.mediaColor} grid place-items-center`} />
+          )}
+          <a
+            href={post.mediaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-10 h-16 w-16 rounded-full bg-white/20 backdrop-blur grid place-items-center hover:bg-white/30 transition-colors"
+          >
+            <Youtube size={32} className="text-white ml-0.5" />
+          </a>
         </div>
       )}
 
