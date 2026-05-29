@@ -12,7 +12,6 @@ import {
   Pencil,
   Trash2,
   Check,
-  X,
 } from "lucide-react";
 import {
   conversations,
@@ -39,6 +38,16 @@ function ConversationDetail() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [comments, setComments] = useState(() => getConversationComments(id));
+  const [replyLikes, setReplyLikes] = useState<Set<string>>(new Set());
+
+  const toggleReplyLike = (key: string) => {
+    setReplyLikes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   if (!conv) {
     return (
@@ -79,7 +88,7 @@ function ConversationDetail() {
     if (!text) return;
     const c = comments.find((cm) => cm.id === commentId);
     if (c) {
-      c.replies.push({ author: CURRENT_USER, text, createdAt: "agora" });
+      c.replies.push({ author: CURRENT_USER, text, createdAt: "agora", likes: 0 });
     }
     setReplyContent("");
     setReplyingTo(null);
@@ -246,15 +255,30 @@ function ConversationDetail() {
 
                       {c.replies.length > 0 && (
                         <div className="mt-3 ml-4 pl-3 border-l-2 border-border space-y-2">
-                          {c.replies.map((r, i) => (
-                            <div key={i} className="text-sm">
-                              <span className="font-semibold">{r.author}</span>
-                              <span className="text-foreground/80"> {r.text}</span>
-                              <span className="text-[10px] text-foreground/40 ml-2">
-                                {r.createdAt}
-                              </span>
-                            </div>
-                          ))}
+                          {c.replies.map((r, i) => {
+                            const rKey = c.id + "-" + i;
+                            const rLiked = replyLikes.has(rKey);
+                            return (
+                              <div key={i} className="text-sm">
+                                <span className="font-semibold">{r.author}</span>
+                                <span className="text-foreground/80"> {r.text}</span>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <button
+                                    onClick={() => toggleReplyLike(rKey)}
+                                    className={`flex items-center gap-0.5 text-[10px] ${
+                                      rLiked ? "text-[#d81e62]" : "text-foreground/40"
+                                    }`}
+                                  >
+                                    <Heart size={10} fill={rLiked ? "#d81e62" : "none"} />{" "}
+                                    {r.likes + (rLiked ? 1 : 0)}
+                                  </button>
+                                  <span className="text-[10px] text-foreground/40">
+                                    {r.createdAt}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
 

@@ -500,7 +500,7 @@ export interface MockConversationComment {
   likes: number;
   createdAt: string;
   editedAt?: string;
-  replies: { author: string; text: string; createdAt: string }[];
+  replies: { author: string; text: string; createdAt: string; likes: number }[];
 }
 
 export const conversationComments: MockConversationComment[] = [
@@ -512,7 +512,9 @@ export const conversationComments: MockConversationComment[] = [
     text: "Recomendo o Nike Vomero 17. Muito amortecimento e conforto para longas distâncias!",
     likes: 23,
     createdAt: "1h",
-    replies: [{ author: "Rafael", text: "Vou testar! Obrigado pela dica.", createdAt: "30m" }],
+    replies: [
+      { author: "Rafael", text: "Vou testar! Obrigado pela dica.", createdAt: "30m", likes: 3 },
+    ],
   },
   {
     id: "cc2",
@@ -533,8 +535,13 @@ export const conversationComments: MockConversationComment[] = [
     likes: 31,
     createdAt: "20m",
     replies: [
-      { author: "Rafael", text: "Hoka parece interessante, vou pesquisar!", createdAt: "10m" },
-      { author: "Carlos", text: "Vale cada centavo!", createdAt: "5m" },
+      {
+        author: "Rafael",
+        text: "Hoka parece interessante, vou pesquisar!",
+        createdAt: "10m",
+        likes: 5,
+      },
+      { author: "Carlos", text: "Vale cada centavo!", createdAt: "5m", likes: 8 },
     ],
   },
   {
@@ -555,7 +562,7 @@ export const conversationComments: MockConversationComment[] = [
     text: "Descobri uma banda chamada 'Novos Baianos'. Música brasileira de qualidade!",
     likes: 28,
     createdAt: "2h",
-    replies: [{ author: "Ana", text: "Clássico!ótima descoberta.", createdAt: "1h" }],
+    replies: [{ author: "Ana", text: "Clássico!ótima descoberta.", createdAt: "1h", likes: 12 }],
   },
   {
     id: "cc6",
@@ -566,11 +573,17 @@ export const conversationComments: MockConversationComment[] = [
     likes: 67,
     createdAt: "1d",
     replies: [
-      { author: "Lucas", text: "Pois é, mas o ecossistema muda tão rápido...", createdAt: "12h" },
+      {
+        author: "Lucas",
+        text: "Pois é, mas o ecossistema muda tão rápido...",
+        createdAt: "12h",
+        likes: 4,
+      },
       {
         author: "Daniel",
         text: "Por isso React é seguro, tem décadas de mercado.",
         createdAt: "10h",
+        likes: 7,
       },
     ],
   },
@@ -582,7 +595,7 @@ export const conversationComments: MockConversationComment[] = [
     text: "A rotina de 10 passos não é para todo mundo! Adaptem à sua pele.",
     likes: 52,
     createdAt: "1d",
-    replies: [{ author: "Júlia", text: "Exato! Menos é mais.", createdAt: "20h" }],
+    replies: [{ author: "Júlia", text: "Exato! Menos é mais.", createdAt: "20h", likes: 15 }],
   },
 ];
 
