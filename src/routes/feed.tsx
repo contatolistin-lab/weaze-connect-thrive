@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Youtube } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
@@ -71,14 +71,13 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
             className="absolute inset-0 h-full w-full object-cover"
             loop
             playsInline
-            onClick={(e) => { e.stopPropagation(); setPlaying((p) => !p); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setPlaying((p) => !p);
+            }}
           />
         ) : (
-          <img
-            src={post.mediaUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <img src={post.mediaUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
         )
       ) : (
         <div className="absolute inset-0 grid place-items-center text-[180px] select-none opacity-90">
@@ -104,7 +103,9 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <div className={`absolute inset-0 bg-gradient-to-br ${post.mediaColor} grid place-items-center`} />
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${post.mediaColor} grid place-items-center`}
+            />
           )}
           <a
             href={post.mediaUrl}
@@ -119,18 +120,6 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
       )}
 
       <div className="absolute right-3 bottom-32 flex flex-col gap-5 items-center text-white">
-        <Link
-          to="/communities/$id"
-          params={{ id: post.community.id }}
-          className="flex flex-col items-center"
-        >
-          <span className="h-12 w-12 rounded-full bg-brand-gradient grid place-items-center text-white font-bold border-2 border-white">
-            {post.community.name[0]}
-          </span>
-          <span className="-mt-2 h-5 w-5 rounded-full bg-[#d81e62] grid place-items-center text-xs font-bold border-2 border-white">
-            +
-          </span>
-        </Link>
         <ActionBtn
           icon={Heart}
           label={shortNum(post.likes + (liked ? 1 : 0))}
@@ -146,18 +135,14 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
       </div>
 
       <div className="absolute left-0 right-20 bottom-24 px-4 text-white">
-        <Link
-          to="/communities/$id"
-          params={{ id: post.community.id }}
-          className="inline-flex items-center gap-2"
-        >
+        <span className="inline-flex items-center gap-2">
           <span className="font-bold">{post.community.name}</span>
           {post.community.verified && (
             <span className="h-4 w-4 rounded-full bg-[#d81e62] grid place-items-center text-[10px]">
               ✓
             </span>
           )}
-        </Link>
+        </span>
         <p className="mt-2 text-sm leading-snug">{post.caption}</p>
         <div className="mt-2 flex items-center gap-2 text-xs opacity-80">
           <Music2 size={12} /> som original · {post.community.handle}

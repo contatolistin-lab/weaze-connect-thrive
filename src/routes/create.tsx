@@ -3,17 +3,15 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   Video,
-  Sparkles,
   Link2,
   Upload,
   Youtube,
   X,
   Check,
-  Music2,
 } from "lucide-react";
 import { WButton } from "@/components/weaze/WButton";
 import { useState, useRef } from "react";
-import { communities, addUserPost } from "@/lib/mock-data";
+import { addUserPost } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/create")({
   head: () => ({ meta: [{ title: "Criar postagem — WEAZE" }] }),
@@ -38,7 +36,7 @@ function Create() {
   const [description, setDescription] = useState("");
   const [ctaName, setCtaName] = useState("");
   const [ctaLink, setCtaLink] = useState("");
-  const [selectedCommunity, setSelectedCommunity] = useState(communities[0].id);
+  const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,14 +84,23 @@ function Create() {
   };
 
   const hasMedia = !!filePreview || !!externalPreview || !!externalLink;
-  const canPublish =
-    hasMedia || description.trim().length > 0;
+  const canPublish = hasMedia || description.trim().length > 0;
 
   const submit = () => {
     if (!canPublish || loading) return;
     setLoading(true);
 
-    const community = communities.find((c) => c.id === selectedCommunity) ?? communities[0];
+    const community = {
+      id: "default",
+      name: title || "WEAZE",
+      handle: "@weaze",
+      description: "",
+      members: 0,
+      category: "",
+      color: "",
+      cover: "W",
+      verified: true,
+    };
     const id = "user_" + Date.now();
 
     const colors = [
@@ -115,11 +122,7 @@ function Create() {
       shares: 0,
       mediaColor: colors[Math.floor(Math.random() * colors.length)],
       emoji: fileType === "video" ? "🎬" : externalLink ? "🔗" : "✨",
-      mediaType: fileType
-        ? (fileType as "image" | "video")
-        : externalLink
-          ? "external"
-          : undefined,
+      mediaType: fileType ? (fileType as "image" | "video") : externalLink ? "external" : undefined,
       mediaUrl: filePreview || externalLink || undefined,
       mediaPreview: externalPreview || undefined,
     });
@@ -194,11 +197,7 @@ function Create() {
                         playsInline
                       />
                     ) : (
-                      <img
-                        src={filePreview}
-                        alt="Preview"
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={filePreview} alt="Preview" className="h-full w-full object-cover" />
                     )}
                     <button
                       onClick={clearFile}
@@ -249,7 +248,10 @@ function Create() {
                     className="flex-1 bg-transparent outline-none text-sm"
                   />
                   {externalLink && (
-                    <button onClick={clearExternal} className="text-foreground/40 hover:text-foreground">
+                    <button
+                      onClick={clearExternal}
+                      className="text-foreground/40 hover:text-foreground"
+                    >
                       <X size={16} />
                     </button>
                   )}
@@ -320,29 +322,15 @@ function Create() {
 
             <div className="rounded-2xl bg-white border border-border overflow-hidden shadow-soft">
               <div className="px-4 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <span className="inline-grid h-8 w-8 place-items-center rounded-lg bg-brand-gradient text-white">
-                    <Music2 size={16} />
-                  </span>
-                  <div>
-                    <p className="font-bold text-sm">Comunidade</p>
-                  </div>
-                </div>
-                <div className="mt-2 flex gap-1.5 overflow-x-auto scrollbar-hide">
-                  {communities.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedCommunity(c.id)}
-                      className={`shrink-0 flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold border transition-colors ${
-                        selectedCommunity === c.id
-                          ? "bg-brand-gradient text-white border-transparent"
-                          : "bg-white border-border text-foreground/70"
-                      }`}
-                    >
-                      {c.cover} {c.name.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
+                <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
+                  Título da postagem
+                </p>
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Digite o título da postagem..."
+                  className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+                />
               </div>
 
               <div className="px-4 py-3 border-b border-border">
@@ -390,12 +378,10 @@ function Create() {
               <p className="text-xs font-bold tracking-widest uppercase opacity-80">Preview</p>
               <div className="mt-3 flex items-center gap-3">
                 <span className="h-10 w-10 rounded-full bg-white/20 grid place-items-center text-lg font-bold">
-                  {communities.find((c) => c.id === selectedCommunity)?.cover ?? "W"}
+                  W
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm">
-                    {communities.find((c) => c.id === selectedCommunity)?.name ?? "WEAZE"}
-                  </p>
+                  <p className="font-bold text-sm">{title || "WEAZE"}</p>
                   <p className="text-xs opacity-80">agora</p>
                 </div>
               </div>
