@@ -808,7 +808,11 @@ export function unlikeConversation(id: string) {
   if (c) c.likes = Math.max(0, c.likes - 1);
 }
 
+const viewedConversations = new Set<string>();
+
 export function viewConversation(id: string) {
+  if (viewedConversations.has(id)) return;
+  viewedConversations.add(id);
   const c = [...userConversations, ...conversations].find((x) => x.id === id);
   if (c) c.views += 1;
 }
