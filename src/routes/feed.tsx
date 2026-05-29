@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Youtube } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
 import { getAllPosts } from "@/lib/mock-data";
-import { FeedSkeleton } from "@/components/weaze/Skeleton";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({ meta: [{ title: "Feed — WEAZE" }] }),
@@ -13,12 +12,7 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const [tab, setTab] = useState<"foryou" | "following">("foryou");
-  const [loading, setLoading] = useState(true);
   const allPosts = getAllPosts();
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <div className="min-h-dvh bg-black">
@@ -43,22 +37,16 @@ function Feed() {
           </div>
         </header>
 
-        {loading ? (
-          <div className="pt-20">
-            <FeedSkeleton />
-          </div>
-        ) : (
-          <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
-            {allPosts.map((p) => (
-              <PostCard key={p.id} post={p} />
-            ))}
-            {allPosts.length === 0 && (
-              <div className="h-dvh grid place-items-center text-white/50 text-sm">
-                Nenhuma postagem ainda.
-              </div>
-            )}
-          </div>
-        )}
+        <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
+          {allPosts.map((p) => (
+            <PostCard key={p.id} post={p} />
+          ))}
+          {allPosts.length === 0 && (
+            <div className="h-dvh grid place-items-center text-white/50 text-sm">
+              Nenhuma postagem ainda.
+            </div>
+          )}
+        </div>
 
         <BottomNav />
       </div>
