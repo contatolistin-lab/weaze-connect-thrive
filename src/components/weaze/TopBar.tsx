@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Bell, Search } from "lucide-react";
 import { WeazeLogo } from "./WeazeLogo";
+import { useWeaze } from "@/lib/weaze-context";
 
 interface TopBarProps {
   title?: string;
@@ -10,6 +11,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, showSearch = true, showLogo = true, right }: TopBarProps) {
+  const { unreadCount } = useWeaze();
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-border safe-pt">
       <div className="mx-auto max-w-md flex items-center justify-between px-4 h-14">
@@ -31,7 +33,11 @@ export function TopBar({ title, showSearch = true, showLogo = true, right }: Top
             className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted relative"
           >
             <Bell size={20} className="text-foreground/80" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-brand-gradient" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-brand-gradient text-[10px] font-bold text-white grid place-items-center">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </Link>
           {right}
         </div>

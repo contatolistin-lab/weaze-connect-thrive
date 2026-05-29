@@ -1,9 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, Music2, Play, Pause, Youtube } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Music2,
+  Play,
+  Pause,
+  Youtube,
+  Bell,
+  type LucideIcon,
+} from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
 import { getAllPosts } from "@/lib/mock-data";
+import { useWeaze } from "@/lib/weaze-context";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({ meta: [{ title: "Feed — WEAZE" }] }),
@@ -11,7 +22,6 @@ export const Route = createFileRoute("/feed")({
 });
 
 function Feed() {
-  const [tab, setTab] = useState<"foryou" | "following">("foryou");
   const allPosts = getAllPosts();
 
   return (
@@ -20,20 +30,7 @@ function Feed() {
         <header className="absolute top-0 inset-x-0 z-30 pt-3 px-4 safe-pt">
           <div className="flex items-center justify-between">
             <WeazeLogo size="sm" variant="white" />
-            <div className="flex items-center gap-6 text-white text-sm font-semibold">
-              {(["following", "foryou"] as const).map((k) => (
-                <button
-                  key={k}
-                  onClick={() => setTab(k)}
-                  className={`pb-1 border-b-2 transition-colors ${
-                    tab === k ? "border-white" : "border-transparent text-white/60"
-                  }`}
-                >
-                  {k === "foryou" ? "Para você" : "Seguindo"}
-                </button>
-              ))}
-            </div>
-            <span className="w-7" />
+            <FeedBell />
           </div>
         </header>
 
@@ -54,10 +51,28 @@ function Feed() {
   );
 }
 
+function FeedBell() {
+  const { unreadCount } = useWeaze();
+  return (
+    <Link
+      to="/notifications"
+      className="h-9 w-9 grid place-items-center rounded-full hover:bg-white/10 relative text-white"
+    >
+      <Bell size={20} />
+      {unreadCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-brand-gradient text-[10px] font-bold text-white grid place-items-center">
+          {unreadCount > 9 ? "9+" : unreadCount}
+        </span>
+      )}
+    </Link>
+  );
+}
+
 function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState(true);
   const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
+  const { addLike, addComment, addShare } = useWeaze();
 
   return (
     <article
@@ -126,12 +141,28 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
           active={liked}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            setLiked((v) => !v);
+            if (!liked) {
+              setLiked(true);
+              addLike();
+            }
           }}
         />
-        <ActionBtn icon={MessageCircle} label={shortNum(post.comments)} />
-        <ActionBtn icon={Share2} label={shortNum(post.shares)} />
-        <ActionBtn icon={Bookmark} label="Salvar" />
+        <ActionBtn
+          icon={MessageCircle}
+          label={shortNum(post.comments)}
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            addComment();
+          }}
+        />
+        <ActionBtn
+          icon={Share2}
+          label={shortNum(post.shares)}
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            addShare();
+          }}
+        />
       </div>
 
       <div className="absolute left-0 right-20 bottom-24 px-4 text-white">
@@ -153,7 +184,7 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="mt-3 inline-flex items-center justify-center bg-brand-gradient text-white font-bold rounded-2xl px-5 h-11 text-sm shadow-brand"
+            className="mt-3 flex items-center justify-center bg-brand-gradient text-white font-bold rounded-2xl px-6 h-12 text-sm shadow-brand w-full max-w-[220px]"
           >
             {post.cta}
           </a>
@@ -163,7 +194,17 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
   );
 }
 
-function ActionBtn({ icon: Icon, label, active, onClick }: any) {
+function ActionBtn({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
   return (
     <button onClick={onClick} className="flex flex-col items-center gap-1">
       <span

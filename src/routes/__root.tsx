@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+import { WeazeProvider } from "@/lib/weaze-context";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -120,8 +121,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <WeazeProvider>
+        <Outlet />
+      </WeazeProvider>
     </QueryClientProvider>
   );
 }

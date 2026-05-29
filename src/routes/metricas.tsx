@@ -3,6 +3,7 @@ import {
   TrendingUp,
   Heart,
   MessageSquare,
+  Share2,
   Image,
   Trophy,
   Award,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { metricsOverview, topActive } from "@/lib/mock-data";
+import { useWeaze } from "@/lib/weaze-context";
 
 export const Route = createFileRoute("/metricas")({
   head: () => ({ meta: [{ title: "Métricas — WEAZE" }] }),
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/metricas")({
 const iconMap: Record<string, typeof Heart> = {
   "❤️": Heart,
   "💬": MessageSquare,
+  "📤": Share2,
   "📷": Image,
   "📊": TrendingUp,
 };
@@ -35,7 +38,16 @@ const badgeIcons: Record<string, typeof Trophy> = {
   "🏆 Campeão": Trophy,
 };
 
+const baseMetrics = metricsOverview;
+
 function Metricas() {
+  const { metrics } = useWeaze();
+  const allMetrics = [
+    { ...baseMetrics[0], value: metrics.likes },
+    { ...baseMetrics[1], value: metrics.comments },
+    { id: "m3b", label: "Compartilhamentos", value: metrics.shares, trend: "+0%", icon: "📤" },
+    ...baseMetrics.slice(2),
+  ];
   return (
     <AppShell title="Métricas">
       <div className="px-4 pt-3 space-y-5 pb-6">
@@ -46,7 +58,7 @@ function Metricas() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {metricsOverview.map((m) => {
+          {allMetrics.map((m) => {
             const Icon = iconMap[m.icon] || Heart;
             return (
               <div key={m.id} className="rounded-2xl bg-white border border-border p-4 shadow-soft">
