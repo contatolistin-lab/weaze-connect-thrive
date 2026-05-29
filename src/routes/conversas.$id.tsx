@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect, useReducer } from "react";
 import {
   ArrowLeft,
   Heart,
@@ -14,11 +14,14 @@ import {
   Check,
 } from "lucide-react";
 import {
-  conversations,
+  getConversation,
   getConversationComments,
   addConversationComment,
   updateConversationComment,
   deleteConversationComment,
+  likeConversation,
+  unlikeConversation,
+  viewConversation,
 } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/conversas/$id")({
@@ -30,7 +33,8 @@ const CURRENT_USER = "Você";
 function ConversationDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
-  const conv = conversations.find((x) => x.id === id) ?? null;
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const [conv, setConv] = useState(() => getConversation(id) ?? null);
   const [liked, setLiked] = useState(false);
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -40,6 +44,18 @@ function ConversationDetail() {
   const [comments, setComments] = useState(() => getConversationComments(id));
   const [likedComments, setLikedComments] = useState<Record<string, boolean>>({});
   const [likedReplies, setLikedReplies] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    viewConversation(id);
+    setConv(getConversation(id) ?? null);
+    setComments([...getConversationComments(id)]);
+  }, [id]);
+
+  const refresh = () => {
+    setConv(getConversation(id) ?? null);
+    setComments([...getConversationComments(id)]);
+    forceUpdate();
+  };
 
   if (!conv) {
     return (
@@ -159,15 +175,22 @@ function ConversationDetail() {
 
             <div className="mt-4 flex gap-2">
               <button
-                onClick={() => setLiked((v) => !v)}
+                onClick={() => {
+                  if (liked) {
+                    unlikeConversation(conv.id);
+                  } else {
+                    likeConversation(conv.id);
+                  }
+                  setLiked((v) => !v);
+                  refresh();
+                }}
                 className={`flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
                   liked
                     ? "bg-[#d81e62] text-white border-[#d81e62]"
                     : "bg-white border-border text-foreground/70"
                 }`}
               >
-                <Heart size={16} fill={liked ? "white" : "none"} />{" "}
-                {liked ? conv.likes + 1 : conv.likes}
+                <Heart size={16} fill={liked ? "white" : "none"} /> {conv.likes}
               </button>
               <button className="flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-semibold bg-white border-border border text-foreground/70">
                 <MessageSquare size={16} /> Responder

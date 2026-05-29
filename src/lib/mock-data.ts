@@ -793,3 +793,22 @@ export function deleteConversationComment(commentId: string, conversationId: str
 export function getConversationComments(conversationId: string): MockConversationComment[] {
   return conversationComments.filter((c) => c.conversationId === conversationId);
 }
+
+export function getConversation(id: string): MockConversation | undefined {
+  return [...userConversations, ...conversations].find((c) => c.id === id);
+}
+
+export function likeConversation(id: string) {
+  const c = [...userConversations, ...conversations].find((x) => x.id === id);
+  if (c) c.likes += 1;
+}
+
+export function unlikeConversation(id: string) {
+  const c = [...userConversations, ...conversations].find((x) => x.id === id);
+  if (c) c.likes = Math.max(0, c.likes - 1);
+}
+
+export function viewConversation(id: string) {
+  const c = [...userConversations, ...conversations].find((x) => x.id === id);
+  if (c) c.views += 1;
+}
