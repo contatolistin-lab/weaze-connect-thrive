@@ -112,6 +112,7 @@ function PostCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [shared, setShared] = useState(false);
   const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
   const { addLike, addComment: addNotif, addShare } = useWeaze();
 
@@ -199,10 +200,22 @@ function PostCard({
         />
         <ActionBtn
           icon={Share2}
-          label={shortNum(post.shares)}
-          onClick={(e: React.MouseEvent) => {
+          label={shared ? "Copiado!" : shortNum(post.shares)}
+          onClick={async (e: React.MouseEvent) => {
             e.stopPropagation();
             addShare();
+            const url = `${window.location.origin}/feed`;
+            const title = post.community.name;
+            const text = post.caption;
+            if (navigator.share) {
+              try {
+                await navigator.share({ title, text, url });
+              } catch {}
+            } else {
+              await navigator.clipboard.writeText(url);
+              setShared(true);
+              setTimeout(() => setShared(false), 2000);
+            }
           }}
         />
       </div>
