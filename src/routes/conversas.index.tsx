@@ -11,7 +11,7 @@ export const Route = createFileRoute("/conversas/")({
 
 const ALLOWED_CATEGORIES = ["Esportes", "Música", "Tech", "Beleza", "Lifestyle"];
 
-const initial = { title: "", description: "", tags: "", category: "Esportes" };
+const initial = { title: "", description: "", tags: "" };
 
 function Conversas() {
   const [cat, setCat] = useState("Todas");
@@ -41,7 +41,7 @@ function Conversas() {
       id,
       title: form.title.trim(),
       description: form.description.trim(),
-      category: form.category,
+      category: "Geral",
       author: "Você",
       authorAvatar: first,
       replies: 0,
@@ -94,25 +94,12 @@ function Conversas() {
               rows={3}
               className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
             />
-            <div className="flex gap-2">
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] bg-white"
-              >
-                {ALLOWED_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              <input
-                value={form.tags}
-                onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                placeholder="Tags: separadas por vírgula"
-                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-              />
-            </div>
+            <input
+              value={form.tags}
+              onChange={(e) => setForm({ ...form, tags: e.target.value })}
+              placeholder="Tags: separadas por vírgula"
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            />
             <button
               onClick={submit}
               disabled={!form.title.trim()}

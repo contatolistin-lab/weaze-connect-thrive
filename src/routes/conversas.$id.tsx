@@ -73,10 +73,6 @@ function ConversationDetail() {
     );
   }
 
-  const refresh = () => {
-    setComments([...getConversationComments(id)]);
-  };
-
   const handleSend = () => {
     const text = (editingId ? editText : input).trim();
     if (!text) return;
