@@ -621,6 +621,90 @@ export const topActive: MockRankingUser[] = [
   { id: "u10", name: "Gabriel Martins", avatar: "G", score: 650, badge: "🏆 Campeão" },
 ];
 
+export interface MockPostComment {
+  id: string;
+  postId: string;
+  author: string;
+  authorAvatar: string;
+  text: string;
+  createdAt: string;
+  editedAt?: string;
+}
+
+export const postComments: Record<string, MockPostComment[]> = {
+  p1: [
+    {
+      id: "pc1",
+      postId: "p1",
+      author: "Ana Beatriz",
+      authorAvatar: "A",
+      text: "Sensacional! Vou comprar o meu hoje.",
+      createdAt: "15 min atrás",
+    },
+    {
+      id: "pc2",
+      postId: "p1",
+      author: "Rafael Costa",
+      authorAvatar: "R",
+      text: "Já tenho o meu e é incrível 🔥",
+      createdAt: "8 min atrás",
+    },
+  ],
+  p2: [
+    {
+      id: "pc3",
+      postId: "p2",
+      author: "Júlia Lima",
+      authorAvatar: "J",
+      text: "Ansiosa pra ver o meu!",
+      createdAt: "1 hora atrás",
+    },
+  ],
+};
+
+export function addComment(postId: string, text: string) {
+  if (!postComments[postId]) postComments[postId] = [];
+  const comment: MockPostComment = {
+    id: "pc_" + Date.now(),
+    postId,
+    author: "Você",
+    authorAvatar: "V",
+    text,
+    createdAt: "agora",
+  };
+  postComments[postId].unshift(comment);
+  const all = [...userPosts, ...posts];
+  const found = all.find((p) => p.id === postId);
+  if (found) found.comments = (found.comments || 0) + 1;
+}
+
+export function updateComment(commentId: string, text: string) {
+  for (const arr of Object.values(postComments)) {
+    const c = arr.find((cm) => cm.id === commentId);
+    if (c) {
+      c.text = text;
+      c.editedAt = "agora";
+      return;
+    }
+  }
+}
+
+export function deleteComment(commentId: string, postId: string) {
+  const arr = postComments[postId];
+  if (!arr) return;
+  const idx = arr.findIndex((c) => c.id === commentId);
+  if (idx !== -1) {
+    arr.splice(idx, 1);
+    const all = [...userPosts, ...posts];
+    const found = all.find((p) => p.id === postId);
+    if (found) found.comments = Math.max(0, (found.comments || 0) - 1);
+  }
+}
+
+export function getPostComments(postId: string): MockPostComment[] {
+  return postComments[postId] || [];
+}
+
 export const userPosts: MockPost[] = [];
 
 export function addUserPost(post: MockPost) {

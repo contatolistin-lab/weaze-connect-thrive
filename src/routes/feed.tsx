@@ -13,11 +13,22 @@ import {
   Pencil,
   Trash2,
   X,
+  Send,
+  Check,
   type LucideIcon,
 } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
-import { getAllPosts, updatePost, deletePost } from "@/lib/mock-data";
+import {
+  getAllPosts,
+  updatePost,
+  deletePost,
+  getPostComments,
+  addComment,
+  updateComment,
+  deleteComment,
+  type MockPostComment,
+} from "@/lib/mock-data";
 import { useWeaze } from "@/lib/weaze-context";
 
 export const Route = createFileRoute("/feed")({
@@ -85,8 +96,9 @@ function PostCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
-  const { addLike, addComment, addShare } = useWeaze();
+  const { addLike, addComment: addNotif, addShare } = useWeaze();
 
   return (
     <article
@@ -166,7 +178,8 @@ function PostCard({
           label={shortNum(post.comments)}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            addComment();
+            setCommentsOpen(true);
+            addNotif();
           }}
         />
         <ActionBtn
@@ -269,6 +282,14 @@ function PostCard({
             setDeleteConfirm(false);
             onChange();
           }}
+        />
+      )}
+
+      {commentsOpen && (
+        <CommentsModal
+          postId={post.id}
+          onClose={() => setCommentsOpen(false)}
+          onChange={onChange}
         />
       )}
     </article>
@@ -378,6 +399,253 @@ function DeleteConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfir
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CommentsModal({
+  postId,
+  onClose,
+  onChange,
+}: {
+  postId: string;
+  onClose: () => void;
+  onChange: () => void;
+}) {
+  const [comments, setComments] = useState(() => getPostComments(postId));
+  const [input, setInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+
+  const refresh = () => {
+    setComments([...getPostComments(postId)]);
+    onChange();
+  };
+
+  const handleSend = () => {
+    const text = (editingId ? editText : input).trim();
+    if (!text) return;
+    if (editingId) {
+      updateComment(editingId, text);
+      setEditingId(null);
+      setEditText("");
+    } else {
+      addComment(postId, text);
+      setInput("");
+    }
+    refresh();
+  };
+
+  return (
+    <div
+      className="absolute inset-0 z-40 flex flex-col justify-end bg-black/60 backdrop-blur-sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div
+        className="w-full max-w-md mx-auto bg-white rounded-t-3xl flex flex-col max-h-[70vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-border shrink-0">
+          <h2 className="font-bold text-lg">Comentários</h2>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 grid place-items-center rounded-full hover:bg-muted"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3">
+          {comments.length === 0 && (
+            <p className="text-sm text-foreground/50 text-center py-8">Nenhum comentário ainda.</p>
+          )}
+          {comments.map((c) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              isEditing={editingId === c.id}
+              editText={editText}
+              onEdit={() => {
+                setEditingId(c.id);
+                setEditText(c.text);
+              }}
+              onEditChange={setEditText}
+              onSaveEdit={() => {
+                const t = editText.trim();
+                if (!t) return;
+                updateComment(c.id, t);
+                setEditingId(null);
+                setEditText("");
+                refresh();
+              }}
+              onCancelEdit={() => {
+                setEditingId(null);
+                setEditText("");
+              }}
+              onDelete={() => {
+                deleteComment(c.id, postId);
+                refresh();
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 px-5 py-3 border-t border-border shrink-0">
+          <span className="shrink-0 h-8 w-8 rounded-full bg-brand-gradient grid place-items-center text-white text-xs font-bold">
+            V
+          </span>
+          {editingId ? (
+            <div className="flex-1 flex items-center gap-2">
+              <input
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSend();
+                  if (e.key === "Escape") {
+                    setEditingId(null);
+                    setEditText("");
+                  }
+                }}
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+                autoFocus
+              />
+              <button
+                onClick={handleSend}
+                className="shrink-0 h-10 w-10 grid place-items-center rounded-xl bg-brand-gradient text-white"
+              >
+                <Check size={18} />
+              </button>
+              <button
+                onClick={() => {
+                  setEditingId(null);
+                  setEditText("");
+                }}
+                className="shrink-0 h-10 px-3 rounded-xl bg-muted text-foreground text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSend();
+                }}
+                placeholder="Escreva um comentário..."
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="shrink-0 h-10 w-10 grid place-items-center rounded-xl bg-brand-gradient text-white disabled:opacity-40"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CommentItem({
+  comment,
+  isEditing,
+  editText,
+  onEdit,
+  onEditChange,
+  onSaveEdit,
+  onCancelEdit,
+  onDelete,
+}: {
+  comment: MockPostComment;
+  isEditing: boolean;
+  editText: string;
+  onEdit: () => void;
+  onEditChange: (v: string) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div className="flex gap-3">
+      <span className="shrink-0 h-8 w-8 rounded-full bg-brand-gradient grid place-items-center text-white text-xs font-bold">
+        {comment.authorAvatar}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-sm">{comment.author}</span>
+          <span className="text-[10px] text-foreground/50">{comment.createdAt}</span>
+          {comment.editedAt && (
+            <span className="text-[10px] text-foreground/40 italic">(editado)</span>
+          )}
+        </div>
+        {isEditing ? (
+          <div className="mt-1 flex items-center gap-2">
+            <input
+              value={editText}
+              onChange={(e) => onEditChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSaveEdit();
+                if (e.key === "Escape") onCancelEdit();
+              }}
+              className="flex-1 h-8 rounded-lg border border-border px-2 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+              autoFocus
+            />
+            <button
+              onClick={onSaveEdit}
+              className="shrink-0 h-8 w-8 grid place-items-center rounded-lg bg-brand-gradient text-white"
+            >
+              <Check size={14} />
+            </button>
+          </div>
+        ) : (
+          <p className="text-sm text-foreground/80">{comment.text}</p>
+        )}
+      </div>
+      {!isEditing && (
+        <div className="relative shrink-0">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="h-7 w-7 grid place-items-center rounded-full hover:bg-muted text-foreground/50"
+          >
+            <MoreVertical size={14} />
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-soft border border-border overflow-hidden min-w-[130px]">
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onEdit();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                >
+                  <Pencil size={13} /> Editar
+                </button>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onDelete();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#d81e62] hover:bg-muted"
+                >
+                  <Trash2 size={13} /> Excluir
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
