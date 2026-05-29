@@ -39,6 +39,7 @@ export const Route = createFileRoute("/feed")({
 function Feed() {
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const allPosts = getAllPosts();
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
 
   return (
     <div className="min-h-dvh bg-black">
@@ -52,7 +53,12 @@ function Feed() {
 
         <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
           {allPosts.map((p) => (
-            <PostCard key={p.id} post={p} onChange={forceUpdate} />
+            <PostCard
+              key={p.id}
+              post={p}
+              onChange={forceUpdate}
+              onCommentClick={() => setCommentPostId(p.id)}
+            />
           ))}
           {allPosts.length === 0 && (
             <div className="h-dvh grid place-items-center text-white/50 text-sm">
@@ -63,6 +69,14 @@ function Feed() {
 
         <BottomNav />
       </div>
+
+      {commentPostId && (
+        <CommentsModal
+          postId={commentPostId}
+          onClose={() => setCommentPostId(null)}
+          onChange={forceUpdate}
+        />
+      )}
     </div>
   );
 }
@@ -87,16 +101,17 @@ function FeedBell() {
 function PostCard({
   post,
   onChange,
+  onCommentClick,
 }: {
   post: ReturnType<typeof getAllPosts>[number];
   onChange: () => void;
+  onCommentClick: () => void;
 }) {
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [commentsOpen, setCommentsOpen] = useState(false);
   const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
   const { addLike, addComment: addNotif, addShare } = useWeaze();
 
@@ -178,7 +193,7 @@ function PostCard({
           label={shortNum(post.comments)}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            setCommentsOpen(true);
+            onCommentClick();
             addNotif();
           }}
         />
@@ -282,14 +297,6 @@ function PostCard({
             setDeleteConfirm(false);
             onChange();
           }}
-        />
-      )}
-
-      {commentsOpen && (
-        <CommentsModal
-          postId={post.id}
-          onClose={() => setCommentsOpen(false)}
-          onChange={onChange}
         />
       )}
     </article>
