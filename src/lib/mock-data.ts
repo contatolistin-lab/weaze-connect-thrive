@@ -627,6 +627,23 @@ export function addUserPost(post: MockPost) {
   userPosts.unshift(post);
 }
 
+export function updatePost(id: string, data: { title?: string; caption?: string }) {
+  const all = [...userPosts, ...posts];
+  const found = all.find((p) => p.id === id);
+  if (!found) return;
+  if (data.caption !== undefined) found.caption = data.caption;
+  if (data.title !== undefined) {
+    found.community = { ...found.community, name: data.title };
+  }
+}
+
+export function deletePost(id: string) {
+  const ui = userPosts.findIndex((p) => p.id === id);
+  if (ui !== -1) userPosts.splice(ui, 1);
+  const pi = posts.findIndex((p) => p.id === id);
+  if (pi !== -1) posts.splice(pi, 1);
+}
+
 export function getAllPosts(): MockPost[] {
   return [...userPosts, ...posts];
 }

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import {
   Heart,
   MessageCircle,
@@ -9,11 +9,15 @@ import {
   Pause,
   Youtube,
   Bell,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
-import { getAllPosts } from "@/lib/mock-data";
+import { getAllPosts, updatePost, deletePost } from "@/lib/mock-data";
 import { useWeaze } from "@/lib/weaze-context";
 
 export const Route = createFileRoute("/feed")({
@@ -22,6 +26,7 @@ export const Route = createFileRoute("/feed")({
 });
 
 function Feed() {
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const allPosts = getAllPosts();
 
   return (
@@ -36,7 +41,7 @@ function Feed() {
 
         <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
           {allPosts.map((p) => (
-            <PostCard key={p.id} post={p} />
+            <PostCard key={p.id} post={p} onChange={forceUpdate} />
           ))}
           {allPosts.length === 0 && (
             <div className="h-dvh grid place-items-center text-white/50 text-sm">
@@ -68,9 +73,18 @@ function FeedBell() {
   );
 }
 
-function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
+function PostCard({
+  post,
+  onChange,
+}: {
+  post: ReturnType<typeof getAllPosts>[number];
+  onChange: () => void;
+}) {
   const [liked, setLiked] = useState(false);
   const [playing, setPlaying] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const hasRealMedia = post.mediaUrl && (post.mediaType === "image" || post.mediaType === "video");
   const { addLike, addComment, addShare } = useWeaze();
 
@@ -190,7 +204,181 @@ function PostCard({ post }: { post: ReturnType<typeof getAllPosts>[number] }) {
           </a>
         )}
       </div>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setMenuOpen((v) => !v);
+        }}
+        className="absolute top-14 right-3 z-20 h-9 w-9 grid place-items-center rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/30"
+      >
+        <MoreVertical size={18} />
+      </button>
+
+      {menuOpen && (
+        <>
+          <div
+            className="absolute inset-0 z-20"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(false);
+            }}
+          />
+          <div
+            className="absolute top-20 right-3 z-30 bg-white rounded-2xl shadow-soft border border-border overflow-hidden min-w-[160px]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                setEditOpen(true);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+            >
+              <Pencil size={16} /> Editar
+            </button>
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                setDeleteConfirm(true);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#d81e62] hover:bg-muted transition-colors"
+            >
+              <Trash2 size={16} /> Excluir
+            </button>
+          </div>
+        </>
+      )}
+
+      {editOpen && (
+        <EditModal
+          post={post}
+          onClose={() => setEditOpen(false)}
+          onSave={() => {
+            setEditOpen(false);
+            onChange();
+          }}
+        />
+      )}
+
+      {deleteConfirm && (
+        <DeleteConfirm
+          onCancel={() => setDeleteConfirm(false)}
+          onConfirm={() => {
+            deletePost(post.id);
+            setDeleteConfirm(false);
+            onChange();
+          }}
+        />
+      )}
     </article>
+  );
+}
+
+function EditModal({
+  post,
+  onClose,
+  onSave,
+}: {
+  post: ReturnType<typeof getAllPosts>[number];
+  onClose: () => void;
+  onSave: () => void;
+}) {
+  const [title, setTitle] = useState(post.community.name);
+  const [caption, setCaption] = useState(post.caption);
+
+  return (
+    <div
+      className="absolute inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClose();
+      }}
+    >
+      <div
+        className="w-full max-w-md bg-white rounded-t-3xl p-5 pb-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-lg">Editar postagem</h2>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 grid place-items-center rounded-full hover:bg-muted"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
+              Título
+            </p>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
+              Descrição
+            </p>
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={3}
+              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
+            />
+          </div>
+          <button
+            onClick={() => {
+              updatePost(post.id, { title, caption });
+              onSave();
+            }}
+            className="w-full h-11 rounded-2xl bg-brand-gradient text-white font-bold text-sm shadow-brand"
+          >
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
+  return (
+    <div
+      className="absolute inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        onCancel();
+      }}
+    >
+      <div
+        className="w-full max-w-md bg-white rounded-t-3xl p-5 pb-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="font-bold text-lg text-center">Excluir postagem</h2>
+        <p className="mt-2 text-sm text-foreground/60 text-center">
+          Tem certeza? Esta ação não pode ser desfeita.
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 h-11 rounded-2xl bg-muted text-foreground font-semibold text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 h-11 rounded-2xl bg-[#d81e62] text-white font-bold text-sm"
+          >
+            Excluir
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
