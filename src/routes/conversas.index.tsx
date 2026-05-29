@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Pin, TrendingUp, MessageSquare, Heart, Eye, Plus, Sparkles } from "lucide-react";
+import { Search, Pin, TrendingUp, MessageSquare, Heart, Eye, Plus, Sparkles, X, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
-import { conversations } from "@/lib/mock-data";
+import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/conversas/")({
   head: () => ({ meta: [{ title: "Conversas — WEAZE" }] }),
@@ -21,12 +21,17 @@ const categories = [
   "Geral",
 ];
 
+const initial = { title: "", description: "", tags: "", category: "Geral" };
+
 function Conversas() {
   const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "trending">("recentes");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(initial);
+  const all = getAllConversations();
 
-  const filtered = conversations.filter(
+  const filtered = all.filter(
     (c) =>
       (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
   );
@@ -34,6 +39,33 @@ function Conversas() {
   const pinned = filtered.filter((c) => c.pinned);
   const list =
     tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
+
+  const submit = () => {
+    if (!form.title.trim()) return;
+    const id = "ucv_" + Date.now();
+    const first = form.title.trim()[0].toUpperCase();
+    addUserConversation({
+      id,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      category: form.category,
+      author: "Você",
+      authorAvatar: first,
+      replies: 0,
+      likes: 0,
+      views: 0,
+      pinned: false,
+      trending: false,
+      createdAt: "agora",
+      lastActivity: "agora",
+      tags: form.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    });
+    setForm(initial);
+    setShowForm(false);
+  };
 
   return (
     <AppShell title="Conversas">
@@ -45,6 +77,56 @@ function Conversas() {
             Participe das discussões, tire dúvidas e compartilhe conhecimento.
           </p>
         </div>
+
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="w-full h-11 rounded-2xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
+        >
+          {showForm ? <X size={18} /> : <Plus size={18} />}
+          {showForm ? "Cancelar" : "Criar conversa"}
+        </button>
+
+        {showForm && (
+          <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
+            <input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Título da conversa"
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            />
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Descrição (opcional)"
+              rows={3}
+              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
+            />
+            <div className="flex gap-2">
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] bg-white"
+              >
+                {categories.filter((c) => c !== "Todas").map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <input
+                value={form.tags}
+                onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                placeholder="Tags: separadas por vírgula"
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+              />
+            </div>
+            <button
+              onClick={submit}
+              disabled={!form.title.trim()}
+              className="w-full h-10 rounded-xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
+            >
+              <Check size={16} /> Publicar conversa
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-11">
           <Search size={18} className="text-foreground/40" />
@@ -110,13 +192,6 @@ function Conversas() {
             </div>
           )}
         </div>
-
-        <Link
-          to="/create"
-          className="fixed bottom-24 right-5 h-14 w-14 rounded-2xl bg-brand-gradient text-white shadow-brand grid place-items-center active:scale-95 transition-transform z-40"
-        >
-          <Plus size={26} strokeWidth={2.4} />
-        </Link>
       </div>
     </AppShell>
   );

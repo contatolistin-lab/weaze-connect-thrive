@@ -630,3 +630,13 @@ export function addUserPost(post: MockPost) {
 export function getAllPosts(): MockPost[] {
   return [...userPosts, ...posts];
 }
+
+export const userConversations: MockConversation[] = [];
+
+export function addUserConversation(conv: MockConversation) {
+  userConversations.unshift(conv);
+}
+
+export function getAllConversations(): MockConversation[] {
+  return [...userConversations, ...conversations];
+}
