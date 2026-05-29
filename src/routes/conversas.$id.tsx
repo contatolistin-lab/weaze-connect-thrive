@@ -128,11 +128,7 @@ function ConversationDetail() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 pt-4 pb-2 border-b border-border">
-            <div className="flex items-center gap-2 text-xs text-[#630091] font-semibold uppercase">
-              {conv.pinned && <Pin size={12} />}
-              {conv.category}
-            </div>
-            <h1 className="mt-2 text-xl font-extrabold tracking-tight leading-snug">
+            <h1 className="text-xl font-extrabold tracking-tight leading-snug">
               {conv.title}
             </h1>
             <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{conv.description}</p>

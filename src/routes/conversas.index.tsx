@@ -9,25 +9,17 @@ export const Route = createFileRoute("/conversas/")({
   component: Conversas,
 });
 
-const ALLOWED_CATEGORIES = ["Esportes", "Música", "Tech", "Beleza", "Lifestyle"];
-
 const initial = { title: "", description: "", tags: "" };
 
 function Conversas() {
-  const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initial);
   const all = getAllConversations();
 
-  const availableCategories = ALLOWED_CATEGORIES.filter((c) =>
-    all.some((conv) => conv.category === c),
-  );
-
-  const filtered = all.filter(
-    (c) =>
-      (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
+  const filtered = all.filter((c) =>
+    c.title.toLowerCase().includes(q.toLowerCase()),
   );
 
   const pinned = filtered.filter((c) => c.pinned);
@@ -41,7 +33,7 @@ function Conversas() {
       id,
       title: form.title.trim(),
       description: form.description.trim(),
-      category: "Geral",
+      category: "",
       author: "Você",
       authorAvatar: first,
       replies: 0,
@@ -135,22 +127,6 @@ function Conversas() {
           ))}
         </div>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-          {["Todas", ...availableCategories].map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
-                cat === c
-                  ? "bg-brand-gradient text-white border-transparent"
-                  : "bg-white border-border text-foreground/70"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
         {pinned.length > 0 && (
           <div>
             <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -190,9 +166,6 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
-            <span className="text-[10px] font-semibold text-[#630091] uppercase">
-              {conv.category}
-            </span>
           </div>
           <h3 className="mt-1 font-bold text-sm leading-snug">{conv.title}</h3>
           <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{conv.description}</p>
