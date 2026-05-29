@@ -11,6 +11,11 @@ import {
 import { AppShell } from "@/components/weaze/AppShell";
 import { useWeaze } from "@/lib/weaze-context";
 
+export const Route = createFileRoute("/notifications")({
+  head: () => ({ meta: [{ title: "Notificações — WEAZE" }] }),
+  component: Notifications,
+});
+
 const iconMap: Record<string, { I: LucideIcon; color: string }> = {
   like: { I: Heart, color: "#d81e62" },
   comment: { I: MessageCircle, color: "#630091" },
