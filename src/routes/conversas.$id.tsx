@@ -38,16 +38,8 @@ function ConversationDetail() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [comments, setComments] = useState(() => getConversationComments(id));
-  const [replyLikes, setReplyLikes] = useState<Set<string>>(new Set());
-
-  const toggleReplyLike = (key: string) => {
-    setReplyLikes((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  };
+  const [likedComments, setLikedComments] = useState<Record<string, boolean>>({});
+  const [likedReplies, setLikedReplies] = useState<Record<string, boolean>>({});
 
   if (!conv) {
     return (
@@ -242,8 +234,16 @@ function ConversationDetail() {
                       )}
 
                       <div className="mt-2 flex items-center gap-3">
-                        <button className="flex items-center gap-1 text-xs text-foreground/50 hover:text-[#d81e62]">
-                          <Heart size={12} /> {c.likes}
+                        <button
+                          onClick={() =>
+                            setLikedComments((prev) => ({ ...prev, [c.id]: !prev[c.id] }))
+                          }
+                          className={`flex items-center gap-1 text-xs ${
+                            likedComments[c.id] ? "text-[#d81e62]" : "text-foreground/50"
+                          } hover:text-[#d81e62]`}
+                        >
+                          <Heart size={12} fill={likedComments[c.id] ? "#d81e62" : "none"} />{" "}
+                          {c.likes + (likedComments[c.id] ? 1 : 0)}
                         </button>
                         <button
                           onClick={() => setReplyingTo(replyingTo === c.id ? null : c.id)}
@@ -257,14 +257,19 @@ function ConversationDetail() {
                         <div className="mt-3 ml-4 pl-3 border-l-2 border-border space-y-2">
                           {c.replies.map((r, i) => {
                             const rKey = c.id + "-" + i;
-                            const rLiked = replyLikes.has(rKey);
+                            const rLiked = likedReplies[rKey];
                             return (
                               <div key={i} className="text-sm">
                                 <span className="font-semibold">{r.author}</span>
                                 <span className="text-foreground/80"> {r.text}</span>
                                 <div className="mt-1 flex items-center gap-2">
                                   <button
-                                    onClick={() => toggleReplyLike(rKey)}
+                                    onClick={() =>
+                                      setLikedReplies((prev) => ({
+                                        ...prev,
+                                        [rKey]: !prev[rKey],
+                                      }))
+                                    }
                                     className={`flex items-center gap-0.5 text-[10px] ${
                                       rLiked ? "text-[#d81e62]" : "text-foreground/40"
                                     }`}
