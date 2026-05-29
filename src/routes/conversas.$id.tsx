@@ -1,26 +1,94 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Heart, MessageSquare, Eye, Share2, Send, Sparkles, Pin } from "lucide-react";
-import { conversations, conversationComments } from "@/lib/mock-data";
-import { WButton } from "@/components/weaze/WButton";
+import {
+  ArrowLeft,
+  Heart,
+  MessageSquare,
+  Eye,
+  Share2,
+  Send,
+  Pin,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+} from "lucide-react";
+import {
+  conversations,
+  getConversationComments,
+  addConversationComment,
+  updateConversationComment,
+  deleteConversationComment,
+} from "@/lib/mock-data";
 
 export const Route = createFileRoute("/conversas/$id")({
   component: ConversationDetail,
 });
 
+const CURRENT_USER = "Você";
+
 function ConversationDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
-  const conv = conversations.find((x) => x.id === id) ?? conversations[0];
-  const comments = conversationComments.filter((c) => c.conversationId === conv.id);
+  const conv = conversations.find((x) => x.id === id) ?? null;
   const [liked, setLiked] = useState(false);
-  const [replyText, setReplyText] = useState("");
+  const [input, setInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
+  const [comments, setComments] = useState(() => getConversationComments(id));
 
-  const sendReply = () => {
-    if (!replyText.trim()) return;
-    setReplyText("");
+  if (!conv) {
+    return (
+      <div className="min-h-dvh bg-background grid place-items-center">
+        <div className="text-center">
+          <p className="text-foreground/50">Conversa não encontrada.</p>
+          <button
+            onClick={() => nav({ to: "/conversas" })}
+            className="mt-3 text-sm text-[#d81e62] font-semibold"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const refresh = () => {
+    setComments([...getConversationComments(id)]);
+  };
+
+  const handleSend = () => {
+    const text = (editingId ? editText : input).trim();
+    if (!text) return;
+    if (editingId) {
+      updateConversationComment(editingId, text);
+      setEditingId(null);
+      setEditText("");
+    } else {
+      addConversationComment(id, text);
+      setInput("");
+    }
+    refresh();
+  };
+
+  const handleReply = (commentId: string) => {
+    const text = replyContent.trim();
+    if (!text) return;
+    const c = comments.find((cm) => cm.id === commentId);
+    if (c) {
+      c.replies.push({ author: CURRENT_USER, text, createdAt: "agora" });
+    }
+    setReplyContent("");
+    setReplyingTo(null);
+    refresh();
+  };
+
+  const handleDelete = (commentId: string) => {
+    deleteConversationComment(commentId, id);
+    refresh();
   };
 
   return (
@@ -50,12 +118,6 @@ function ConversationDetail() {
             <div className="flex items-center gap-2 text-xs text-[#630091] font-semibold uppercase">
               {conv.pinned && <Pin size={12} />}
               {conv.category}
-              {conv.trending && (
-                <>
-                  <span className="text-foreground/30">·</span>
-                  <Sparkles size={12} className="text-amber-500" /> Trending
-                </>
-              )}
             </div>
             <h1 className="mt-2 text-xl font-extrabold tracking-tight leading-snug">
               {conv.title}
@@ -130,8 +192,46 @@ function ConversationDetail() {
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm">{c.author}</span>
                         <span className="text-[10px] text-foreground/50">{c.createdAt}</span>
+                        {c.editedAt && (
+                          <span className="text-[10px] text-foreground/40 italic">(editado)</span>
+                        )}
                       </div>
-                      <p className="mt-1 text-sm text-foreground/80 leading-relaxed">{c.text}</p>
+
+                      {editingId === c.id ? (
+                        <div className="mt-1 flex items-center gap-2">
+                          <input
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSend();
+                              if (e.key === "Escape") {
+                                setEditingId(null);
+                                setEditText("");
+                              }
+                            }}
+                            className="flex-1 h-9 rounded-lg border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+                            autoFocus
+                          />
+                          <button
+                            onClick={handleSend}
+                            className="shrink-0 h-9 w-9 grid place-items-center rounded-lg bg-brand-gradient text-white"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditText("");
+                            }}
+                            className="shrink-0 h-9 px-3 rounded-lg bg-muted text-foreground text-xs font-semibold"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-sm text-foreground/80 leading-relaxed">{c.text}</p>
+                      )}
+
                       <div className="mt-2 flex items-center gap-3">
                         <button className="flex items-center gap-1 text-xs text-foreground/50 hover:text-[#d81e62]">
                           <Heart size={12} /> {c.likes}
@@ -165,19 +265,10 @@ function ConversationDetail() {
                             onChange={(e) => setReplyContent(e.target.value)}
                             placeholder="Escreva sua resposta..."
                             className="flex-1 h-9 rounded-full bg-muted px-4 text-sm outline-none"
-                            onKeyDown={(e) =>
-                              e.key === "Enter" &&
-                              (() => {
-                                setReplyContent("");
-                                setReplyingTo(null);
-                              })()
-                            }
+                            onKeyDown={(e) => e.key === "Enter" && handleReply(c.id)}
                           />
                           <button
-                            onClick={() => {
-                              setReplyContent("");
-                              setReplyingTo(null);
-                            }}
+                            onClick={() => handleReply(c.id)}
                             className="h-9 w-9 rounded-full bg-brand-gradient text-white grid place-items-center"
                           >
                             <Send size={14} />
@@ -185,9 +276,26 @@ function ConversationDetail() {
                         </div>
                       )}
                     </div>
+
+                    {c.author === CURRENT_USER && editingId !== c.id && (
+                      <div className="relative shrink-0">
+                        <CommentMenu
+                          onEdit={() => {
+                            setEditingId(c.id);
+                            setEditText(c.text);
+                          }}
+                          onDelete={() => handleDelete(c.id)}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
+              {comments.length === 0 && (
+                <div className="text-center py-10 text-foreground/50 text-sm">
+                  Nenhum comentário ainda. Seja o primeiro a responder!
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -195,21 +303,62 @@ function ConversationDetail() {
         <div className="sticky bottom-0 bg-white border-t border-border px-4 py-3 safe-pb">
           <div className="flex items-center gap-2">
             <input
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Escreva um comentário..."
               className="flex-1 h-11 rounded-2xl bg-muted px-4 text-sm outline-none"
-              onKeyDown={(e) => e.key === "Enter" && sendReply()}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <button
-              onClick={sendReply}
-              className="h-11 w-11 rounded-2xl bg-brand-gradient text-white grid place-items-center shadow-pink"
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="h-11 w-11 rounded-2xl bg-brand-gradient text-white grid place-items-center shadow-pink disabled:opacity-50"
             >
               <Send size={18} />
             </button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function CommentMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="h-7 w-7 grid place-items-center rounded-full hover:bg-muted text-foreground/50"
+      >
+        <MoreVertical size={14} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-soft border border-border overflow-hidden min-w-[130px]">
+            <button
+              onClick={() => {
+                setOpen(false);
+                onEdit();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+            >
+              <Pencil size={13} /> Editar
+            </button>
+            <button
+              onClick={() => {
+                setOpen(false);
+                onDelete();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#d81e62] hover:bg-muted"
+            >
+              <Trash2 size={13} /> Excluir
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

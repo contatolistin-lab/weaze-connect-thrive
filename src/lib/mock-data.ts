@@ -499,6 +499,7 @@ export interface MockConversationComment {
   text: string;
   likes: number;
   createdAt: string;
+  editedAt?: string;
   replies: { author: string; text: string; createdAt: string }[];
 }
 
@@ -740,4 +741,42 @@ export function addUserConversation(conv: MockConversation) {
 
 export function getAllConversations(): MockConversation[] {
   return [...userConversations, ...conversations];
+}
+
+export function addConversationComment(conversationId: string, text: string) {
+  const comment: MockConversationComment = {
+    id: "cc_" + Date.now(),
+    conversationId,
+    author: "Você",
+    authorAvatar: "V",
+    text,
+    likes: 0,
+    createdAt: "agora",
+    replies: [],
+  };
+  conversationComments.unshift(comment);
+  const all = [...userConversations, ...conversations];
+  const found = all.find((c) => c.id === conversationId);
+  if (found) found.replies = (found.replies || 0) + 1;
+}
+
+export function updateConversationComment(commentId: string, text: string) {
+  const c = conversationComments.find((cm) => cm.id === commentId);
+  if (c) {
+    c.text = text;
+  }
+}
+
+export function deleteConversationComment(commentId: string, conversationId: string) {
+  const idx = conversationComments.findIndex((c) => c.id === commentId);
+  if (idx !== -1) {
+    conversationComments.splice(idx, 1);
+    const all = [...userConversations, ...conversations];
+    const found = all.find((c) => c.id === conversationId);
+    if (found) found.replies = Math.max(0, (found.replies || 0) - 1);
+  }
+}
+
+export function getConversationComments(conversationId: string): MockConversationComment[] {
+  return conversationComments.filter((c) => c.conversationId === conversationId);
 }

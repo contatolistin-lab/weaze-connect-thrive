@@ -8,10 +8,10 @@ interface LogoProps {
 }
 
 const sizeMap = {
-  sm: { box: 28, text: "text-lg" },
-  md: { box: 36, text: "text-xl" },
-  lg: { box: 48, text: "text-2xl" },
-  xl: { box: 72, text: "text-4xl" },
+  sm: { h: 28 },
+  md: { h: 36 },
+  lg: { h: 48 },
+  xl: { h: 72 },
 };
 
 export function WeazeLogo({
@@ -21,40 +21,29 @@ export function WeazeLogo({
   to = "/",
 }: LogoProps) {
   const s = sizeMap[size];
-  const fill =
-    variant === "white" ? "#ffffff" : variant === "dark" ? "#0b0b12" : "url(#weaze-grad)";
-  const textClass =
-    variant === "white"
-      ? "text-white"
-      : variant === "dark"
-        ? "text-foreground"
-        : "text-brand-gradient";
 
   const content = (
     <span className="inline-flex items-center gap-2 select-none">
-      <svg width={s.box} height={s.box} viewBox="0 0 64 64" fill="none" aria-hidden>
-        <defs>
-          <linearGradient
-            id="weaze-grad"
-            x1="0"
-            y1="0"
-            x2="64"
-            y2="64"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#630091" />
-            <stop offset="100%" stopColor="#d81e62" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="60" height="60" rx="16" fill={fill} />
-        <path
-          d="M14 22 L22 46 L29 30 L36 46 L44 22 L40 22 L34 38 L29 22 L25 22 L20 38 L18 22 Z"
-          fill="#ffffff"
-        />
-        <circle cx="50" cy="18" r="4" fill="#ffffff" />
-      </svg>
+      <img
+        src="/logo-weaze.png"
+        alt="WEAZE"
+        height={s.h}
+        className="w-auto object-contain"
+        style={{ height: s.h }}
+      />
       {withWordmark && (
-        <span className={`font-extrabold tracking-tight ${s.text} ${textClass}`}>WEAZE</span>
+        <span
+          className={`font-extrabold tracking-tight text-lg ${
+            variant === "white"
+              ? "text-white"
+              : variant === "dark"
+                ? "text-foreground"
+                : "text-brand-gradient"
+          }`}
+          style={{ fontSize: s.h * 0.65 }}
+        >
+          WEAZE
+        </span>
       )}
     </span>
   );
