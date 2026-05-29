@@ -317,7 +317,7 @@ function EditModal({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
       onClick={(e) => {
         e.stopPropagation();
         onClose();
@@ -377,7 +377,7 @@ function EditModal({
 function DeleteConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
   return (
     <div
-      className="absolute inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
       onClick={(e) => {
         e.stopPropagation();
         onCancel();
@@ -445,14 +445,14 @@ function CommentsModal({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex flex-col justify-end bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm"
       onClick={(e) => {
         e.stopPropagation();
         onClose();
       }}
     >
       <div
-        className="w-full max-w-md mx-auto bg-white rounded-t-3xl flex flex-col max-h-[70vh]"
+        className="w-full max-w-md mx-auto bg-white rounded-t-3xl flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-2 border-b border-border shrink-0">
