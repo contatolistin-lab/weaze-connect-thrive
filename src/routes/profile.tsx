@@ -3,7 +3,7 @@ import { Settings, LogOut, Copy, Check, Share2 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCommunity, communityEmail } from "@/lib/community-store";
 
 export const Route = createFileRoute("/profile")({
@@ -35,7 +35,17 @@ function Profile() {
     updateCommunity({ whatsapp });
   };
 
-  const communityLink = `https://weaze.app/c/${community.name.toLowerCase().replace(/\s+/g, "-")}`;
+  const communitySlug = community.name.toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
+  const communityLink = `${window.location.origin}/c/${communitySlug}`;
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("weaze_community_invites");
+      const map = raw ? JSON.parse(raw) : {};
+      map[communitySlug] = { name: community.name, description: community.description };
+      localStorage.setItem("weaze_community_invites", JSON.stringify(map));
+    } catch {}
+  }, [community.name, community.description, communitySlug]);
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(communityLink);

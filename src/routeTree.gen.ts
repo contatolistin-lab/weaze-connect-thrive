@@ -26,6 +26,7 @@ import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as ConversasIdRouteImport } from './routes/conversas.$id'
 import { Route as CommunitiesIdRouteImport } from './routes/communities.$id'
+import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as B2bSignupRouteImport } from './routes/b2b/signup'
 import { Route as B2bLoginRouteImport } from './routes/b2b/login'
 import { Route as B2bDashboardRouteImport } from './routes/b2b/dashboard'
@@ -116,6 +117,11 @@ const CommunitiesIdRoute = CommunitiesIdRouteImport.update({
   path: '/communities/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CSlugRoute = CSlugRouteImport.update({
+  id: '/c/$slug',
+  path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const B2bSignupRoute = B2bSignupRouteImport.update({
   id: '/b2b/signup',
   path: '/b2b/signup',
@@ -151,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
+  '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -174,6 +181,7 @@ export interface FileRoutesByTo {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
+  '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
+  '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
+    | '/c/$slug'
     | '/communities/$id'
     | '/conversas/$id'
     | '/groups/$id'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
+    | '/c/$slug'
     | '/communities/$id'
     | '/conversas/$id'
     | '/groups/$id'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
+    | '/c/$slug'
     | '/communities/$id'
     | '/conversas/$id'
     | '/groups/$id'
@@ -293,6 +305,7 @@ export interface RootRouteChildren {
   B2bDashboardRoute: typeof B2bDashboardRoute
   B2bLoginRoute: typeof B2bLoginRoute
   B2bSignupRoute: typeof B2bSignupRoute
+  CSlugRoute: typeof CSlugRoute
   CommunitiesIdRoute: typeof CommunitiesIdRoute
   ConversasIdRoute: typeof ConversasIdRoute
   MessagesIdRoute: typeof MessagesIdRoute
@@ -422,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunitiesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$slug': {
+      id: '/c/$slug'
+      path: '/c/$slug'
+      fullPath: '/c/$slug'
+      preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/b2b/signup': {
       id: '/b2b/signup'
       path: '/b2b/signup'
@@ -480,6 +500,7 @@ const rootRouteChildren: RootRouteChildren = {
   B2bDashboardRoute: B2bDashboardRoute,
   B2bLoginRoute: B2bLoginRoute,
   B2bSignupRoute: B2bSignupRoute,
+  CSlugRoute: CSlugRoute,
   CommunitiesIdRoute: CommunitiesIdRoute,
   ConversasIdRoute: ConversasIdRoute,
   MessagesIdRoute: MessagesIdRoute,
