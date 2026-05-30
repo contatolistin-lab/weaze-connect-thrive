@@ -51,14 +51,18 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   const updateCommunity = useCallback((data: Partial<CommunityData>) => {
     setCommunity((prev) => {
       const next = { ...prev, ...data };
-      try { localStorage.setItem("weaze_community", JSON.stringify(next)); } catch {}
+      try {
+        localStorage.setItem("weaze_community", JSON.stringify(next));
+      } catch {}
       return next;
     });
   }, []);
 
   const setB2B = useCallback((v: boolean) => {
     setB2BState(v);
-    try { localStorage.setItem("weaze_user_b2b", String(v)); } catch {}
+    try {
+      localStorage.setItem("weaze_user_b2b", String(v));
+    } catch {}
   }, []);
 
   const userType: UserTypeContext = { isB2B, setB2B };

@@ -211,132 +211,430 @@ export const notifications: MockNotification[] = [
   { id: "n5", kind: "follow", text: "Você ganhou 12 novos seguidores hoje.", time: "3h" },
 ];
 
+// ---- Groups (Private Messaging System) ----
+
+export const currentUserId = "u_você";
+export const currentUserName = "Você";
+export const currentUserAvatar = "V";
+
 export interface MockGroup {
   id: string;
   name: string;
-  members: number;
-  topic: string;
-  privacy: "public" | "private";
-  emoji: string;
+  description: string;
+  image: string;
+  memberCount: number;
+  createdAt: string;
+  createdBy: string;
+  createdByName: string;
+  lastActivity?: string;
+  inviteCode?: string;
+}
+
+export interface MockGroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  name: string;
+  avatar: string;
+  role: "admin" | "member";
+  joinedAt: string;
+}
+
+export interface MockGroupMessage {
+  id: string;
+  groupId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string;
+  text: string;
+  createdAt: string;
+  isPinned?: boolean;
 }
 
 export const groups: MockGroup[] = [
   {
     id: "g1",
-    name: "Corrida SP",
-    members: 1280,
-    topic: "Treinos e pace",
-    privacy: "public",
-    emoji: "🏃",
+    name: "VIP Corrida",
+    description:
+      "Grupo exclusivo para membros premium do Nike Run Club. Treinos, desafios e novidades em primeira mão.",
+    image: "🏃",
+    memberCount: 12,
+    createdAt: "15 jan",
+    createdBy: "u_nike",
+    createdByName: "Nike Run Club",
+    lastActivity: "2m",
+    inviteCode: "CORRIDA2025",
   },
   {
     id: "g2",
-    name: "Vinil Brasil",
-    members: 540,
-    topic: "Trocas e achados",
-    privacy: "public",
-    emoji: "🎵",
+    name: "Devs Indie",
+    description:
+      "Networking e mentoria para devs independentes. Side projects, freelas e colaborações.",
+    image: "💻",
+    memberCount: 8,
+    createdAt: "20 jan",
+    createdBy: "u_maria",
+    createdByName: "Maria",
+    lastActivity: "15m",
+    inviteCode: "DEVS123",
   },
   {
     id: "g3",
-    name: "Devs Indie",
-    members: 320,
-    topic: "Side projects",
-    privacy: "private",
-    emoji: "💻",
+    name: "Skincare Club",
+    description:
+      "Grupo VIP de skincare com dicas exclusivas, lançamentos e consultoria personalizada.",
+    image: "✨",
+    memberCount: 15,
+    createdAt: "5 fev",
+    createdBy: "u_stone",
+    createdByName: "Stone Beauty",
+    lastActivity: "1h",
+    inviteCode: "SKINVIP",
   },
   {
     id: "g4",
-    name: "Skincare Lovers",
-    members: 980,
-    topic: "Rotinas e reviews",
-    privacy: "public",
-    emoji: "✨",
+    name: "Mentoria WEAZE",
+    description:
+      "Mentoria exclusiva para criadores de comunidade. Estratégias de crescimento e engajamento.",
+    image: "🚀",
+    memberCount: 5,
+    createdAt: "1 mar",
+    createdBy: "u_weaze",
+    createdByName: "WEAZE",
+    lastActivity: "3h",
+    inviteCode: "MENTORIA",
   },
 ];
 
-export interface MockGroupTopic {
-  id: string;
-  groupId: string;
-  title: string;
-  author: string;
-  replies: number;
-  likes: number;
-  createdAt: string;
-}
-
-export const groupTopics: MockGroupTopic[] = [
+export const groupMembers: MockGroupMember[] = [
   {
-    id: "gt1",
+    id: "gm1",
     groupId: "g1",
-    title: "Dica de tênis para asfalto?",
-    author: "Ana",
-    replies: 12,
-    likes: 34,
-    createdAt: "2h",
+    userId: "u_nike",
+    name: "Nike Run Club",
+    avatar: "N",
+    role: "admin",
+    joinedAt: "15 jan",
   },
   {
-    id: "gt2",
+    id: "gm2",
     groupId: "g1",
-    title: "Treino longo de domingo — quem vai?",
-    author: "Pedro",
-    replies: 8,
-    likes: 21,
-    createdAt: "5h",
+    userId: "u_você",
+    name: "Você",
+    avatar: "V",
+    role: "member",
+    joinedAt: "15 jan",
   },
   {
-    id: "gt3",
+    id: "gm3",
     groupId: "g1",
-    title: "Meu pace melhorou 10s depois do treino intervalado",
-    author: "Lucas",
-    replies: 5,
-    likes: 45,
-    createdAt: "1d",
+    userId: "u_ana",
+    name: "Ana Beatriz",
+    avatar: "A",
+    role: "member",
+    joinedAt: "15 jan",
   },
   {
-    id: "gt4",
+    id: "gm4",
+    groupId: "g1",
+    userId: "u_pedro",
+    name: "Pedro Santos",
+    avatar: "P",
+    role: "member",
+    joinedAt: "16 jan",
+  },
+  {
+    id: "gm5",
+    groupId: "g1",
+    userId: "u_lucas",
+    name: "Lucas Oliveira",
+    avatar: "L",
+    role: "member",
+    joinedAt: "16 jan",
+  },
+  {
+    id: "gm6",
     groupId: "g2",
-    title: "Raridade: Pink Floyd vinil original",
-    author: "Carla",
-    replies: 23,
-    likes: 67,
-    createdAt: "3h",
+    userId: "u_maria",
+    name: "Maria",
+    avatar: "M",
+    role: "admin",
+    joinedAt: "20 jan",
   },
   {
-    id: "gt5",
+    id: "gm7",
     groupId: "g2",
-    title: "Indicações de lojas em SP",
-    author: "Rafael",
-    replies: 15,
-    likes: 29,
-    createdAt: "1d",
+    userId: "u_você",
+    name: "Você",
+    avatar: "V",
+    role: "member",
+    joinedAt: "20 jan",
   },
   {
-    id: "gt6",
+    id: "gm8",
+    groupId: "g2",
+    userId: "u_tiago",
+    name: "Tiago",
+    avatar: "T",
+    role: "member",
+    joinedAt: "21 jan",
+  },
+  {
+    id: "gm9",
+    groupId: "g2",
+    userId: "u_rafael",
+    name: "Rafael Costa",
+    avatar: "R",
+    role: "member",
+    joinedAt: "22 jan",
+  },
+  {
+    id: "gm10",
     groupId: "g3",
-    title: "Side project que mais te orgulha?",
-    author: "Tiago",
-    replies: 31,
-    likes: 89,
-    createdAt: "6h",
+    userId: "u_stone",
+    name: "Stone Beauty",
+    avatar: "S",
+    role: "admin",
+    joinedAt: "5 fev",
   },
   {
-    id: "gt7",
+    id: "gm11",
     groupId: "g3",
-    title: "Dica: Next.js vs TanStack Start",
-    author: "Maria",
-    replies: 18,
-    likes: 56,
-    createdAt: "1d",
+    userId: "u_você",
+    name: "Você",
+    avatar: "V",
+    role: "member",
+    joinedAt: "5 fev",
   },
   {
-    id: "gt8",
+    id: "gm12",
+    groupId: "g3",
+    userId: "u_julia",
+    name: "Júlia Lima",
+    avatar: "J",
+    role: "member",
+    joinedAt: "5 fev",
+  },
+  {
+    id: "gm13",
+    groupId: "g3",
+    userId: "u_beatriz",
+    name: "Beatriz Rocha",
+    avatar: "B",
+    role: "member",
+    joinedAt: "6 fev",
+  },
+  {
+    id: "gm14",
     groupId: "g4",
-    title: "Rotina skincare noturna completa",
-    author: "Júlia",
-    replies: 9,
-    likes: 72,
-    createdAt: "4h",
+    userId: "u_weaze",
+    name: "WEAZE",
+    avatar: "W",
+    role: "admin",
+    joinedAt: "1 mar",
+  },
+  {
+    id: "gm15",
+    groupId: "g4",
+    userId: "u_você",
+    name: "Você",
+    avatar: "V",
+    role: "member",
+    joinedAt: "1 mar",
+  },
+  {
+    id: "gm16",
+    groupId: "g4",
+    userId: "u_ana",
+    name: "Ana Beatriz",
+    avatar: "A",
+    role: "member",
+    joinedAt: "1 mar",
+  },
+  {
+    id: "gm17",
+    groupId: "g4",
+    userId: "u_pedro",
+    name: "Pedro Santos",
+    avatar: "P",
+    role: "member",
+    joinedAt: "2 mar",
+  },
+];
+
+export const groupMessages: MockGroupMessage[] = [
+  {
+    id: "msg1",
+    groupId: "g1",
+    authorId: "u_nike",
+    authorName: "Nike Run Club",
+    authorAvatar: "N",
+    text: "Bem-vindos ao grupo VIP Corrida! 🏃 Aqui vocês terão acesso a treinos exclusivos, desafios semanais e lançamentos antes de todo mundo.",
+    createdAt: "15 jan",
+  },
+  {
+    id: "msg2",
+    groupId: "g1",
+    authorId: "u_você",
+    authorName: "Você",
+    authorAvatar: "V",
+    text: "Que honra fazer parte! 🔥 Mal posso esperar pelos desafios.",
+    createdAt: "15 jan",
+  },
+  {
+    id: "msg3",
+    groupId: "g1",
+    authorId: "u_ana",
+    authorName: "Ana Beatriz",
+    authorAvatar: "A",
+    text: "Oii pessoal! Também estou super animada 🙌",
+    createdAt: "15 jan",
+  },
+  {
+    id: "msg4",
+    groupId: "g1",
+    authorId: "u_nike",
+    authorName: "Nike Run Club",
+    authorAvatar: "N",
+    text: "📌 Desafio da semana: 5km em pace 5:30. Quem topa?",
+    createdAt: "16 jan",
+    isPinned: true,
+  },
+  {
+    id: "msg5",
+    groupId: "g1",
+    authorId: "u_pedro",
+    authorName: "Pedro Santos",
+    authorAvatar: "P",
+    text: "Topo! Vou tentar amanhã cedo.",
+    createdAt: "16 jan",
+  },
+  {
+    id: "msg6",
+    groupId: "g1",
+    authorId: "u_lucas",
+    authorName: "Lucas Oliveira",
+    authorAvatar: "L",
+    text: "Bora! Também vou.",
+    createdAt: "16 jan",
+  },
+  {
+    id: "msg7",
+    groupId: "g1",
+    authorId: "u_nike",
+    authorName: "Nike Run Club",
+    authorAvatar: "N",
+    text: "E aí, como foi o desafio de hoje? 👟",
+    createdAt: "2m",
+  },
+  {
+    id: "msg8",
+    groupId: "g2",
+    authorId: "u_maria",
+    authorName: "Maria",
+    authorAvatar: "M",
+    text: "Bem-vindos ao Devs Indie! Vamos trocar ideias sobre side projects e freelas 💻",
+    createdAt: "20 jan",
+  },
+  {
+    id: "msg9",
+    groupId: "g2",
+    authorId: "u_tiago",
+    authorName: "Tiago",
+    authorAvatar: "T",
+    text: "Fala galera! To desenvolvendo um SAAS de agendamento. Alguém já usou Next.js com Supabase?",
+    createdAt: "21 jan",
+  },
+  {
+    id: "msg10",
+    groupId: "g2",
+    authorId: "u_rafael",
+    authorName: "Rafael Costa",
+    authorAvatar: "R",
+    text: "Usei num projeto recente. Recomendo demais! A integração é muito suave.",
+    createdAt: "22 jan",
+  },
+  {
+    id: "msg11",
+    groupId: "g2",
+    authorId: "u_maria",
+    authorName: "Maria",
+    authorAvatar: "M",
+    text: "Gente, quem tiver interesse em participar de uma hackathon mês que vem, dá um like aqui! 🚀",
+    createdAt: "15m",
+  },
+  {
+    id: "msg12",
+    groupId: "g3",
+    authorId: "u_stone",
+    authorName: "Stone Beauty",
+    authorAvatar: "S",
+    text: "Bem-vindas ao Skincare Club! 💄 Aqui vocês terão dicas exclusivas, lançamentos e consultoria personalizada.",
+    createdAt: "5 fev",
+  },
+  {
+    id: "msg13",
+    groupId: "g3",
+    authorId: "u_julia",
+    authorName: "Júlia Lima",
+    authorAvatar: "J",
+    text: "Amei! Sempre quis um grupo assim 😍",
+    createdAt: "5 fev",
+  },
+  {
+    id: "msg14",
+    groupId: "g3",
+    authorId: "u_beatriz",
+    authorName: "Beatriz Rocha",
+    authorAvatar: "B",
+    text: "Alguém já testou o novo sérum de vitamina C?",
+    createdAt: "6 fev",
+  },
+  {
+    id: "msg15",
+    groupId: "g3",
+    authorId: "u_stone",
+    authorName: "Stone Beauty",
+    authorAvatar: "S",
+    text: "Acabou de chegar no nosso estoque! Quem quiser testar, temos amostras para o grupo 🎁",
+    createdAt: "1h",
+  },
+  {
+    id: "msg16",
+    groupId: "g4",
+    authorId: "u_weaze",
+    authorName: "WEAZE",
+    authorAvatar: "W",
+    text: "Bem-vindos à Mentoria WEAZE! 🚀 Aqui vamos trabalhar estratégias de crescimento e engajamento para suas comunidades.",
+    createdAt: "1 mar",
+  },
+  {
+    id: "msg17",
+    groupId: "g4",
+    authorId: "u_ana",
+    authorName: "Ana Beatriz",
+    authorAvatar: "A",
+    text: "Estou pronta pra aprender! Minha comunidade tem 200 membros e quero escalar.",
+    createdAt: "1 mar",
+  },
+  {
+    id: "msg18",
+    groupId: "g4",
+    authorId: "u_pedro",
+    authorName: "Pedro Santos",
+    authorAvatar: "P",
+    text: "Mesma aqui! To com 150 membros ativos.",
+    createdAt: "2 mar",
+  },
+  {
+    id: "msg19",
+    groupId: "g4",
+    authorId: "u_weaze",
+    authorName: "WEAZE",
+    authorAvatar: "W",
+    text: "📌 PRÓXIMA LIVE: Segunda 20h — Como engajar membros nos primeiros 30 dias",
+    createdAt: "3h",
+    isPinned: true,
   },
 ];
 
@@ -830,7 +1128,13 @@ export function viewConversation(id: string) {
 
 // ---- Groups ----
 
-export const userGroupIds: string[] = ["g1", "g3"];
+export const userGroupIds: string[] = ["g1", "g2", "g3", "g4"];
+export const groupInviteCodes: Record<string, string> = {
+  g1: "CORRIDA2025",
+  g2: "DEVS123",
+  g3: "SKINVIP",
+  g4: "MENTORIA",
+};
 
 export function isGroupMember(groupId: string): boolean {
   return userGroupIds.includes(groupId);
@@ -840,33 +1144,64 @@ export function joinGroup(groupId: string) {
   if (!userGroupIds.includes(groupId)) {
     userGroupIds.push(groupId);
     const g = groups.find((x) => x.id === groupId);
-    if (g) g.members += 1;
+    if (g) g.memberCount += 1;
+    if (!groupMembers.some((m) => m.groupId === groupId && m.userId === currentUserId)) {
+      groupMembers.push({
+        id: "gm_" + Date.now(),
+        groupId,
+        userId: currentUserId,
+        name: currentUserName,
+        avatar: currentUserAvatar,
+        role: "member",
+        joinedAt: "agora",
+      });
+    }
   }
 }
 
-export function createGroup(input: {
-  name: string;
-  description: string;
-  privacy: "public" | "private";
-}) {
+export function leaveGroup(groupId: string) {
+  const idx = userGroupIds.indexOf(groupId);
+  if (idx !== -1) {
+    userGroupIds.splice(idx, 1);
+    const g = groups.find((x) => x.id === groupId);
+    if (g) g.memberCount = Math.max(1, g.memberCount - 1);
+    const mIdx = groupMembers.findIndex((m) => m.groupId === groupId && m.userId === currentUserId);
+    if (mIdx !== -1) groupMembers.splice(mIdx, 1);
+  }
+}
+
+export function createGroup(input: { name: string; description: string; image: string }) {
   const id = "g_" + Date.now();
-  const code = input.privacy === "private" ? Math.random().toString(36).substring(2, 8).toUpperCase() : undefined;
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const now = new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "short" });
+
   groups.push({
     id,
     name: input.name,
-    members: 1,
-    topic: input.description,
-    privacy: input.privacy,
-    emoji: "👥",
+    description: input.description,
+    image: input.image || "👥",
+    memberCount: 1,
+    createdAt: "agora",
+    createdBy: currentUserId,
+    createdByName: currentUserName,
+    inviteCode: code,
   });
+
+  groupMembers.push({
+    id: "gm_" + Date.now(),
+    groupId: id,
+    userId: currentUserId,
+    name: currentUserName,
+    avatar: currentUserAvatar,
+    role: "admin",
+    joinedAt: "agora",
+  });
+
   userGroupIds.push(id);
-  if (code) groupInviteCodes[id] = code;
+  groupInviteCodes[id] = code;
+
   return { id, inviteCode: code };
 }
-
-export const groupInviteCodes: Record<string, string> = {
-  g3: "ABC123",
-};
 
 export function getGroupByInviteCode(code: string): MockGroup | undefined {
   const entry = Object.entries(groupInviteCodes).find(([, v]) => v === code);
@@ -882,6 +1217,53 @@ export function getGroup(id: string): MockGroup | undefined {
   return groups.find((g) => g.id === id);
 }
 
-export function getGroupTopics(groupId: string): MockGroupTopic[] {
-  return groupTopics.filter((t) => t.groupId === groupId);
+export function getGroupMembers(groupId: string): MockGroupMember[] {
+  return groupMembers.filter((m) => m.groupId === groupId);
+}
+
+export function getGroupMessages(groupId: string): MockGroupMessage[] {
+  return groupMessages.filter((m) => m.groupId === groupId);
+}
+
+export function getPinnedMessage(groupId: string): MockGroupMessage | undefined {
+  return groupMessages.find((m) => m.groupId === groupId && m.isPinned);
+}
+
+export function sendMessage(groupId: string, text: string) {
+  const msg: MockGroupMessage = {
+    id: "msg_" + Date.now(),
+    groupId,
+    authorId: currentUserId,
+    authorName: currentUserName,
+    authorAvatar: currentUserAvatar,
+    text,
+    createdAt: "agora",
+  };
+  groupMessages.push(msg);
+  const g = groups.find((x) => x.id === groupId);
+  if (g) g.lastActivity = "agora";
+  return msg;
+}
+
+export function pinMessage(groupId: string, messageId: string) {
+  groupMessages.forEach((m) => {
+    if (m.groupId === groupId) m.isPinned = false;
+  });
+  const msg = groupMessages.find((m) => m.id === messageId);
+  if (msg) msg.isPinned = true;
+}
+
+export function unpinMessage(groupId: string) {
+  groupMessages.forEach((m) => {
+    if (m.groupId === groupId) m.isPinned = false;
+  });
+}
+
+export function removeMember(groupId: string, userId: string) {
+  const idx = groupMembers.findIndex((m) => m.groupId === groupId && m.userId === userId);
+  if (idx !== -1) {
+    groupMembers.splice(idx, 1);
+    const g = groups.find((x) => x.id === groupId);
+    if (g) g.memberCount = Math.max(1, g.memberCount - 1);
+  }
 }

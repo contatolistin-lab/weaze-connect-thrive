@@ -128,9 +128,7 @@ function ConversationDetail() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 pt-4 pb-2 border-b border-border">
-            <h1 className="text-xl font-extrabold tracking-tight leading-snug">
-              {conv.title}
-            </h1>
+            <h1 className="text-xl font-extrabold tracking-tight leading-snug">{conv.title}</h1>
             <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{conv.description}</p>
 
             <div className="mt-3 flex items-center gap-3 text-xs text-foreground/60">

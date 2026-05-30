@@ -341,7 +341,14 @@ function Create() {
                 </p>
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
-                    {["Saiba mais", "Comprar", "Agendar", "Inscrever-se", "Assistir", "Orçamento"].map((name) => (
+                    {[
+                      "Saiba mais",
+                      "Comprar",
+                      "Agendar",
+                      "Inscrever-se",
+                      "Assistir",
+                      "Orçamento",
+                    ].map((name) => (
                       <button
                         key={name}
                         onClick={() => setCtaName(ctaName === name ? "" : name)}
@@ -380,7 +387,9 @@ function Create() {
                     <button
                       onClick={() => setCommentsEnabled(true)}
                       className={`px-3 h-7 rounded-lg text-xs font-semibold transition-all ${
-                        commentsEnabled ? "bg-brand-gradient text-white shadow-brand" : "bg-muted text-foreground/50"
+                        commentsEnabled
+                          ? "bg-brand-gradient text-white shadow-brand"
+                          : "bg-muted text-foreground/50"
                       }`}
                     >
                       Sim
@@ -388,7 +397,9 @@ function Create() {
                     <button
                       onClick={() => setCommentsEnabled(false)}
                       className={`px-3 h-7 rounded-lg text-xs font-semibold transition-all ${
-                        !commentsEnabled ? "bg-brand-gradient text-white shadow-brand" : "bg-muted text-foreground/50"
+                        !commentsEnabled
+                          ? "bg-brand-gradient text-white shadow-brand"
+                          : "bg-muted text-foreground/50"
                       }`}
                     >
                       Não

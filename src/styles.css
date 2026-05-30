@@ -71,10 +71,10 @@
   --ring: #d81e62;
 
   --gradient-brand: linear-gradient(135deg, #630091 0%, #d81e62 100%);
-  --gradient-brand-soft: linear-gradient(135deg, rgba(99,0,145,0.08), rgba(216,30,98,0.08));
-  --shadow-brand: 0 18px 40px -18px rgba(99,0,145,0.55);
-  --shadow-pink: 0 18px 40px -18px rgba(216,30,98,0.55);
-  --shadow-soft: 0 1px 2px rgba(11,11,18,0.04), 0 8px 24px -12px rgba(11,11,18,0.10);
+  --gradient-brand-soft: linear-gradient(135deg, rgba(99, 0, 145, 0.08), rgba(216, 30, 98, 0.08));
+  --shadow-brand: 0 18px 40px -18px rgba(99, 0, 145, 0.55);
+  --shadow-pink: 0 18px 40px -18px rgba(216, 30, 98, 0.55);
+  --shadow-soft: 0 1px 2px rgba(11, 11, 18, 0.04), 0 8px 24px -12px rgba(11, 11, 18, 0.1);
 }
 
 .dark {
@@ -94,14 +94,20 @@
   --muted-foreground: #a39db0;
   --accent: #2a1f33;
   --accent-foreground: #ffffff;
-  --border: rgba(255,255,255,0.08);
-  --input: rgba(255,255,255,0.12);
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
   --ring: #d81e62;
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body, #root { height: 100%; }
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -112,37 +118,76 @@
 }
 
 @layer utilities {
-  .bg-brand-gradient { background-image: var(--gradient-brand); }
-  .bg-brand-gradient-soft { background-image: var(--gradient-brand-soft); }
+  .bg-brand-gradient {
+    background-image: var(--gradient-brand);
+  }
+  .bg-brand-gradient-soft {
+    background-image: var(--gradient-brand-soft);
+  }
   .text-brand-gradient {
     background-image: var(--gradient-brand);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
-  .ring-brand { box-shadow: 0 0 0 2px var(--brand-pink); }
-  .shadow-brand { box-shadow: var(--shadow-brand); }
-  .shadow-pink { box-shadow: var(--shadow-pink); }
-  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .ring-brand {
+    box-shadow: 0 0 0 2px var(--brand-pink);
+  }
+  .shadow-brand {
+    box-shadow: var(--shadow-brand);
+  }
+  .shadow-pink {
+    box-shadow: var(--shadow-pink);
+  }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
 
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
-  .snap-y-mandatory { scroll-snap-type: y mandatory; }
-  .snap-start-always { scroll-snap-align: start; scroll-snap-stop: always; }
+  .snap-y-mandatory {
+    scroll-snap-type: y mandatory;
+  }
+  .snap-start-always {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
 
-  .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
-  .safe-pt { padding-top: env(safe-area-inset-top); }
+  .safe-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-pt {
+    padding-top: env(safe-area-inset-top);
+  }
 
   @keyframes weaze-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.08); opacity: 0.9; }
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.08);
+      opacity: 0.9;
+    }
   }
-  .animate-weaze-pulse { animation: weaze-pulse 1.4s ease-in-out infinite; }
+  .animate-weaze-pulse {
+    animation: weaze-pulse 1.4s ease-in-out infinite;
+  }
 
   @keyframes shimmer {
-    0% { background-position: -400px 0; }
-    100% { background-position: 400px 0; }
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
   }
   .skeleton {
     background: linear-gradient(90deg, #efeaf3 0%, #f7f4f9 40%, #efeaf3 80%);
@@ -151,8 +196,16 @@
   }
 
   @keyframes float-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
-  .animate-float-in { animation: float-in 0.4s ease-out both; }
+  .animate-float-in {
+    animation: float-in 0.4s ease-out both;
+  }
 }

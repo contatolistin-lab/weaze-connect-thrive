@@ -53,7 +53,10 @@ export function BottomNav() {
             <span className="h-10 w-10 rounded-xl bg-brand-gradient text-white grid place-items-center shadow-brand -mt-2">
               <Plus size={22} strokeWidth={3} />
             </span>
-            <span className="text-[9px] font-semibold leading-tight" style={{ color: "#d81e62", opacity: 0.55 }}>
+            <span
+              className="text-[9px] font-semibold leading-tight"
+              style={{ color: "#d81e62", opacity: 0.55 }}
+            >
               Criar
             </span>
           </Link>
