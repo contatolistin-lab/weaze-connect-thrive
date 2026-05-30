@@ -185,7 +185,7 @@ function PostCard({
             e.stopPropagation();
             if (!liked) {
               setLiked(true);
-              addLike();
+              addLike("Você");
             }
           }}
         />
@@ -195,7 +195,7 @@ function PostCard({
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onCommentClick();
-            addNotif();
+            addNotif("Você");
           }}
         />
         <ActionBtn
