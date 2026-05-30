@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Send, Info, Pin, LogOut, ChevronDown } from "lucide-react";
+import { ArrowLeft, Send, Info, Pin, LogOut, ChevronDown, Share2, Copy, Check } from "lucide-react";
 import {
   getGroup,
   getGroupMembers,
@@ -17,6 +17,7 @@ import { useCommunity } from "@/lib/community-store";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { GroupImage } from "@/lib/group-utils";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/groups/$id")({
@@ -40,6 +41,7 @@ function GroupChat() {
   const [msgs, setMsgs] = useState<MockGroupMessage[]>(messages);
   const [showInfo, setShowInfo] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const isB2B = userType.isB2B;
   const currentMember = members.find((m) => m.userId === currentUserId);
@@ -62,9 +64,7 @@ function GroupChat() {
 
   const scrollToBottom = () => {
     const el = listRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
+    if (el) el.scrollTop = el.scrollHeight;
   };
 
   const handleSend = () => {
@@ -101,6 +101,14 @@ function GroupChat() {
     setMsgs((prev) => prev.map((m) => ({ ...m, isPinned: false })));
   };
 
+  const handleCopyInvite = () => {
+    if (!group?.inviteCode) return;
+    const link = `${window.location.origin}/groups/invite/${group.inviteCode}`;
+    navigator.clipboard.writeText(link);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
   if (!group) {
     return (
       <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
@@ -135,7 +143,7 @@ function GroupChat() {
             onClick={() => setShowInfo(true)}
             className="flex items-center gap-2 flex-1 min-w-0 text-left"
           >
-            <span className="text-2xl shrink-0">{group.image}</span>
+            <GroupImage src={group.image} className="h-9 w-9 shrink-0 rounded-full" />
             <div className="min-w-0">
               <p className="font-bold text-sm truncate">{group.name}</p>
               <p className="text-[11px] text-foreground/40">{group.memberCount} membros</p>
@@ -157,7 +165,6 @@ function GroupChat() {
         className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide"
         style={{ background: "#f0edf3" }}
       >
-        {/* Pinned message */}
         {pinnedMsg && (
           <div className="bg-white/90 backdrop-blur rounded-xl border border-border p-3 shadow-soft flex items-start gap-2">
             <Pin size={14} className="text-brand-pink shrink-0 mt-0.5" />
@@ -178,7 +185,6 @@ function GroupChat() {
           </div>
         )}
 
-        {/* Messages */}
         {msgs
           .filter((m) => !m.isPinned)
           .map((msg, i) => {
@@ -197,7 +203,6 @@ function GroupChat() {
                   isOwn ? "flex-row-reverse" : "flex-row",
                 )}
               >
-                {/* Avatar */}
                 <div className="shrink-0 self-end">
                   {showAvatar && !isOwn ? (
                     <Avatar name={msg.authorName} size={30} />
@@ -206,16 +211,13 @@ function GroupChat() {
                   )}
                 </div>
 
-                {/* Bubble */}
                 <div className={cn("max-w-[80%]", isOwn ? "items-end" : "items-start")}>
-                  {/* Admin badge */}
                   {showAvatar && isAdminAuthor && (
                     <p className="text-[10px] font-bold text-brand-purple mb-0.5">
                       👑 {msg.authorName}
                     </p>
                   )}
 
-                  {/* Message */}
                   <div
                     className={cn(
                       "rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed relative group",
@@ -225,8 +227,6 @@ function GroupChat() {
                     )}
                   >
                     <p className="whitespace-pre-wrap break-words">{msg.text}</p>
-
-                    {/* time + actions */}
                     <div
                       className={cn(
                         "flex items-center justify-end gap-1 mt-1",
@@ -234,8 +234,6 @@ function GroupChat() {
                       )}
                     >
                       <span className="text-[10px] font-medium">{msg.createdAt}</span>
-
-                      {/* Admin: pin button */}
                       {isAdmin && !isOwn && (
                         <button
                           onClick={() => handlePinMessage(msg.id)}
@@ -252,7 +250,6 @@ function GroupChat() {
             );
           })}
 
-        {/* Scroll to bottom button */}
         {showScrollBtn && (
           <button
             onClick={scrollToBottom}
@@ -293,8 +290,8 @@ function GroupChat() {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="text-center">
-              <span className="text-5xl block mb-2">{group.image}</span>
-              <h3 className="font-extrabold text-lg">{group.name}</h3>
+              <GroupImage src={group.image} className="h-16 w-16 mx-auto rounded-full" />
+              <h3 className="font-extrabold text-lg mt-2">{group.name}</h3>
               <p className="text-sm text-foreground/60 mt-1">{group.description}</p>
               <div className="flex items-center justify-center gap-1.5 text-xs text-foreground/40 mt-2">
                 <Lock size={12} />
@@ -312,7 +309,6 @@ function GroupChat() {
               )}
             </div>
 
-            {/* Members */}
             <div>
               <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
                 Membros ({members.length})
@@ -337,16 +333,18 @@ function GroupChat() {
               </div>
             </div>
 
-            {/* Actions */}
             <div className="space-y-2">
-              {isAdmin && (
-                <WButton variant="outline" fullWidth className="text-xs">
-                  Gerenciar membros
-                </WButton>
-              )}
               {isAdmin && group.inviteCode && (
-                <WButton variant="outline" fullWidth className="text-xs">
-                  Compartilhar convite
+                <WButton variant="outline" fullWidth className="text-xs" onClick={handleCopyInvite}>
+                  {copiedLink ? (
+                    <>
+                      <Check size={14} /> Link copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 size={14} /> Compartilhar convite
+                    </>
+                  )}
                 </WButton>
               )}
               <button

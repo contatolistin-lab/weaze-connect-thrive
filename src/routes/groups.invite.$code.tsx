@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, UserPlus, Check, ArrowRight } from "lucide-react";
+import { Lock, UserPlus, ArrowRight } from "lucide-react";
 import { getGroupByInviteCode, joinGroup, isGroupMember } from "@/lib/mock-data";
+import { GroupImage } from "@/lib/group-utils";
 import { WButton } from "@/components/weaze/WButton";
 
 export const Route = createFileRoute("/groups/invite/$code")({
@@ -43,7 +44,7 @@ function GroupInvite() {
     return (
       <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
         <div className="max-w-sm space-y-4">
-          <div className="text-6xl">{group.image}</div>
+          <GroupImage src={group.image} className="h-20 w-20 mx-auto rounded-full" />
           <h1 className="text-2xl font-extrabold">{group.name}</h1>
           <p className="text-sm text-foreground/60">
             {alreadyMember
@@ -71,7 +72,7 @@ function GroupInvite() {
   return (
     <div className="min-h-dvh bg-background grid place-items-center px-6">
       <div className="max-w-sm w-full space-y-5 text-center">
-        <div className="text-6xl">{group.image}</div>
+        <GroupImage src={group.image} className="h-24 w-24 mx-auto rounded-full" />
 
         <h1 className="text-2xl font-extrabold">{group.name}</h1>
         <p className="text-sm text-foreground/60 leading-relaxed">{group.description}</p>

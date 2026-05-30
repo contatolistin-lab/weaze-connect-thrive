@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
-import { Lock, Users, Plus, Copy, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import { Lock, Users, Plus, Copy, Check, Share2, ImageUp, ArrowRight, X } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { getMyGroups, getGroupMembers, createGroup } from "@/lib/mock-data";
+import { GroupImage } from "@/lib/group-utils";
 import { useCommunity } from "@/lib/community-store";
 import {
   Dialog,
@@ -23,27 +24,57 @@ function Groups() {
   const nav = useNavigate();
   const { userType } = useCommunity();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // When visiting a child route like /groups/$id or /groups/invite/$code,
-  // render only the child content via Outlet (no list layout)
   if (pathname !== "/groups") {
     return <Outlet />;
   }
+
   const myGroups = getMyGroups();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", image: "" });
-  const [created, setCreated] = useState<{ id: string; code: string } | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [created, setCreated] = useState<{
+    id: string;
+    code: string;
+    image: string;
+    name: string;
+  } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [step, setStep] = useState<"form" | "invite">("form");
+
+  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setImagePreview(dataUrl);
+      setForm((prev) => ({ ...prev, image: dataUrl }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClearImage = () => {
+    setImagePreview("");
+    setForm((prev) => ({ ...prev, image: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleCreate = () => {
     if (!form.name.trim() || !form.description.trim()) return;
     const result = createGroup({
       name: form.name.trim(),
       description: form.description.trim(),
-      image: form.image.trim() || "👥",
+      image: form.image || "👥",
     });
-    setCreated({ id: result.id, code: result.inviteCode! });
-    setForm({ name: "", description: "", image: "" });
+    setCreated({
+      id: result.id,
+      code: result.inviteCode!,
+      image: form.image || "👥",
+      name: form.name.trim(),
+    });
+    setStep("invite");
   };
 
   const handleCopyLink = () => {
@@ -53,11 +84,37 @@ function Groups() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleGoToGroup = (id: string) => {
-    setModalOpen(false);
-    setCreated(null);
-    nav({ to: "/groups/$id", params: { id } });
+  const handleShareLink = async () => {
+    const link = `${window.location.origin}/groups/invite/${created!.code}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: created!.name, url: link });
+      } catch {}
+    } else {
+      handleCopyLink();
+    }
   };
+
+  const handleGoToGroup = () => {
+    setModalOpen(false);
+    setStep("form");
+    setCreated(null);
+    setImagePreview("");
+    nav({ to: "/groups/$id", params: { id: created!.id } });
+  };
+
+  const resetModal = () => {
+    setModalOpen(false);
+    setTimeout(() => {
+      setStep("form");
+      setCreated(null);
+      setForm({ name: "", description: "", image: "" });
+      setImagePreview("");
+      setCopied(false);
+    }, 200);
+  };
+
+  const inviteLink = created ? `${window.location.origin}/groups/invite/${created.code}` : "";
 
   return (
     <AppShell title="Grupos">
@@ -96,7 +153,7 @@ function Groups() {
                   onClick={() => nav({ to: "/groups/$id", params: { id: g.id } })}
                   className="w-full text-left flex items-center gap-3 p-3 rounded-2xl border bg-white border-border shadow-soft"
                 >
-                  <span className="text-3xl shrink-0">{g.image}</span>
+                  <GroupImage src={g.image} className="h-11 w-11 shrink-0 rounded-full" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-bold text-sm">{g.name}</p>
@@ -130,35 +187,71 @@ function Groups() {
       <Dialog
         open={modalOpen}
         onOpenChange={(o) => {
-          setModalOpen(o);
-          if (!o) setCreated(null);
+          if (!o) resetModal();
         }}
       >
         <DialogContent className="rounded-2xl max-w-sm">
-          {!created ? (
+          {step === "form" ? (
             <>
               <DialogHeader>
                 <DialogTitle>Criar Grupo</DialogTitle>
-                <DialogDescription>Crie um grupo privado para seus membros.</DialogDescription>
+                <DialogDescription>
+                  Preencha os dados para criar um grupo privado.
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-3 pt-2">
+              <div className="space-y-4 pt-2">
+                {/* Image upload */}
                 <div>
-                  <label className="text-xs font-semibold text-foreground/60 mb-1 block">
-                    Imagem
+                  <label className="text-xs font-semibold text-foreground/60 mb-2 block">
+                    Imagem do Grupo
                   </label>
-                  <Input
-                    placeholder="🏠 (emoji)"
-                    value={form.image}
-                    onChange={(e) => setForm({ ...form, image: e.target.value })}
-                    className="text-lg"
-                  />
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      {imagePreview ? (
+                        <div className="relative">
+                          <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="h-16 w-16 rounded-full object-cover border-2 border-border"
+                          />
+                          <button
+                            onClick={handleClearImage}
+                            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-foreground/60 text-white grid place-items-center"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="h-16 w-16 rounded-full bg-muted border-2 border-dashed border-border grid place-items-center cursor-pointer hover:bg-muted/80 transition-colors"
+                        >
+                          <ImageUp size={20} className="text-foreground/40" />
+                        </div>
+                      )}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImagePick}
+                        className="hidden"
+                      />
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-xs font-semibold text-brand-pink underline"
+                    >
+                      {imagePreview ? "Trocar foto" : "Carregar foto"}
+                    </button>
+                  </div>
                 </div>
+
                 <div>
                   <label className="text-xs font-semibold text-foreground/60 mb-1 block">
                     Nome do Grupo *
                   </label>
                   <Input
-                    placeholder="Ex: Grupo VIP"
+                    placeholder="Ex: Grupo VIP de Mentoria"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                   />
@@ -168,7 +261,7 @@ function Groups() {
                     Descrição *
                   </label>
                   <textarea
-                    placeholder="Descrição do grupo..."
+                    placeholder="Descreva o propósito do grupo..."
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     className="flex w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm resize-none h-20 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -183,19 +276,48 @@ function Groups() {
                 </WButton>
               </div>
             </>
-          ) : (
+          ) : created ? (
             <>
               <DialogHeader>
-                <DialogTitle>Grupo criado!</DialogTitle>
-                <DialogDescription>Compartilhe o link de convite com os membros.</DialogDescription>
+                <DialogTitle>Grupo criado com sucesso!</DialogTitle>
+                <DialogDescription>
+                  Compartilhe o link abaixo com os membros que deseja convidar.
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-3 pt-2">
-                <div className="bg-muted rounded-xl p-3 text-center">
-                  <p className="text-xs font-mono font-bold text-foreground/60 break-all">
-                    {window.location.origin}/groups/invite/{created.code}
-                  </p>
+              <div className="space-y-4 pt-2">
+                {/* Group info */}
+                <div className="flex items-center gap-3 bg-muted rounded-xl p-3">
+                  <GroupImage src={created.image} className="h-12 w-12 shrink-0 rounded-full" />
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm">{created.name}</p>
+                    <p className="text-[11px] text-foreground/40">Grupo privado</p>
+                  </div>
                 </div>
+
+                {/* Invite link */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground/50 mb-1.5 block">
+                    Link de convite exclusivo
+                  </label>
+                  <div className="bg-muted rounded-xl p-3 flex items-center gap-2">
+                    <code className="flex-1 text-xs font-mono text-foreground/70 break-all select-all">
+                      {inviteLink}
+                    </code>
+                    <button
+                      onClick={handleCopyLink}
+                      className="h-8 w-8 rounded-full bg-white border border-border grid place-items-center shrink-0 hover:bg-muted transition-colors"
+                      title="Copiar link"
+                    >
+                      {copied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions */}
                 <div className="flex gap-2">
+                  <WButton variant="outline" className="flex-1" onClick={handleShareLink}>
+                    <Share2 size={14} /> Compartilhar
+                  </WButton>
                   <WButton variant="outline" className="flex-1" onClick={handleCopyLink}>
                     {copied ? (
                       <>
@@ -208,12 +330,12 @@ function Groups() {
                     )}
                   </WButton>
                 </div>
-                <WButton fullWidth onClick={() => handleGoToGroup(created.id)}>
-                  Ir para o Grupo
+                <WButton fullWidth onClick={handleGoToGroup}>
+                  <ArrowRight size={16} /> Ir para o Grupo
                 </WButton>
               </div>
             </>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
     </AppShell>
