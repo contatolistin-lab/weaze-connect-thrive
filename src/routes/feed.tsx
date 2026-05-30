@@ -195,7 +195,7 @@ function PostCard({
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             onCommentClick();
-            addNotif();
+            addNotif("Você");
           }}
         />
         <ActionBtn
