@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import { WeazeProvider } from "@/lib/weaze-context";
+import { CommunityProvider } from "@/lib/community-store";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -122,7 +123,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <WeazeProvider>
-        <Outlet />
+        <CommunityProvider>
+          <Outlet />
+        </CommunityProvider>
       </WeazeProvider>
     </QueryClientProvider>
   );

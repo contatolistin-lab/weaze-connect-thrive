@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { TopBar } from "./TopBar";
+import { WhatsAppButton } from "./WhatsAppButton";
 
 interface AppShellProps {
   children: ReactNode;
@@ -8,6 +9,7 @@ interface AppShellProps {
   hideTopBar?: boolean;
   hideBottomNav?: boolean;
   fullBleed?: boolean;
+  hideWhatsApp?: boolean;
 }
 
 export function AppShell({
@@ -16,6 +18,7 @@ export function AppShell({
   hideTopBar = false,
   hideBottomNav = false,
   fullBleed = false,
+  hideWhatsApp = false,
 }: AppShellProps) {
   return (
     <div className="min-h-dvh bg-background">
@@ -23,6 +26,7 @@ export function AppShell({
         {!hideTopBar && <TopBar title={title} />}
         <main className={`flex-1 ${fullBleed ? "" : "pb-24"}`}>{children}</main>
         {!hideBottomNav && <BottomNav />}
+        {!hideWhatsApp && <WhatsAppButton />}
       </div>
     </div>
   );

@@ -756,6 +756,16 @@ export function getAllConversations(): MockConversation[] {
   return [...userConversations, ...conversations];
 }
 
+export function deleteConversation(id: string) {
+  const idx = userConversations.findIndex((c) => c.id === id);
+  if (idx !== -1) {
+    userConversations.splice(idx, 1);
+    return;
+  }
+  const idx2 = conversations.findIndex((c) => c.id === id);
+  if (idx2 !== -1) conversations.splice(idx2, 1);
+}
+
 export function addConversationComment(conversationId: string, text: string) {
   const comment: MockConversationComment = {
     id: "cc_" + Date.now(),

@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Lock, Building2 } from "lucide-react";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
 import { WButton } from "@/components/weaze/WButton";
 import { Field } from "../login";
+import { useCommunity } from "@/lib/community-store";
 
 export const Route = createFileRoute("/b2b/login")({
   head: () => ({ meta: [{ title: "WEAZE para marcas — Entrar" }] }),
@@ -13,9 +14,11 @@ export const Route = createFileRoute("/b2b/login")({
 function B2BLogin() {
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  const { userType } = useCommunity();
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    userType.setB2B(true);
     setTimeout(() => nav({ to: "/b2b/dashboard" }), 700);
   };
   return (
