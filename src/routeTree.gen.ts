@@ -28,6 +28,7 @@ import { Route as CommunitiesIdRouteImport } from './routes/communities.$id'
 import { Route as B2bSignupRouteImport } from './routes/b2b/signup'
 import { Route as B2bLoginRouteImport } from './routes/b2b/login'
 import { Route as B2bDashboardRouteImport } from './routes/b2b/dashboard'
+import { Route as GroupsInviteCodeRouteImport } from './routes/groups.invite.$code'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -124,12 +125,17 @@ const B2bDashboardRoute = B2bDashboardRouteImport.update({
   path: '/b2b/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsInviteCodeRoute = GroupsInviteCodeRouteImport.update({
+  id: '/invite/$code',
+  path: '/invite/$code',
+  getParentRoute: () => GroupsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
   '/metricas': typeof MetricasRoute
   '/notifications': typeof NotificationsRoute
@@ -145,12 +151,13 @@ export interface FileRoutesByFullPath {
   '/communities/': typeof CommunitiesIndexRoute
   '/conversas/': typeof ConversasIndexRoute
   '/messages/': typeof MessagesIndexRoute
+  '/groups/invite/$code': typeof GroupsInviteCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
   '/metricas': typeof MetricasRoute
   '/notifications': typeof NotificationsRoute
@@ -166,13 +173,14 @@ export interface FileRoutesByTo {
   '/communities': typeof CommunitiesIndexRoute
   '/conversas': typeof ConversasIndexRoute
   '/messages': typeof MessagesIndexRoute
+  '/groups/invite/$code': typeof GroupsInviteCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
   '/metricas': typeof MetricasRoute
   '/notifications': typeof NotificationsRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/communities/': typeof CommunitiesIndexRoute
   '/conversas/': typeof ConversasIndexRoute
   '/messages/': typeof MessagesIndexRoute
+  '/groups/invite/$code': typeof GroupsInviteCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/communities/'
     | '/conversas/'
     | '/messages/'
+    | '/groups/invite/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/communities'
     | '/conversas'
     | '/messages'
+    | '/groups/invite/$code'
   id:
     | '__root__'
     | '/'
@@ -253,13 +264,14 @@ export interface FileRouteTypes {
     | '/communities/'
     | '/conversas/'
     | '/messages/'
+    | '/groups/invite/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   FeedRoute: typeof FeedRoute
-  GroupsRoute: typeof GroupsRoute
+  GroupsRoute: typeof GroupsRouteWithChildren
   LoginRoute: typeof LoginRoute
   MetricasRoute: typeof MetricasRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -412,14 +424,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof B2bDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups/invite/$code': {
+      id: '/groups/invite/$code'
+      path: '/invite/$code'
+      fullPath: '/groups/invite/$code'
+      preLoaderRoute: typeof GroupsInviteCodeRouteImport
+      parentRoute: typeof GroupsRoute
+    }
   }
 }
+
+interface GroupsRouteChildren {
+  GroupsInviteCodeRoute: typeof GroupsInviteCodeRoute
+}
+
+const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsInviteCodeRoute: GroupsInviteCodeRoute,
+}
+
+const GroupsRouteWithChildren =
+  GroupsRoute._addFileChildren(GroupsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   FeedRoute: FeedRoute,
-  GroupsRoute: GroupsRoute,
+  GroupsRoute: GroupsRouteWithChildren,
   LoginRoute: LoginRoute,
   MetricasRoute: MetricasRoute,
   NotificationsRoute: NotificationsRoute,
@@ -439,3 +469,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
