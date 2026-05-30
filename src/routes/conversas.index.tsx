@@ -1,95 +1,70 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useReducer, useState } from "react";
-import { Search, Pin, List, MessageSquare, Heart, Eye, Plus, X, Check } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Search, Pin, TrendingUp, MessageSquare, Heart, Eye, Plus, Sparkles, X, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/conversas/")({
   head: () => ({ meta: [{ title: "Conversas — WEAZE" }] }),
   component: Conversas,
-  errorComponent: ConversasError,
 });
 
-function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
-  const router = useRouter();
-  if (typeof console !== "undefined") console.error(error);
-  return (
-    <div className="min-h-dvh grid place-items-center bg-background px-6 text-center">
-      <div className="max-w-sm space-y-3">
-        <h1 className="text-xl font-extrabold">Não foi possível abrir Conversas</h1>
-        <p className="text-sm text-foreground/60">
-          Tivemos um problema ao carregar esta página. Tente novamente.
-        </p>
-        <div className="flex justify-center gap-2 pt-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="h-10 px-4 rounded-full bg-brand-gradient text-white text-sm font-bold shadow-brand"
-          >
-            Tentar novamente
-          </button>
-          <Link
-            to="/feed"
-            className="h-10 px-4 rounded-full bg-muted text-foreground text-sm font-bold grid place-items-center"
-          >
-            Ir para o feed
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
+const categories = [
+  "Todas",
+  "Esportes",
+  "Música",
+  "Tech",
+  "Beleza",
+  "Lifestyle",
+  "Finanças",
+  "Cultura",
+  "Geral",
+];
 
-const initial = { title: "", description: "", tags: "" };
+const initial = { title: "", description: "", tags: "", category: "Geral" };
 
 function Conversas() {
+  const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState<"recentes" | "todas">("recentes");
+  const [tab, setTab] = useState<"recentes" | "trending">("recentes");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initial);
-  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const all = getAllConversations();
 
-  const filtered = all.filter((c) =>
-    (c.title ?? "").toLowerCase().includes(q.toLowerCase()),
+  const filtered = all.filter(
+    (c) =>
+      (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
   );
 
   const pinned = filtered.filter((c) => c.pinned);
-  const list = filtered.filter((c) => !c.pinned);
+  const list =
+    tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
 
   const submit = () => {
-    const title = form.title.trim();
-    if (!title) return;
-    try {
-      const id = "ucv_" + Date.now();
-      const first = (title[0] ?? "?").toUpperCase();
-      addUserConversation({
-        id,
-        title,
-        description: form.description.trim(),
-        category: "",
-        author: "Você",
-        authorAvatar: first,
-        replies: 0,
-        likes: 0,
-        views: 0,
-        pinned: false,
-        trending: false,
-        createdAt: "agora",
-        lastActivity: "agora",
-        tags: form.tags
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean),
-      });
-      setForm(initial);
-      setShowForm(false);
-      forceUpdate();
-    } catch (err) {
-      console.error("Falha ao criar conversa", err);
-    }
+    if (!form.title.trim()) return;
+    const id = "ucv_" + Date.now();
+    const first = form.title.trim()[0].toUpperCase();
+    addUserConversation({
+      id,
+      title: form.title.trim(),
+      description: form.description.trim(),
+      category: form.category,
+      author: "Você",
+      authorAvatar: first,
+      replies: 0,
+      likes: 0,
+      views: 0,
+      pinned: false,
+      trending: false,
+      createdAt: "agora",
+      lastActivity: "agora",
+      tags: form.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    });
+    setForm(initial);
+    setShowForm(false);
   };
 
   return (
@@ -126,12 +101,23 @@ function Conversas() {
               rows={3}
               className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
             />
-            <input
-              value={form.tags}
-              onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              placeholder="Tags: separadas por vírgula"
-              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-            />
+            <div className="flex gap-2">
+              <select
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] bg-white"
+              >
+                {categories.filter((c) => c !== "Todas").map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <input
+                value={form.tags}
+                onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                placeholder="Tags: separadas por vírgula"
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+              />
+            </div>
             <button
               onClick={submit}
               disabled={!form.title.trim()}
@@ -153,7 +139,7 @@ function Conversas() {
         </div>
 
         <div className="flex gap-2">
-          {(["recentes", "todas"] as const).map((t) => (
+          {(["recentes", "trending"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -161,8 +147,24 @@ function Conversas() {
                 tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
               }`}
             >
-              {t === "todas" ? <List size={14} /> : <MessageSquare size={14} />}
-              {t === "recentes" ? "Recentes" : "Todas"}
+              {t === "trending" ? <TrendingUp size={14} /> : <MessageSquare size={14} />}
+              {t === "recentes" ? "Recentes" : "Trending"}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCat(c)}
+              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
+                cat === c
+                  ? "bg-brand-gradient text-white border-transparent"
+                  : "bg-white border-border text-foreground/70"
+              }`}
+            >
+              {c}
             </button>
           ))}
         </div>
@@ -195,7 +197,7 @@ function Conversas() {
   );
 }
 
-function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
+function ConversationCard({ conv }: { conv: (typeof conversations)[number] }) {
   return (
     <Link
       to="/conversas/$id"
@@ -206,6 +208,10 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
+            {conv.trending && <Sparkles size={12} className="text-amber-500" />}
+            <span className="text-[10px] font-semibold text-[#630091] uppercase">
+              {conv.category}
+            </span>
           </div>
           <h3 className="mt-1 font-bold text-sm leading-snug">{conv.title}</h3>
           <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{conv.description}</p>
