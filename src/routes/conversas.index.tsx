@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useReducer, useState } from "react";
 import { Search, Pin, List, MessageSquare, Heart, Eye, Plus, X, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { getAllConversations, addUserConversation } from "@/lib/mock-data";
@@ -7,7 +7,40 @@ import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 export const Route = createFileRoute("/conversas/")({
   head: () => ({ meta: [{ title: "Conversas — WEAZE" }] }),
   component: Conversas,
+  errorComponent: ConversasError,
 });
+
+function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  if (typeof console !== "undefined") console.error(error);
+  return (
+    <div className="min-h-dvh grid place-items-center bg-background px-6 text-center">
+      <div className="max-w-sm space-y-3">
+        <h1 className="text-xl font-extrabold">Não foi possível abrir Conversas</h1>
+        <p className="text-sm text-foreground/60">
+          Tivemos um problema ao carregar esta página. Tente novamente.
+        </p>
+        <div className="flex justify-center gap-2 pt-2">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="h-10 px-4 rounded-full bg-brand-gradient text-white text-sm font-bold shadow-brand"
+          >
+            Tentar novamente
+          </button>
+          <Link
+            to="/feed"
+            className="h-10 px-4 rounded-full bg-muted text-foreground text-sm font-bold grid place-items-center"
+          >
+            Ir para o feed
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const initial = { title: "", description: "", tags: "" };
 
@@ -16,40 +49,47 @@ function Conversas() {
   const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initial);
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const all = getAllConversations();
 
   const filtered = all.filter((c) =>
-    c.title.toLowerCase().includes(q.toLowerCase()),
+    (c.title ?? "").toLowerCase().includes(q.toLowerCase()),
   );
 
   const pinned = filtered.filter((c) => c.pinned);
   const list = filtered.filter((c) => !c.pinned);
 
   const submit = () => {
-    if (!form.title.trim()) return;
-    const id = "ucv_" + Date.now();
-    const first = form.title.trim()[0].toUpperCase();
-    addUserConversation({
-      id,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      category: "",
-      author: "Você",
-      authorAvatar: first,
-      replies: 0,
-      likes: 0,
-      views: 0,
-      pinned: false,
-      trending: false,
-      createdAt: "agora",
-      lastActivity: "agora",
-      tags: form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-    setForm(initial);
-    setShowForm(false);
+    const title = form.title.trim();
+    if (!title) return;
+    try {
+      const id = "ucv_" + Date.now();
+      const first = (title[0] ?? "?").toUpperCase();
+      addUserConversation({
+        id,
+        title,
+        description: form.description.trim(),
+        category: "",
+        author: "Você",
+        authorAvatar: first,
+        replies: 0,
+        likes: 0,
+        views: 0,
+        pinned: false,
+        trending: false,
+        createdAt: "agora",
+        lastActivity: "agora",
+        tags: form.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      });
+      setForm(initial);
+      setShowForm(false);
+      forceUpdate();
+    } catch (err) {
+      console.error("Falha ao criar conversa", err);
+    }
   };
 
   return (
