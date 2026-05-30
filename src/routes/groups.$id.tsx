@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Send, Info, Pin, LogOut, ChevronDown, Share2, Copy, Check } from "lucide-react";
+import { ArrowLeft, Send, Info, Pin, LogOut, ChevronDown, Share2, Copy, Check, Lock } from "lucide-react";
 import {
   getGroup,
   getGroupMembers,
