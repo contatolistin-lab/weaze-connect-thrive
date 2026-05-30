@@ -23,6 +23,7 @@ import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as ConversasIndexRouteImport } from './routes/conversas.index'
 import { Route as CommunitiesIndexRouteImport } from './routes/communities.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
+import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as ConversasIdRouteImport } from './routes/conversas.$id'
 import { Route as CommunitiesIdRouteImport } from './routes/communities.$id'
 import { Route as B2bSignupRouteImport } from './routes/b2b/signup'
@@ -100,6 +101,11 @@ const MessagesIdRoute = MessagesIdRouteImport.update({
   path: '/messages/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsIdRoute = GroupsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => GroupsRoute,
+} as any)
 const ConversasIdRoute = ConversasIdRouteImport.update({
   id: '/conversas/$id',
   path: '/conversas/$id',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/b2b/signup': typeof B2bSignupRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/messages/$id': typeof MessagesIdRoute
   '/communities/': typeof CommunitiesIndexRoute
   '/conversas/': typeof ConversasIndexRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByTo {
   '/b2b/signup': typeof B2bSignupRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/messages/$id': typeof MessagesIdRoute
   '/communities': typeof CommunitiesIndexRoute
   '/conversas': typeof ConversasIndexRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/b2b/signup': typeof B2bSignupRoute
   '/communities/$id': typeof CommunitiesIdRoute
   '/conversas/$id': typeof ConversasIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/messages/$id': typeof MessagesIdRoute
   '/communities/': typeof CommunitiesIndexRoute
   '/conversas/': typeof ConversasIndexRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/b2b/signup'
     | '/communities/$id'
     | '/conversas/$id'
+    | '/groups/$id'
     | '/messages/$id'
     | '/communities/'
     | '/conversas/'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/b2b/signup'
     | '/communities/$id'
     | '/conversas/$id'
+    | '/groups/$id'
     | '/messages/$id'
     | '/communities'
     | '/conversas'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/b2b/signup'
     | '/communities/$id'
     | '/conversas/$id'
+    | '/groups/$id'
     | '/messages/$id'
     | '/communities/'
     | '/conversas/'
@@ -389,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups/$id': {
+      id: '/groups/$id'
+      path: '/$id'
+      fullPath: '/groups/$id'
+      preLoaderRoute: typeof GroupsIdRouteImport
+      parentRoute: typeof GroupsRoute
+    }
     '/conversas/$id': {
       id: '/conversas/$id'
       path: '/conversas/$id'
@@ -435,10 +454,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface GroupsRouteChildren {
+  GroupsIdRoute: typeof GroupsIdRoute
   GroupsInviteCodeRoute: typeof GroupsInviteCodeRoute
 }
 
 const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsIdRoute: GroupsIdRoute,
   GroupsInviteCodeRoute: GroupsInviteCodeRoute,
 }
 

@@ -1,12 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, Globe, Plus, MessageSquare, Heart, X, Check, Copy, Share2 } from "lucide-react";
+import { Lock, Globe, Plus, X, Check, Copy, Share2 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import {
   groups,
   groupTopics,
-  userGroupIds,
   isGroupMember,
   joinGroup,
   createGroup,
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/groups")({
 function Groups() {
   const nav = useNavigate();
   const [filter, setFilter] = useState<"todos" | "publicos" | "privados">("todos");
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", privacy: "public" as "public" | "private" });
   const [createdInfo, setCreatedInfo] = useState<{ id: string; inviteCode?: string } | null>(null);
@@ -40,9 +38,6 @@ function Groups() {
     return true;
   });
 
-  const activeGroup = groups.find((g) => g.id === selectedGroup);
-  const activeTopics = activeGroup ? groupTopics.filter((t) => t.groupId === activeGroup.id) : [];
-
   const handleCreate = () => {
     if (!form.name.trim()) return;
     const result = createGroup({
@@ -56,12 +51,14 @@ function Groups() {
     rerender();
   };
 
-  const handleJoin = (groupId: string) => {
+  const handleJoin = (e: React.MouseEvent, groupId: string) => {
+    e.stopPropagation();
     joinGroup(groupId);
     rerender();
   };
 
-  const handleCopyInvite = (code: string) => {
+  const handleCopyInvite = (e: React.MouseEvent, code: string) => {
+    e.stopPropagation();
     const url = window.location.origin + "/groups/invite/" + code;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
@@ -69,12 +66,13 @@ function Groups() {
     });
   };
 
-  const handleShareInvite = (code: string) => {
+  const handleShareInvite = (e: React.MouseEvent, code: string) => {
+    e.stopPropagation();
     const url = window.location.origin + "/groups/invite/" + code;
     if (navigator.share) {
       navigator.share({ url });
     } else {
-      handleCopyInvite(code);
+      handleCopyInvite(e, code);
     }
   };
 
@@ -96,7 +94,7 @@ function Groups() {
           {(["todos", "publicos", "privados"] as const).map((t) => (
             <button
               key={t}
-              onClick={() => { setFilter(t); setSelectedGroup(null); }}
+              onClick={() => setFilter(t)}
               className={`flex-1 h-9 rounded-full text-sm font-semibold ${
                 filter === t ? "bg-brand-gradient text-white" : "bg-muted"
               }`}
@@ -107,7 +105,7 @@ function Groups() {
         </div>
 
         <div className="flex gap-3">
-          <div className="w-full space-y-2">
+          <div className="w-full space-y-3">
             {filteredGroups.length === 0 && filter === "privados" && (
               <div className="text-center py-10 text-foreground/50 text-sm px-4 leading-relaxed">
                 🔒 Você ainda não faz parte de nenhum grupo privado.<br />
@@ -115,119 +113,57 @@ function Groups() {
               </div>
             )}
             {filteredGroups.map((g) => {
-              const isActive = selectedGroup === g.id;
               const topics = groupTopics.filter((t) => t.groupId === g.id);
               const userIsMember = isGroupMember(g.id);
               const inviteCode = g.privacy === "private" ? groupInviteCodes[g.id] : undefined;
               return (
-                <div key={g.id} className="space-y-1">
+                <div key={g.id} className="bg-white border border-border rounded-2xl shadow-soft overflow-hidden">
                   <button
-                    onClick={() => setSelectedGroup(isActive ? null : g.id)}
-                    className={`w-full text-left flex items-center gap-3 p-3 rounded-2xl border transition-all ${
-                      isActive
-                        ? "bg-brand-gradient text-white border-transparent shadow-brand"
-                        : "bg-white border-border shadow-soft"
-                    }`}
+                    onClick={() => nav({ to: "/groups/$id", params: { id: g.id } })}
+                    className="w-full text-left flex items-center gap-3 p-3"
                   >
                     <span className="text-2xl shrink-0">{g.emoji}</span>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm flex items-center gap-1.5">
                         {g.name}
                         {g.privacy === "private" ? (
-                          <Lock size={12} className={isActive ? "text-white/70" : "text-foreground/50"} />
+                          <Lock size={12} className="text-foreground/50" />
                         ) : (
-                          <Globe size={12} className={isActive ? "text-white/70" : "text-foreground/50"} />
+                          <Globe size={12} className="text-foreground/50" />
                         )}
                       </p>
-                      <p className={`text-[11px] ${isActive ? "text-white/80" : "text-foreground/60"}`}>
+                      <p className="text-[11px] text-foreground/60">
                         {g.topic} · {g.members} membros · {topics.length} tópicos
                       </p>
                     </div>
-                    <span className={`text-xs font-bold ${isActive ? "text-white" : "text-[#d81e62]"}`}>
-                      {isActive ? "Aberto" : "Abrir"}
-                    </span>
+                    <span className="text-xs font-bold text-[#d81e62]">Acessar</span>
                   </button>
 
-                  {isActive && activeGroup && (
-                    <div className="pl-3 space-y-2">
-                      {g.privacy === "public" && !userIsMember && (
-                        <button
-                          onClick={() => handleJoin(g.id)}
-                          className="w-full h-10 rounded-2xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand"
-                        >
-                          Entrar no Grupo
-                        </button>
-                      )}
-                      {g.privacy === "public" && userIsMember && (
-                        <div className="text-xs text-center text-foreground/50 py-1 font-semibold">
-                          ✔ Você é membro deste grupo
-                        </div>
-                      )}
-                      {g.privacy === "private" && userIsMember && inviteCode && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleCopyInvite(inviteCode)}
-                            className="flex-1 h-9 rounded-xl bg-muted text-foreground text-xs font-semibold flex items-center justify-center gap-1.5"
-                          >
-                            <Copy size={14} /> {copied ? "Copiado!" : "Copiar Link"}
-                          </button>
-                          <button
-                            onClick={() => handleShareInvite(inviteCode)}
-                            className="flex-1 h-9 rounded-xl bg-muted text-foreground text-xs font-semibold flex items-center justify-center gap-1.5"
-                          >
-                            <Share2 size={14} /> Compartilhar
-                          </button>
-                        </div>
-                      )}
-                      {g.privacy === "private" && !userIsMember && (
-                        <div className="text-xs text-center text-foreground/50 py-1">
-                          🔒 Grupo privado — você precisa de um convite para entrar.
-                        </div>
-                      )}
+                  {g.privacy === "public" && !userIsMember && (
+                    <div className="px-3 pb-3">
+                      <button
+                        onClick={(e) => handleJoin(e, g.id)}
+                        className="w-full h-9 rounded-xl bg-brand-gradient text-white font-bold text-xs shadow-brand"
+                      >
+                        Entrar no Grupo
+                      </button>
                     </div>
                   )}
 
-                  {isActive && activeGroup && userIsMember && (
-                    <div className="pb-2 pl-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider">
-                          Tópicos do grupo
-                        </p>
-                        <button className="text-xs font-semibold text-[#d81e62] flex items-center gap-1">
-                          <Plus size={12} /> Novo tópico
-                        </button>
-                      </div>
-                      {activeTopics.length > 0 ? (
-                        <div className="space-y-1.5">
-                          {activeTopics.map((t) => (
-                            <div
-                              key={t.id}
-                              className="rounded-2xl bg-white border border-border p-3 shadow-soft"
-                            >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-bold text-sm">{t.title}</p>
-                                  <p className="text-xs text-foreground/60 mt-0.5">
-                                    por {t.author} · {t.createdAt}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="mt-1.5 flex items-center gap-3 text-xs text-foreground/60">
-                                <span className="flex items-center gap-1">
-                                  <Heart size={12} /> {t.likes}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <MessageSquare size={12} /> {t.replies} respostas
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-foreground/50 text-sm">
-                          Nenhum tópico ainda. Seja o primeiro!
-                        </div>
-                      )}
+                  {g.privacy === "private" && userIsMember && inviteCode && (
+                    <div className="px-3 pb-3 flex gap-2">
+                      <button
+                        onClick={(e) => handleCopyInvite(e, inviteCode)}
+                        className="flex-1 h-9 rounded-xl bg-muted text-foreground text-xs font-semibold flex items-center justify-center gap-1.5"
+                      >
+                        <Copy size={14} /> {copied ? "Copiado!" : "Copiar Link"}
+                      </button>
+                      <button
+                        onClick={(e) => handleShareInvite(e, inviteCode)}
+                        className="flex-1 h-9 rounded-xl bg-muted text-foreground text-xs font-semibold flex items-center justify-center gap-1.5"
+                      >
+                        <Share2 size={14} /> Compartilhar
+                      </button>
                     </div>
                   )}
                 </div>
@@ -314,14 +250,14 @@ function Groups() {
                     {window.location.origin}/groups/invite/{createdInfo.inviteCode}
                   </code>
                   <button
-                    onClick={() => handleCopyInvite(createdInfo.inviteCode!)}
+                    onClick={() => handleCopyInvite({} as any, createdInfo.inviteCode!)}
                     className="shrink-0 h-8 w-8 grid place-items-center rounded-lg bg-brand-gradient text-white"
                   >
                     <Copy size={14} />
                   </button>
                 </div>
                 <button
-                  onClick={() => handleShareInvite(createdInfo.inviteCode!)}
+                  onClick={() => handleShareInvite({} as any, createdInfo.inviteCode!)}
                   className="w-full h-10 rounded-xl bg-muted text-foreground text-sm font-semibold flex items-center justify-center gap-1.5"
                 >
                   <Share2 size={14} /> Compartilhar Link
@@ -333,7 +269,7 @@ function Groups() {
               </p>
             )}
             <button
-              onClick={() => { setCreatedInfo(null); setSelectedGroup(createdInfo.id); rerender(); }}
+              onClick={() => { setCreatedInfo(null); nav({ to: "/groups/$id", params: { id: createdInfo.id } }); }}
               className="w-full h-11 rounded-xl bg-brand-gradient text-white font-bold text-sm shadow-brand"
             >
               Ir para o Grupo

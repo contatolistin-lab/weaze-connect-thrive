@@ -876,3 +876,11 @@ export function getGroupByInviteCode(code: string): MockGroup | undefined {
 export function getMyGroups(): MockGroup[] {
   return groups.filter((g) => userGroupIds.includes(g.id));
 }
+
+export function getGroup(id: string): MockGroup | undefined {
+  return groups.find((g) => g.id === id);
+}
+
+export function getGroupTopics(groupId: string): MockGroupTopic[] {
+  return groupTopics.filter((t) => t.groupId === groupId);
+}
