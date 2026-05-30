@@ -136,7 +136,7 @@ function Groups() {
                         {g.topic} · {g.members} membros · {topics.length} tópicos
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-[#d81e62]">Acessar</span>
+                    <span className="text-xs font-bold text-[#d81e62]">Abrir</span>
                   </button>
 
                   {g.privacy === "public" && !userIsMember && (
