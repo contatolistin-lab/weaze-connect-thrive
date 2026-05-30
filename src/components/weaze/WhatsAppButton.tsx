@@ -14,7 +14,7 @@ export function WhatsAppButton() {
         href={`https://wa.me/${number}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed z-50 flex items-center justify-center w-14 h-14 rounded-full bg-brand-gradient text-white shadow-brand hover:shadow-pink transition-shadow animate-float-in"
+        className="fixed z-50 flex items-center justify-center w-14 h-14 rounded-full bg-[#128C7E] text-white shadow-lg hover:shadow-xl transition-shadow animate-float-in"
         style={{ bottom: 90, right: 16 }}
         aria-label="Fale conosco no WhatsApp"
       >
