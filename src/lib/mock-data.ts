@@ -25,6 +25,7 @@ export interface MockPost {
   mediaType?: "image" | "video" | "external";
   mediaUrl?: string;
   mediaPreview?: string;
+  commentsEnabled?: boolean;
 }
 
 export const communities: MockCommunity[] = [

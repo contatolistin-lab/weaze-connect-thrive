@@ -37,6 +37,7 @@ function Create() {
   const [ctaName, setCtaName] = useState("");
   const [ctaLink, setCtaLink] = useState("");
   const [title, setTitle] = useState("");
+  const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +126,7 @@ function Create() {
       mediaType: fileType ? (fileType as "image" | "video") : externalLink ? "external" : undefined,
       mediaUrl: filePreview || externalLink || undefined,
       mediaPreview: externalPreview || undefined,
+      commentsEnabled,
     });
 
     setTimeout(() => nav({ to: "/feed" }), 400);
@@ -338,12 +340,21 @@ function Create() {
                   CTA — link do botão
                 </p>
                 <div className="space-y-2">
-                  <input
-                    value={ctaName}
-                    onChange={(e) => setCtaName(e.target.value)}
-                    placeholder="Nome do botão (ex: Entrar agora)"
-                    className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    {["Saiba mais", "Comprar", "Agendar", "Inscrever-se", "Assistir", "Orçamento"].map((name) => (
+                      <button
+                        key={name}
+                        onClick={() => setCtaName(ctaName === name ? "" : name)}
+                        className={`px-4 h-9 rounded-xl text-sm font-semibold transition-all ${
+                          ctaName === name
+                            ? "bg-brand-gradient text-white shadow-brand"
+                            : "bg-muted text-foreground/70"
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
                   <div className="flex items-center gap-2 rounded-xl border border-border px-3 h-10 focus-within:ring-2 focus-within:ring-[#d81e62] transition-shadow">
                     <Link2 size={16} className="text-foreground/40 shrink-0" />
                     <input
@@ -364,12 +375,25 @@ function Create() {
 
               <div className="divide-y divide-border">
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm">Visibilidade</span>
-                  <span className="text-sm text-[#630091] font-semibold">Pública</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-3">
                   <span className="text-sm">Permitir comentários</span>
-                  <span className="text-sm text-[#630091] font-semibold">Sim</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setCommentsEnabled(true)}
+                      className={`px-3 h-7 rounded-lg text-xs font-semibold transition-all ${
+                        commentsEnabled ? "bg-brand-gradient text-white shadow-brand" : "bg-muted text-foreground/50"
+                      }`}
+                    >
+                      Sim
+                    </button>
+                    <button
+                      onClick={() => setCommentsEnabled(false)}
+                      className={`px-3 h-7 rounded-lg text-xs font-semibold transition-all ${
+                        !commentsEnabled ? "bg-brand-gradient text-white shadow-brand" : "bg-muted text-foreground/50"
+                      }`}
+                    >
+                      Não
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

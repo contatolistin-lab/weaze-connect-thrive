@@ -194,8 +194,10 @@ function PostCard({
           label={shortNum(post.comments)}
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            onCommentClick();
-            addNotif("Você");
+            if (post.commentsEnabled !== false) {
+              onCommentClick();
+              addNotif("Você");
+            }
           }}
         />
         <ActionBtn
