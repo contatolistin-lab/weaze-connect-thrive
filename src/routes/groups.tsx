@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { Lock, Users, Plus, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
@@ -22,6 +22,13 @@ export const Route = createFileRoute("/groups")({
 function Groups() {
   const nav = useNavigate();
   const { userType } = useCommunity();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // When visiting a child route like /groups/$id or /groups/invite/$code,
+  // render only the child content via Outlet (no list layout)
+  if (pathname !== "/groups") {
+    return <Outlet />;
+  }
   const myGroups = getMyGroups();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", image: "" });
