@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Search, Pin, TrendingUp, MessageSquare, Heart, Eye, Plus, Sparkles, X, Check } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search, Pin, List, MessageSquare, Heart, Eye, Plus, X, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 
@@ -9,36 +9,30 @@ export const Route = createFileRoute("/conversas/")({
   component: Conversas,
 });
 
-const categories = [
-  "Todas",
-  "Esportes",
-  "Música",
-  "Tech",
-  "Beleza",
-  "Lifestyle",
-  "Finanças",
-  "Cultura",
-  "Geral",
-];
+function isRecent(createdAt: string) {
+  return createdAt === "agora" || createdAt.endsWith("h");
+}
 
-const initial = { title: "", description: "", tags: "", category: "Geral" };
+const initial = { title: "", description: "", tags: "" };
 
 function Conversas() {
-  const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState<"recentes" | "trending">("recentes");
+  const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initial);
   const all = getAllConversations();
 
-  const filtered = all.filter(
-    (c) =>
-      (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
+  const filtered = useMemo(
+    () => all.filter((c) => c.title.toLowerCase().includes(q.toLowerCase())),
+    [all, q],
   );
 
-  const pinned = filtered.filter((c) => c.pinned);
-  const list =
-    tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
+  const pinned = useMemo(() => filtered.filter((c) => c.pinned), [filtered]);
+  const list = useMemo(() => {
+    const unpinned = filtered.filter((c) => !c.pinned);
+    if (tab === "recentes") return unpinned.filter((c) => isRecent(c.createdAt));
+    return unpinned.filter((c) => !isRecent(c.createdAt));
+  }, [filtered, tab]);
 
   const submit = () => {
     if (!form.title.trim()) return;
@@ -48,7 +42,7 @@ function Conversas() {
       id,
       title: form.title.trim(),
       description: form.description.trim(),
-      category: form.category,
+      category: "",
       author: "Você",
       authorAvatar: first,
       replies: 0,
@@ -101,23 +95,12 @@ function Conversas() {
               rows={3}
               className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
             />
-            <div className="flex gap-2">
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] bg-white"
-              >
-                {categories.filter((c) => c !== "Todas").map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <input
-                value={form.tags}
-                onChange={(e) => setForm({ ...form, tags: e.target.value })}
-                placeholder="Tags: separadas por vírgula"
-                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-              />
-            </div>
+            <input
+              value={form.tags}
+              onChange={(e) => setForm({ ...form, tags: e.target.value })}
+              placeholder="Tags: separadas por vírgula"
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            />
             <button
               onClick={submit}
               disabled={!form.title.trim()}
@@ -139,7 +122,7 @@ function Conversas() {
         </div>
 
         <div className="flex gap-2">
-          {(["recentes", "trending"] as const).map((t) => (
+          {(["recentes", "todas"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -147,24 +130,8 @@ function Conversas() {
                 tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
               }`}
             >
-              {t === "trending" ? <TrendingUp size={14} /> : <MessageSquare size={14} />}
-              {t === "recentes" ? "Recentes" : "Trending"}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
-                cat === c
-                  ? "bg-brand-gradient text-white border-transparent"
-                  : "bg-white border-border text-foreground/70"
-              }`}
-            >
-              {c}
+              {t === "todas" ? <List size={14} /> : <MessageSquare size={14} />}
+              {t === "recentes" ? "Recentes" : "Todas"}
             </button>
           ))}
         </div>
@@ -197,7 +164,7 @@ function Conversas() {
   );
 }
 
-function ConversationCard({ conv }: { conv: (typeof conversations)[number] }) {
+function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
   return (
     <Link
       to="/conversas/$id"
@@ -208,10 +175,6 @@ function ConversationCard({ conv }: { conv: (typeof conversations)[number] }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
-            {conv.trending && <Sparkles size={12} className="text-amber-500" />}
-            <span className="text-[10px] font-semibold text-[#630091] uppercase">
-              {conv.category}
-            </span>
           </div>
           <h3 className="mt-1 font-bold text-sm leading-snug">{conv.title}</h3>
           <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{conv.description}</p>
