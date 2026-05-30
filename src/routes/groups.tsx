@@ -39,6 +39,7 @@ function Groups() {
     name: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "invite">("form");
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +100,14 @@ function Groups() {
     setCreated(null);
     setImagePreview("");
     nav({ to: "/groups/$id", params: { id: created!.id } });
+  };
+
+  const handleCopyCardInvite = (e: React.MouseEvent, groupId: string, code: string) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/groups/invite/${code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedCardId(groupId);
+    setTimeout(() => setCopiedCardId(null), 2000);
   };
 
   const resetModal = () => {
@@ -170,7 +179,22 @@ function Groups() {
                       )}
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-[#d81e62] shrink-0">Abrir</span>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {g.inviteCode && (
+                      <button
+                        onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!)}
+                        className="h-7 w-7 rounded-full bg-muted grid place-items-center hover:bg-foreground/10 transition-colors"
+                        title="Copiar link de convite"
+                      >
+                        {copiedCardId === g.id ? (
+                          <Check size={12} className="text-green-600" />
+                        ) : (
+                          <Share2 size={12} className="text-foreground/50" />
+                        )}
+                      </button>
+                    )}
+                    <span className="text-xs font-bold text-[#d81e62]">Abrir</span>
+                  </div>
                 </button>
               );
             })}
