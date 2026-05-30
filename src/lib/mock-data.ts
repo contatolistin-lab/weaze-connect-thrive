@@ -1136,6 +1136,34 @@ export const groupInviteCodes: Record<string, string> = {
   g4: "MENTORIA",
 };
 
+const STORAGE_KEY = "weaze_groups_persist";
+
+function persistGroups() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      groups, groupMembers, groupMessages, userGroupIds, groupInviteCodes,
+    }));
+  } catch {}
+}
+
+function restoreGroups() {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    groups.length = 0; groups.push(...saved.groups);
+    groupMembers.length = 0; groupMembers.push(...saved.groupMembers);
+    groupMessages.length = 0; groupMessages.push(...saved.groupMessages);
+    userGroupIds.length = 0; userGroupIds.push(...saved.userGroupIds);
+    Object.keys(groupInviteCodes).forEach((k) => delete groupInviteCodes[k]);
+    Object.assign(groupInviteCodes, saved.groupInviteCodes);
+  } catch {}
+}
+
+restoreGroups();
+
 export function isGroupMember(groupId: string): boolean {
   return userGroupIds.includes(groupId);
 }
@@ -1157,6 +1185,7 @@ export function joinGroup(groupId: string) {
       });
     }
   }
+  persistGroups();
 }
 
 export function leaveGroup(groupId: string) {
@@ -1200,6 +1229,7 @@ export function createGroup(input: { name: string; description: string; image: s
   userGroupIds.push(id);
   groupInviteCodes[id] = code;
 
+  persistGroups();
   return { id, inviteCode: code };
 }
 
