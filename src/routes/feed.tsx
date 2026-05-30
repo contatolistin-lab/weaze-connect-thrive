@@ -185,7 +185,7 @@ function PostCard({
             e.stopPropagation();
             if (!liked) {
               setLiked(true);
-              addLike();
+              addLike("Você");
             }
           }}
         />
