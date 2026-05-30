@@ -13,7 +13,6 @@ import {
   currentUserId,
   type MockGroupMessage,
 } from "@/lib/mock-data";
-import { useCommunity } from "@/lib/community-store";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,7 +27,6 @@ export const Route = createFileRoute("/groups/$id")({
 function GroupChat() {
   const { id } = Route.useParams();
   const nav = useNavigate();
-  const { userType } = useCommunity();
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +41,6 @@ function GroupChat() {
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const isB2B = userType.isB2B;
   const currentMember = members.find((m) => m.userId === currentUserId);
   const isAdmin = currentMember?.role === "admin";
 
