@@ -1197,6 +1197,7 @@ export function leaveGroup(groupId: string) {
     const mIdx = groupMembers.findIndex((m) => m.groupId === groupId && m.userId === currentUserId);
     if (mIdx !== -1) groupMembers.splice(mIdx, 1);
   }
+  persistGroups();
 }
 
 export function createGroup(input: { name: string; description: string; image: string }) {
@@ -1272,6 +1273,7 @@ export function sendMessage(groupId: string, text: string) {
   groupMessages.push(msg);
   const g = groups.find((x) => x.id === groupId);
   if (g) g.lastActivity = "agora";
+  persistGroups();
   return msg;
 }
 
@@ -1281,12 +1283,14 @@ export function pinMessage(groupId: string, messageId: string) {
   });
   const msg = groupMessages.find((m) => m.id === messageId);
   if (msg) msg.isPinned = true;
+  persistGroups();
 }
 
 export function unpinMessage(groupId: string) {
   groupMessages.forEach((m) => {
     if (m.groupId === groupId) m.isPinned = false;
   });
+  persistGroups();
 }
 
 export function removeMember(groupId: string, userId: string) {
@@ -1296,4 +1300,5 @@ export function removeMember(groupId: string, userId: string) {
     const g = groups.find((x) => x.id === groupId);
     if (g) g.memberCount = Math.max(1, g.memberCount - 1);
   }
+  persistGroups();
 }
