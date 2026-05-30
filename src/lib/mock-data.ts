@@ -826,3 +826,53 @@ export function viewConversation(id: string) {
   const c = [...userConversations, ...conversations].find((x) => x.id === id);
   if (c) c.views += 1;
 }
+
+// ---- Groups ----
+
+export const userGroupIds: string[] = ["g1", "g3"];
+
+export function isGroupMember(groupId: string): boolean {
+  return userGroupIds.includes(groupId);
+}
+
+export function joinGroup(groupId: string) {
+  if (!userGroupIds.includes(groupId)) {
+    userGroupIds.push(groupId);
+    const g = groups.find((x) => x.id === groupId);
+    if (g) g.members += 1;
+  }
+}
+
+export function createGroup(input: {
+  name: string;
+  description: string;
+  privacy: "public" | "private";
+}) {
+  const id = "g_" + Date.now();
+  const code = input.privacy === "private" ? Math.random().toString(36).substring(2, 8).toUpperCase() : undefined;
+  groups.push({
+    id,
+    name: input.name,
+    members: 1,
+    topic: input.description,
+    privacy: input.privacy,
+    emoji: "👥",
+  });
+  userGroupIds.push(id);
+  if (code) groupInviteCodes[id] = code;
+  return { id, inviteCode: code };
+}
+
+export const groupInviteCodes: Record<string, string> = {
+  g3: "ABC123",
+};
+
+export function getGroupByInviteCode(code: string): MockGroup | undefined {
+  const entry = Object.entries(groupInviteCodes).find(([, v]) => v === code);
+  if (!entry) return undefined;
+  return groups.find((g) => g.id === entry[0]);
+}
+
+export function getMyGroups(): MockGroup[] {
+  return groups.filter((g) => userGroupIds.includes(g.id));
+}
