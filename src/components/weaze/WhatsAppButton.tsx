@@ -2,7 +2,14 @@ import { MessageCircle } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 
 export function WhatsAppButton() {
-  const { community, userType } = useCommunity();
+  let community, userType;
+  try {
+    const ctx = useCommunity();
+    community = ctx.community;
+    userType = ctx.userType;
+  } catch {
+    return null;
+  }
 
   if (userType.isB2B) return null;
   if (!community.whatsapp) return null;

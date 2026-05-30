@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface CommunityData {
   name: string;
@@ -34,28 +34,31 @@ const defaultCommunity: CommunityData = {
 const CommunityCtx = createContext<CommunityContextType | null>(null);
 
 export function CommunityProvider({ children }: { children: ReactNode }) {
-  const [community, setCommunity] = useState<CommunityData>(() => {
+  const [community, setCommunity] = useState<CommunityData>(defaultCommunity);
+  const [isB2B, setB2BState] = useState(false);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("weaze_community");
-      return saved ? JSON.parse(saved) : defaultCommunity;
-    } catch {
-      return defaultCommunity;
-    }
-  });
-
-  const [isB2B, setB2BState] = useState(false);
+      if (saved) setCommunity(JSON.parse(saved));
+    } catch {}
+    try {
+      const saved = localStorage.getItem("weaze_user_b2b");
+      if (saved) setB2BState(saved === "true");
+    } catch {}
+  }, []);
 
   const updateCommunity = useCallback((data: Partial<CommunityData>) => {
     setCommunity((prev) => {
       const next = { ...prev, ...data };
-      localStorage.setItem("weaze_community", JSON.stringify(next));
+      try { localStorage.setItem("weaze_community", JSON.stringify(next)); } catch {}
       return next;
     });
   }, []);
 
   const setB2B = useCallback((v: boolean) => {
     setB2BState(v);
-    localStorage.setItem("weaze_user_b2b", String(v));
+    try { localStorage.setItem("weaze_user_b2b", String(v)); } catch {}
   }, []);
 
   const userType: UserTypeContext = { isB2B, setB2B };
