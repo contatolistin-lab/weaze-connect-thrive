@@ -3,7 +3,6 @@ import { useReducer, useState, type FormEvent } from "react";
 import {
   Search,
   Pin,
-  TrendingUp,
   MessageSquare,
   Heart,
   Eye,
