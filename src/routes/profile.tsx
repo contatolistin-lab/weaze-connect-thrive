@@ -3,7 +3,7 @@ import { Settings, LogOut, Copy, Check, Share2 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCommunity, communityEmail } from "@/lib/community-store";
 
 export const Route = createFileRoute("/profile")({
@@ -15,6 +15,7 @@ function Profile() {
   const { community, updateCommunity, userType } = useCommunity();
   const nav = useNavigate();
   const [copied, setCopied] = useState(false);
+  const linkRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: community.name,
@@ -49,19 +50,11 @@ function Profile() {
     } catch {}
   }, [community.name, community.description, communitySlug]);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = () => {
+    linkRef.current?.select();
     try {
-      await navigator.clipboard.writeText(communityLink);
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = communityLink;
-      el.style.position = "fixed";
-      el.style.opacity = "0";
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand("copy");
-      document.body.removeChild(el);
-    }
+      navigator.clipboard.writeText(communityLink);
+    } catch {}
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -153,9 +146,13 @@ function Profile() {
           <p className="text-xs text-foreground/60 mb-4">
             Envie este link para que pessoas entrem diretamente na sua comunidade.
           </p>
-          <div className="rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 break-all border border-border mb-4">
-            {communityLink}
-          </div>
+           <input
+              ref={linkRef}
+              readOnly
+              value={communityLink}
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+              className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
+            />
           <div className="flex gap-2">
             <WButton variant="outline" size="md" fullWidth onClick={handleCopyLink}>
               {copied ? <Check size={16} /> : <Copy size={16} />}
