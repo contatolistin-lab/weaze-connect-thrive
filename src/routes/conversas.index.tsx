@@ -66,21 +66,28 @@ const categories = [
   "Geral",
 ];
 
+function isWithin24h(createdAt: string) {
+  const v = createdAt.trim().toLowerCase();
+  if (v === "agora") return true;
+  // formatos curtos tipo "2m", "15m", "1h", "23h", "30s"
+  if (/^\d+\s*(s|m|min|h|hora|horas|minutos?|segundos?)$/.test(v)) return true;
+  return false;
+}
+
 function Conversas() {
-  const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState<"recentes" | "trending">("recentes");
+  const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
   const all = getAllConversations();
 
-  const filtered = all.filter(
-    (c) =>
-      (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
-  );
+  const filtered = all.filter((c) => c.title.toLowerCase().includes(q.toLowerCase()));
 
   const pinned = filtered.filter((c) => c.pinned);
   const list =
-    tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
+    tab === "recentes"
+      ? filtered.filter((c) => !c.pinned && isWithin24h(c.createdAt))
+      : filtered.filter((c) => !c.pinned && !isWithin24h(c.createdAt));
+
 
   return (
     <AppShell title="Conversas">
