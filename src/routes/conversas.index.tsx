@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useReducer, useState } from "react";
+import { useReducer, useState, type FormEvent } from "react";
 import {
   Search,
   Pin,
@@ -199,7 +199,7 @@ function CriarConversaButton({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
 
-  const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     if (!title.trim()) return;
     onCriar({ title: title.trim(), description: description.trim(), tags: tags.trim() });
