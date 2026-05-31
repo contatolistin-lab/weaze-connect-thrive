@@ -250,9 +250,6 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
           <div className="flex items-center gap-2">
             {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
             {conv.trending && <Sparkles size={12} className="text-amber-500" />}
-            <span className="text-[10px] font-semibold text-[#630091] uppercase">
-              {conv.category}
-            </span>
           </div>
           <h3 className="mt-1 font-bold text-sm leading-snug">{conv.title}</h3>
           <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{conv.description}</p>
