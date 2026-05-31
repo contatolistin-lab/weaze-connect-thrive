@@ -32,14 +32,10 @@ const categories = [
   "Geral",
 ];
 
-const initial = { title: "", description: "", tags: "" };
-
 function Conversas() {
   const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "trending">("recentes");
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(initial);
   const all = getAllConversations();
 
   const filtered = all.filter(
@@ -50,33 +46,6 @@ function Conversas() {
   const pinned = filtered.filter((c) => c.pinned);
   const list =
     tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
-
-  const submit = () => {
-    if (!form.title.trim()) return;
-    const id = "ucv_" + Date.now();
-    const first = form.title.trim()[0].toUpperCase();
-    addUserConversation({
-      id,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      category: "",
-      author: "Você",
-      authorAvatar: first,
-      replies: 0,
-      likes: 0,
-      views: 0,
-      pinned: false,
-      trending: false,
-      createdAt: "agora",
-      lastActivity: "agora",
-      tags: form.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
-    setForm(initial);
-    setShowForm(false);
-  };
 
   return (
     <AppShell title="Conversas">
@@ -89,44 +58,30 @@ function Conversas() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="w-full h-11 rounded-2xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
-        >
-          {showForm ? <X size={18} /> : <Plus size={18} />}
-          {showForm ? "Cancelar" : "Criar conversa"}
-        </button>
-
-        {showForm && (
-          <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
-            <input
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Título da conversa"
-              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-            />
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Descrição (opcional)"
-              rows={3}
-              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
-            />
-            <input
-              value={form.tags}
-              onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              placeholder="Tags: separadas por vírgula"
-              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
-            />
-            <button
-              onClick={submit}
-              disabled={!form.title.trim()}
-              className="w-full h-10 rounded-xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
-            >
-              <Check size={16} /> Publicar conversa
-            </button>
-          </div>
-        )}
+        <CriarConversaButton
+          onCriar={(dados) => {
+            const id = "ucv_" + Date.now();
+            addUserConversation({
+              id,
+              title: dados.title,
+              description: dados.description,
+              category: "",
+              author: "Você",
+              authorAvatar: dados.title.trim()[0].toUpperCase(),
+              replies: 0,
+              likes: 0,
+              views: 0,
+              pinned: false,
+              trending: false,
+              createdAt: "agora",
+              lastActivity: "agora",
+              tags: dados.tags
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean),
+            });
+          }}
+        />
 
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-11">
           <Search size={18} className="text-foreground/40" />
@@ -194,6 +149,71 @@ function Conversas() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function CriarConversaButton({
+  onCriar,
+}: {
+  onCriar: (dados: { title: string; description: string; tags: string }) => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+
+  const handleSubmit = () => {
+    if (!title.trim()) return;
+    onCriar({ title: title.trim(), description: description.trim(), tags: tags.trim() });
+    setTitle("");
+    setDescription("");
+    setTags("");
+    setAberto(false);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAberto(!aberto)}
+        className="w-full h-11 rounded-2xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
+      >
+        {aberto ? <X size={18} /> : <Plus size={18} />}
+        {aberto ? "Cancelar" : "Criar conversa"}
+      </button>
+
+      {aberto && (
+        <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Título da conversa"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Descrição (opcional)"
+            rows={3}
+            className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
+          />
+          <input
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="Tags: separadas por vírgula"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+          />
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+            className="w-full h-10 rounded-xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
+          >
+            <Check size={16} /> Publicar conversa
+          </button>
+        </div>
+      )}
+    </>
   );
 }
 
