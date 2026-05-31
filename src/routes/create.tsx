@@ -8,6 +8,7 @@ import {
   Youtube,
   X,
   Check,
+  ChevronDown,
 } from "lucide-react";
 import { WButton } from "@/components/weaze/WButton";
 import { useState, useRef } from "react";
@@ -35,6 +36,7 @@ function Create() {
 
   const [description, setDescription] = useState("");
   const [ctaName, setCtaName] = useState("");
+  const [ctaOpen, setCtaOpen] = useState(false);
   const [ctaLink, setCtaLink] = useState("");
   const [title, setTitle] = useState("");
   const [commentsEnabled, setCommentsEnabled] = useState(true);
@@ -340,27 +342,54 @@ function Create() {
                   CTA — link do botão
                 </p>
                 <div className="space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "Saiba mais",
-                      "Comprar",
-                      "Agendar",
-                      "Inscrever-se",
-                      "Assistir",
-                      "Orçamento",
-                    ].map((name) => (
-                      <button
-                        key={name}
-                        onClick={() => setCtaName(ctaName === name ? "" : name)}
-                        className={`px-4 h-9 rounded-xl text-sm font-semibold transition-all ${
-                          ctaName === name
-                            ? "bg-brand-gradient text-white shadow-brand"
-                            : "bg-muted text-foreground/70"
-                        }`}
-                      >
-                        {name}
-                      </button>
-                    ))}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setCtaOpen(!ctaOpen)}
+                      className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] flex items-center justify-between bg-white"
+                    >
+                      <span className={ctaName ? "text-foreground" : "text-foreground/40"}>
+                        {ctaName || "Selecionar CTA"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-foreground/40 transition-transform ${ctaOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {ctaOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setCtaOpen(false)}
+                        />
+                        <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-white rounded-xl border border-border shadow-soft overflow-hidden">
+                          {[
+                            "Saiba mais",
+                            "Comprar",
+                            "Agendar",
+                            "Inscrever-se",
+                            "Assistir",
+                            "Orçamento",
+                          ].map((name) => (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => {
+                                setCtaName(ctaName === name ? "" : name);
+                                setCtaOpen(false);
+                              }}
+                              className={`w-full px-4 h-10 text-sm text-left transition-colors font-semibold ${
+                                ctaName === name
+                                  ? "bg-brand-gradient-soft text-[#630091]"
+                                  : "text-foreground/80 hover:bg-muted hover:text-foreground"
+                              }`}
+                            >
+                              {name}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 rounded-xl border border-border px-3 h-10 focus-within:ring-2 focus-within:ring-[#d81e62] transition-shadow">
                     <Link2 size={16} className="text-foreground/40 shrink-0" />
