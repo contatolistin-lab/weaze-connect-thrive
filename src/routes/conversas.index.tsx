@@ -3,7 +3,6 @@ import { useReducer, useState, type FormEvent } from "react";
 import {
   Search,
   Pin,
-  TrendingUp,
   MessageSquare,
   Heart,
   Eye,
@@ -54,33 +53,30 @@ export const Route = createFileRoute("/conversas/")({
   errorComponent: ({ reset }) => <ConversasError reset={reset} />,
 });
 
-const categories = [
-  "Todas",
-  "Esportes",
-  "Música",
-  "Tech",
-  "Beleza",
-  "Lifestyle",
-  "Finanças",
-  "Cultura",
-  "Geral",
-];
+
+
+function isWithin24h(createdAt: string) {
+  const v = createdAt.trim().toLowerCase();
+  if (v === "agora") return true;
+  // formatos curtos tipo "2m", "15m", "1h", "23h", "30s"
+  if (/^\d+\s*(s|m|min|h|hora|horas|minutos?|segundos?)$/.test(v)) return true;
+  return false;
+}
 
 function Conversas() {
-  const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState<"recentes" | "trending">("recentes");
+  const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
   const all = getAllConversations();
 
-  const filtered = all.filter(
-    (c) =>
-      (cat === "Todas" || c.category === cat) && c.title.toLowerCase().includes(q.toLowerCase()),
-  );
+  const filtered = all.filter((c) => c.title.toLowerCase().includes(q.toLowerCase()));
 
   const pinned = filtered.filter((c) => c.pinned);
   const list =
-    tab === "trending" ? filtered.filter((c) => c.trending) : filtered.filter((c) => !c.pinned);
+    tab === "recentes"
+      ? filtered.filter((c) => !c.pinned && isWithin24h(c.createdAt))
+      : filtered.filter((c) => !c.pinned && !isWithin24h(c.createdAt));
+
 
   return (
     <AppShell title="Conversas">
@@ -131,7 +127,7 @@ function Conversas() {
         </div>
 
         <div className="flex gap-2">
-          {(["recentes", "trending"] as const).map((t) => (
+          {(["recentes", "todas"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -139,27 +135,12 @@ function Conversas() {
                 tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
               }`}
             >
-              {t === "trending" ? <TrendingUp size={14} /> : <MessageSquare size={14} />}
-              {t === "recentes" ? "Recentes" : "Trending"}
+              <MessageSquare size={14} />
+              {t === "recentes" ? "Recentes" : "Todas"}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
-                cat === c
-                  ? "bg-brand-gradient text-white border-transparent"
-                  : "bg-white border-border text-foreground/70"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
 
         {pinned.length > 0 && (
           <div>
