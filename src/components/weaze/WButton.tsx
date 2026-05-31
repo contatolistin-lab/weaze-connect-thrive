@@ -8,6 +8,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   fullWidth?: boolean;
   loading?: boolean;
+  type?: "button" | "submit" | "reset";
 }
 
 const sizeClasses: Record<Size, string> = {
@@ -26,6 +27,7 @@ export const WButton = forwardRef<HTMLButtonElement, Props>(function WButton(
     className = "",
     children,
     disabled,
+    type = "button",
     ...props
   },
   ref,
@@ -44,6 +46,7 @@ export const WButton = forwardRef<HTMLButtonElement, Props>(function WButton(
   return (
     <button
       ref={ref}
+      type={type}
       disabled={disabled || loading}
       className={`${base} ${sizeClasses[size]} ${variants[variant]} ${fullWidth ? "w-full" : ""} ${className}`}
       {...props}

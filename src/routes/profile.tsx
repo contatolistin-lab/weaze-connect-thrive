@@ -38,7 +38,9 @@ function Profile() {
 
   const communitySlug = community.name.toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
   const [origin, setOrigin] = useState("");
-  useEffect(() => { setOrigin(window.location.origin); }, []);
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
   const communityLink = `${origin}/c/${communitySlug}`;
 
   useEffect(() => {
@@ -47,14 +49,18 @@ function Profile() {
       const map = raw ? JSON.parse(raw) : {};
       map[communitySlug] = { name: community.name, description: community.description };
       localStorage.setItem("weaze_community_invites", JSON.stringify(map));
-    } catch {}
+    } catch {
+      /* silent */
+    }
   }, [community.name, community.description, communitySlug]);
 
   const handleCopyLink = () => {
     linkRef.current?.select();
     try {
       navigator.clipboard.writeText(communityLink);
-    } catch {}
+    } catch {
+      /* silent */
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -146,13 +152,13 @@ function Profile() {
           <p className="text-xs text-foreground/60 mb-4">
             Envie este link para que pessoas entrem diretamente na sua comunidade.
           </p>
-           <input
-              ref={linkRef}
-              readOnly
-              value={communityLink}
-              onClick={(e) => (e.target as HTMLInputElement).select()}
-              className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
-            />
+          <input
+            ref={linkRef}
+            readOnly
+            value={communityLink}
+            onClick={(e) => (e.target as HTMLInputElement).select()}
+            className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
+          />
           <div className="flex gap-2">
             <WButton variant="outline" size="md" fullWidth onClick={handleCopyLink}>
               {copied ? <Check size={16} /> : <Copy size={16} />}
