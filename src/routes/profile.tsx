@@ -164,17 +164,17 @@ function Profile() {
               {copied ? <Check size={16} /> : <Copy size={16} />}
               {copied ? "Copiado!" : "Copiar Link"}
             </WButton>
-            <a
-              href={`https://wa.me/?text=${encodeURIComponent(communityLink)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
+            <WButton
+              variant="gradient"
+              size="md"
+              fullWidth
+              onClick={() =>
+                window.open(`https://wa.me/?text=${encodeURIComponent(communityLink)}`, "_blank")
+              }
             >
-              <WButton variant="gradient" size="md" fullWidth>
-                <Share2 size={16} />
-                Compartilhar no WhatsApp
-              </WButton>
-            </a>
+              <Share2 size={16} />
+              Compartilhar no WhatsApp
+            </WButton>
           </div>
         </section>
 
