@@ -36,7 +36,9 @@ function Profile() {
   };
 
   const communitySlug = community.name.toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
-  const communityLink = `${window.location.origin}/c/${communitySlug}`;
+  const [origin, setOrigin] = useState("");
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+  const communityLink = `${origin}/c/${communitySlug}`;
 
   useEffect(() => {
     try {
