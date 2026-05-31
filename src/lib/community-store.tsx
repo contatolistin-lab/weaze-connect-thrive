@@ -16,10 +16,24 @@ interface UserTypeContext {
   setB2B: (v: boolean) => void;
 }
 
+export interface AuthUser {
+  name: string;
+  email: string;
+}
+
+interface AuthContext {
+  isAuthenticated: boolean;
+  user: AuthUser | null;
+  signup: (name: string, email: string, password: string) => void;
+  login: (email: string, password: string) => boolean;
+  logout: () => void;
+}
+
 interface CommunityContextType {
   community: CommunityData;
   updateCommunity: (data: Partial<CommunityData>) => void;
   userType: UserTypeContext;
+  auth: AuthContext;
 }
 
 const defaultCommunity: CommunityData = {
@@ -34,9 +48,37 @@ const defaultCommunity: CommunityData = {
 
 const CommunityCtx = createContext<CommunityContextType | null>(null);
 
+const AUTH_USERS_KEY = "weaze_auth_users";
+const AUTH_SESSION_KEY = "weaze_auth_session";
+
+function getStoredUsers(): Record<string, { name: string; password: string }> {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_USERS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function getStoredSession(): AuthUser | null {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function storeSession(user: AuthUser | null) {
+  if (user) {
+    localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
+  } else {
+    localStorage.removeItem(AUTH_SESSION_KEY);
+  }
+}
+
 export function CommunityProvider({ children }: { children: ReactNode }) {
   const [community, setCommunity] = useState<CommunityData>(defaultCommunity);
   const [isB2B, setB2BState] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -47,6 +89,10 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem("weaze_user_b2b");
       if (saved) setB2BState(saved === "true");
+    } catch { /* silent */ }
+    try {
+      const session = getStoredSession();
+      if (session) setUser(session);
     } catch { /* silent */ }
   }, []);
 
@@ -71,10 +117,43 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const signup = useCallback((name: string, email: string, password: string) => {
+    const users = getStoredUsers();
+    users[email] = { name, password };
+    try {
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+    } catch { /* silent */ }
+    const sessionUser: AuthUser = { name, email };
+    storeSession(sessionUser);
+    setUser(sessionUser);
+  }, []);
+
+  const login = useCallback((email: string, password: string): boolean => {
+    const users = getStoredUsers();
+    const record = users[email];
+    if (!record || record.password !== password) return false;
+    const sessionUser: AuthUser = { name: record.name, email };
+    storeSession(sessionUser);
+    setUser(sessionUser);
+    return true;
+  }, []);
+
+  const logout = useCallback(() => {
+    storeSession(null);
+    setUser(null);
+  }, []);
+
   const userType: UserTypeContext = { isB2B, setB2B };
+  const auth: AuthContext = {
+    isAuthenticated: !!user,
+    user,
+    signup,
+    login,
+    logout,
+  };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType }}>
+    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth }}>
       {children}
     </CommunityCtx.Provider>
   );
