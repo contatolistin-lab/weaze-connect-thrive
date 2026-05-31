@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, LogOut, Share2, Camera } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { LogOut, Share2, Camera } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
@@ -91,12 +91,6 @@ function Profile() {
             </h1>
             <p className="text-sm text-foreground/60 truncate">{communityEmail}</p>
           </div>
-          <Link
-            to="/settings"
-            className="h-10 w-10 grid place-items-center rounded-full bg-muted shrink-0"
-          >
-            <Settings size={18} />
-          </Link>
         </div>
 
         {/* Dados da Comunidade */}
