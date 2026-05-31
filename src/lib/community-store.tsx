@@ -8,6 +8,7 @@ export interface CommunityData {
   state: string;
   country: string;
   whatsapp: string;
+  avatar?: string;
 }
 
 interface UserTypeContext {
@@ -41,11 +42,15 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     try {
       const saved = localStorage.getItem("weaze_community");
       if (saved) setCommunity(JSON.parse(saved));
-    } catch {}
+    } catch {
+      /* silent */
+    }
     try {
       const saved = localStorage.getItem("weaze_user_b2b");
       if (saved) setB2BState(saved === "true");
-    } catch {}
+    } catch {
+      /* silent */
+    }
   }, []);
 
   const updateCommunity = useCallback((data: Partial<CommunityData>) => {
@@ -53,7 +58,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
       const next = { ...prev, ...data };
       try {
         localStorage.setItem("weaze_community", JSON.stringify(next));
-      } catch {}
+      } catch {
+        /* silent */
+      }
       return next;
     });
   }, []);
@@ -62,7 +69,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     setB2BState(v);
     try {
       localStorage.setItem("weaze_user_b2b", String(v));
-    } catch {}
+    } catch {
+      /* silent */
+    }
   }, []);
 
   const userType: UserTypeContext = { isB2B, setB2B };

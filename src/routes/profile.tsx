@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Settings, LogOut, Share2 } from "lucide-react";
+import { Settings, LogOut, Share2, Camera } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCommunity, communityEmail } from "@/lib/community-store";
 
 export const Route = createFileRoute("/profile")({
@@ -14,6 +14,18 @@ export const Route = createFileRoute("/profile")({
 function Profile() {
   const { community, updateCommunity, userType } = useCommunity();
   const nav = useNavigate();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateCommunity({ avatar: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const [form, setForm] = useState({
     name: community.name,
     description: community.description,
@@ -56,7 +68,23 @@ function Profile() {
       <div className="px-4 pt-4 pb-24 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Avatar name={community.name || "C"} size={72} ring />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="relative shrink-0 group"
+          >
+            <Avatar name={community.name || "C"} size={72} ring src={community.avatar} />
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera size={22} className="text-white" />
+            </span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-extrabold tracking-tight truncate">
               {community.name || "Minha Comunidade"}
