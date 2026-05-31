@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useReducer, useState } from "react";
 import {
   Search,
   Pin,
@@ -15,9 +15,43 @@ import {
 import { AppShell } from "@/components/weaze/AppShell";
 import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 
+function ConversasError({ reset }: { reset: () => void }) {
+  const router = useRouter();
+
+  return (
+    <AppShell title="Conversas">
+      <div className="px-4 pt-16 text-center">
+        <h1 className="text-xl font-extrabold tracking-tight">Esta página não carregou</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Não foi possível abrir as conversas. Tente novamente ou volte para o feed.
+        </p>
+        <div className="mt-6 flex justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="h-10 px-4 rounded-xl bg-brand-gradient text-white text-sm font-bold shadow-brand"
+          >
+            Tentar novamente
+          </button>
+          <Link
+            to="/feed"
+            className="h-10 px-4 rounded-xl border border-border bg-white text-sm font-bold grid place-items-center"
+          >
+            Ir para o feed
+          </Link>
+        </div>
+      </div>
+    </AppShell>
+  );
+}
+
 export const Route = createFileRoute("/conversas/")({
   head: () => ({ meta: [{ title: "Conversas — WEAZE" }] }),
   component: Conversas,
+  errorComponent: ({ reset }) => <ConversasError reset={reset} />,
 });
 
 const categories = [
@@ -36,6 +70,7 @@ function Conversas() {
   const [cat, setCat] = useState("Todas");
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "trending">("recentes");
+  const [, refreshList] = useReducer((value: number) => value + 1, 0);
   const all = getAllConversations();
 
   const filtered = all.filter(
@@ -61,13 +96,14 @@ function Conversas() {
         <CriarConversaButton
           onCriar={(dados) => {
             const id = "ucv_" + Date.now();
+            const title = dados.title.trim();
             addUserConversation({
               id,
-              title: dados.title,
+              title,
               description: dados.description,
-              category: "",
+              category: "Geral",
               author: "Você",
-              authorAvatar: dados.title.trim()[0].toUpperCase(),
+              authorAvatar: title.at(0)?.toUpperCase() ?? "V",
               replies: 0,
               likes: 0,
               views: 0,
@@ -80,6 +116,7 @@ function Conversas() {
                 .map((t) => t.trim())
                 .filter(Boolean),
             });
+            refreshList();
           }}
         />
 
@@ -162,7 +199,8 @@ function CriarConversaButton({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     if (!title.trim()) return;
     onCriar({ title: title.trim(), description: description.trim(), tags: tags.trim() });
     setTitle("");
@@ -183,7 +221,10 @@ function CriarConversaButton({
       </button>
 
       {aberto && (
-        <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft"
+        >
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -204,14 +245,13 @@ function CriarConversaButton({
             className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
           />
           <button
-            type="button"
-            onClick={handleSubmit}
+            type="submit"
             disabled={!title.trim()}
             className="w-full h-10 rounded-xl bg-brand-gradient text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             <Check size={16} /> Publicar conversa
           </button>
-        </div>
+        </form>
       )}
     </>
   );
