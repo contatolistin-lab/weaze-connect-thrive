@@ -54,10 +54,10 @@ function Profile() {
     }
   }, [community.name, community.description, communitySlug]);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     linkRef.current?.select();
     try {
-      navigator.clipboard.writeText(communityLink);
+      await navigator.clipboard.writeText(communityLink);
     } catch {
       /* silent */
     }
