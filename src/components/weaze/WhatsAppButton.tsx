@@ -2,6 +2,7 @@ import { MessageCircle } from "lucide-react";
 
 export function WhatsAppButton() {
   try {
+    if (typeof window === "undefined") return null;
     const saved = localStorage.getItem("weaze_community");
     if (!saved) return null;
     const data = JSON.parse(saved);

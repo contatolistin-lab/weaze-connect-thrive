@@ -13,10 +13,12 @@ function CommunityInvite() {
 
   let community: { name: string; description: string } | null = null;
   try {
-    const raw = localStorage.getItem("weaze_community_invites");
-    if (raw) {
-      const map = JSON.parse(raw);
-      community = map[slug] ?? null;
+    if (typeof window !== "undefined") {
+      const raw = localStorage.getItem("weaze_community_invites");
+      if (raw) {
+        const map = JSON.parse(raw);
+        community = map[slug] ?? null;
+      }
     }
   } catch {}
 
