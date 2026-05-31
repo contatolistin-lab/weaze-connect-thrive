@@ -1128,7 +1128,7 @@ export function viewConversation(id: string) {
 
 // ---- Groups ----
 
-export const userGroupIds: string[] = ["g1", "g2", "g3", "g4"];
+export const userGroupIds: string[] = [];
 export const groupInviteCodes: Record<string, string> = {
   g1: "CORRIDA2025",
   g2: "DEVS123",
