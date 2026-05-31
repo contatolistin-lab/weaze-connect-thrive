@@ -138,7 +138,7 @@ function Conversas() {
         </div>
 
         <div className="flex gap-2">
-          {(["recentes", "trending"] as const).map((t) => (
+          {(["recentes", "todas"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -146,27 +146,12 @@ function Conversas() {
                 tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
               }`}
             >
-              {t === "trending" ? <TrendingUp size={14} /> : <MessageSquare size={14} />}
-              {t === "recentes" ? "Recentes" : "Trending"}
+              <MessageSquare size={14} />
+              {t === "recentes" ? "Recentes" : "Todas"}
             </button>
           ))}
         </div>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
-                cat === c
-                  ? "bg-brand-gradient text-white border-transparent"
-                  : "bg-white border-border text-foreground/70"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
 
         {pinned.length > 0 && (
           <div>
