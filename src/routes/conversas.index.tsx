@@ -53,17 +53,7 @@ export const Route = createFileRoute("/conversas/")({
   errorComponent: ({ reset }) => <ConversasError reset={reset} />,
 });
 
-const categories = [
-  "Todas",
-  "Esportes",
-  "Música",
-  "Tech",
-  "Beleza",
-  "Lifestyle",
-  "Finanças",
-  "Cultura",
-  "Geral",
-];
+
 
 function isWithin24h(createdAt: string) {
   const v = createdAt.trim().toLowerCase();
