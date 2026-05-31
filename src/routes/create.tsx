@@ -362,7 +362,7 @@ function Create() {
                           className="fixed inset-0 z-10"
                           onClick={() => setCtaOpen(false)}
                         />
-                        <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-white rounded-xl border border-border shadow-soft overflow-hidden">
+                        <div className="absolute top-full mt-1 left-0 right-0 z-20 bg-white rounded-xl border border-border shadow-soft overflow-y-auto max-h-60">
                           {[
                             "Saiba mais",
                             "Comprar",
@@ -370,6 +370,12 @@ function Create() {
                             "Inscrever-se",
                             "Assistir",
                             "Orçamento",
+                            "Baixar",
+                            "Cadastrar",
+                            "Participar",
+                            "Acessar",
+                            "Doar",
+                            "Reservar",
                           ].map((name) => (
                             <button
                               key={name}
