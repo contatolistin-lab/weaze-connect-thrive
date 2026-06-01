@@ -116,6 +116,12 @@ function CommunitySignup({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  function saveB2CCommunity(name: string) {
+    try {
+      localStorage.setItem("weaze_b2c_community", JSON.stringify({ slug, name }));
+    } catch {}
+  }
+
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !password.trim()) return;
@@ -123,6 +129,7 @@ function CommunitySignup({
     setError("");
     auth.signup(name.trim(), email.trim(), password.trim());
     userType.setB2B(false);
+    saveB2CCommunity(community.name);
     setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
   };
 
@@ -134,6 +141,7 @@ function CommunitySignup({
     const ok = auth.login(email.trim(), password.trim());
     if (ok) {
       userType.setB2B(false);
+      saveB2CCommunity(community.name);
       setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
     } else {
       setError("Email ou senha inválidos.");

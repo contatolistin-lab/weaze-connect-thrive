@@ -2,12 +2,11 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, MessageSquare, Users, BarChart3, User, Plus } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 
-const items: { to: string; icon: typeof Home; label: string }[] = [
+const sharedItems: { to: string; icon: typeof Home; label: string }[] = [
   { to: "/feed", icon: Home, label: "Feed" },
   { to: "/conversas", icon: MessageSquare, label: "Conversas" },
   { to: "/groups", icon: Users, label: "Grupos" },
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
-  { to: "/profile", icon: User, label: "Perfil" },
 ];
 
 export function BottomNav() {
@@ -22,7 +21,7 @@ export function BottomNav() {
       style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
     >
       <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-5"}`}>
-        {items.slice(0, 3).map(({ to, icon: Icon, label }) => {
+        {sharedItems.slice(0, 3).map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));
           return (
             <li key={to}>
@@ -67,7 +66,7 @@ export function BottomNav() {
           </li>
         )}
 
-        {items.slice(3).map(({ to, icon: Icon, label }) => {
+        {sharedItems.slice(3).map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));
           return (
             <li key={to}>
@@ -91,6 +90,26 @@ export function BottomNav() {
             </li>
           );
         })}
+
+        <li>
+          <Link
+            to={isB2B ? "/profile" : "/b2c/profile"}
+            className="flex flex-col items-center justify-center gap-0.5 py-2 px-1"
+            aria-label="Perfil"
+          >
+            <User
+              size={20}
+              strokeWidth={path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 2.6 : 2}
+              style={{ color: "#d81e62", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
+            />
+            <span
+              className="text-[9px] font-semibold leading-tight"
+              style={{ color: "#d81e62", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
+            >
+              Perfil
+            </span>
+          </Link>
+        </li>
       </ul>
     </nav>
   );

@@ -31,6 +31,7 @@ import {
   type MockPostComment,
 } from "@/lib/mock-data";
 import { useWeaze } from "@/lib/weaze-context";
+import { useCommunity } from "@/lib/community-store";
 import { z } from "zod";
 
 const FeedSearchSchema = z.object({
@@ -44,11 +45,21 @@ export const Route = createFileRoute("/feed")({
 });
 
 function Feed() {
-  const { comunidade } = Route.useSearch();
+  const { comunidade: searchComunidade } = Route.useSearch();
+  const { userType } = useCommunity();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const allPosts = getAllPosts();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
 
+  let b2cSlug: string | undefined;
+  if (!userType.isB2B) {
+    try {
+      const raw = localStorage.getItem("weaze_b2c_community");
+      if (raw) b2cSlug = JSON.parse(raw).slug;
+    } catch {}
+  }
+
+  const comunidade = searchComunidade || b2cSlug;
   const filteredPosts = comunidade
     ? allPosts.filter((p) => slugify(p.community.name) === comunidade)
     : allPosts;
