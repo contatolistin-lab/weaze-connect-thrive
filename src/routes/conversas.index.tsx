@@ -69,7 +69,7 @@ function Conversas() {
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
   const all = getAllConversations();
 
-  const filtered = all.filter((c) => c.title.toLowerCase().includes(q.toLowerCase()));
+  const filtered = all.filter((c) => c.title.toLowerCase().includes(q.trim().toLowerCase()));
 
   const pinned = filtered.filter((c) => c.pinned);
   const list =
@@ -239,6 +239,8 @@ function CriarConversaButton({
 }
 
 function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
+  const tags = Array.isArray(conv.tags) ? conv.tags : [];
+
   return (
     <Link
       to="/conversas/$id"
@@ -277,7 +279,7 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
         </div>
       </div>
       <div className="mt-2 flex gap-1.5">
-        {conv.tags.slice(0, 3).map((t) => (
+        {tags.slice(0, 3).map((t) => (
           <span
             key={t}
             className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
