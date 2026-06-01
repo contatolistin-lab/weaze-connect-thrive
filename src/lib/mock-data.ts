@@ -1162,7 +1162,24 @@ export function getAllPosts(): MockPost[] {
 
 export const userConversations: MockConversation[] = [];
 
-function normalizeConversation(conv: Partial<MockConversation> & { id?: string }): MockConversation {
+function toRecord(value: unknown): Partial<MockConversation> & { id?: string } {
+  return value && typeof value === "object" ? (value as Partial<MockConversation> & { id?: string }) : {};
+}
+
+function toCount(value: unknown): number {
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function normalizeTags(value: unknown): string[] {
+  const items = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
+  return items
+    .map((tag) => (typeof tag === "string" ? tag.trim() : ""))
+    .filter(Boolean);
+}
+
+function normalizeConversation(input: unknown): MockConversation {
+  const conv = toRecord(input);
   const title = typeof conv.title === "string" && conv.title.trim() ? conv.title.trim() : "Nova conversa";
   const author = typeof conv.author === "string" && conv.author.trim() ? conv.author.trim() : "Você";
 
@@ -1176,19 +1193,19 @@ function normalizeConversation(conv: Partial<MockConversation> & { id?: string }
       typeof conv.authorAvatar === "string" && conv.authorAvatar.trim()
         ? conv.authorAvatar.trim().charAt(0).toUpperCase()
         : author.charAt(0).toUpperCase() || "V",
-    replies: Number.isFinite(conv.replies) ? Number(conv.replies) : 0,
-    likes: Number.isFinite(conv.likes) ? Number(conv.likes) : 0,
-    views: Number.isFinite(conv.views) ? Number(conv.views) : 0,
+    replies: toCount(conv.replies),
+    likes: toCount(conv.likes),
+    views: toCount(conv.views),
     pinned: Boolean(conv.pinned),
     trending: Boolean(conv.trending),
     createdAt: typeof conv.createdAt === "string" && conv.createdAt.trim() ? conv.createdAt : "agora",
     lastActivity:
       typeof conv.lastActivity === "string" && conv.lastActivity.trim() ? conv.lastActivity : "agora",
-    tags: Array.isArray(conv.tags) ? conv.tags.filter((tag): tag is string => typeof tag === "string") : [],
+    tags: normalizeTags(conv.tags),
   };
 }
 
-export function addUserConversation(conv: MockConversation) {
+export function addUserConversation(conv: Partial<MockConversation>) {
   userConversations.unshift(normalizeConversation(conv));
 }
 
