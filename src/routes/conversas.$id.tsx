@@ -25,6 +25,7 @@ import {
 } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/conversas/$id")({
+  head: () => ({ meta: [{ title: "Conversa — WEAZE" }] }),
   component: ConversationDetail,
 });
 
@@ -153,7 +154,7 @@ function ConversationDetail() {
             </div>
 
             <div className="mt-3 flex gap-1.5">
-              {conv.tags.map((t) => (
+              {(Array.isArray(conv.tags) ? conv.tags : []).map((t) => (
                 <span
                   key={t}
                   className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
