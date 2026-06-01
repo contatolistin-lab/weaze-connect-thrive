@@ -1,9 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, User, Mail, Camera } from "lucide-react";
+import { LogOut, User, Mail } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
-import { Avatar } from "@/components/weaze/Avatar";
-import { useState, useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/b2c/profile")({
   head: () => ({ meta: [{ title: "Meu Perfil — WEAZE" }] }),
@@ -12,55 +10,15 @@ export const Route = createFileRoute("/b2c/profile")({
 
 function B2CProfile() {
   const nav = useNavigate();
-  const { auth, userType, initialized } = useCommunity();
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const [avatar, setAvatar] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (initialized && userType.isB2B) {
-      nav({ to: "/profile" });
-    }
-  }, [initialized, userType.isB2B, nav]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("weaze_b2c_avatar");
-    if (saved) setAvatar(saved);
-  }, []);
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setAvatar(dataUrl);
-      localStorage.setItem("weaze_b2c_avatar", dataUrl);
-    };
-    reader.readAsDataURL(file);
-  };
+  const { auth, userType } = useCommunity();
 
   return (
     <AppShell title="Meu Perfil">
       <div className="px-4 pt-4 pb-24 space-y-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="relative shrink-0 group"
-          >
-            <Avatar name={auth.user?.name || "U"} size={64} src={avatar} />
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera size={20} className="text-white" />
-            </span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
+          <span className="shrink-0 h-16 w-16 rounded-full bg-brand-gradient grid place-items-center text-white text-xl font-extrabold">
+            {auth.user?.name?.charAt(0).toUpperCase() || "U"}
+          </span>
           <div className="flex-1 min-w-0">
             <h1 className="text-lg font-extrabold tracking-tight truncate">
               {auth.user?.name || "Usuário"}

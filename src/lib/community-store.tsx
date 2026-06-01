@@ -34,7 +34,6 @@ interface CommunityContextType {
   updateCommunity: (data: Partial<CommunityData>) => void;
   userType: UserTypeContext;
   auth: AuthContext;
-  initialized: boolean;
 }
 
 const defaultCommunity: CommunityData = {
@@ -80,29 +79,21 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   const [community, setCommunity] = useState<CommunityData>(defaultCommunity);
   const [isB2B, setB2BState] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem("weaze_community");
       if (saved) setCommunity(JSON.parse(saved));
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
     try {
       const saved = localStorage.getItem("weaze_user_b2b");
       if (saved) setB2BState(saved === "true");
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
     try {
       const session = getStoredSession();
       if (session) setUser(session);
-    } catch {
-      /* silent */
-    }
-    setInitialized(true);
+    } catch { /* silent */ }
   }, []);
 
   const updateCommunity = useCallback((data: Partial<CommunityData>) => {
@@ -131,9 +122,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     users[email] = { name, password };
     try {
       localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
-    } catch {
-      /* silent */
-    }
+    } catch { /* silent */ }
     const sessionUser: AuthUser = { name, email };
     storeSession(sessionUser);
     setUser(sessionUser);
@@ -164,7 +153,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, initialized }}>
+    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth }}>
       {children}
     </CommunityCtx.Provider>
   );

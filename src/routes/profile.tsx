@@ -12,15 +12,15 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { community, updateCommunity, userType, initialized } = useCommunity();
+  const { community, updateCommunity, userType } = useCommunity();
   const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (initialized && !userType.isB2B) {
+    if (!userType.isB2B) {
       nav({ to: "/b2c/profile" });
     }
-  }, [initialized, userType.isB2B, nav]);
+  }, [userType.isB2B]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
