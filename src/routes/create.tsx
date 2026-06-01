@@ -11,9 +11,10 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { WButton } from "@/components/weaze/WButton";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { addUserPost } from "@/lib/mock-data";
 import { toast } from "sonner";
+import { useCommunity } from "@/lib/community-store";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
@@ -26,7 +27,14 @@ type MediaTab = "upload" | "link";
 
 function Create() {
   const nav = useNavigate();
+  const { userType } = useCommunity();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!userType.isB2B) {
+      nav({ to: "/feed" });
+    }
+  }, []);
 
   const [mediaTab, setMediaTab] = useState<MediaTab>("upload");
   const [file, setFile] = useState<File | null>(null);

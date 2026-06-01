@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, MessageSquare, Users, BarChart3, User, Plus } from "lucide-react";
+import { useCommunity } from "@/lib/community-store";
 
 const items: { to: string; icon: typeof Home; label: string }[] = [
   { to: "/feed", icon: Home, label: "Feed" },
@@ -11,14 +12,16 @@ const items: { to: string; icon: typeof Home; label: string }[] = [
 
 export function BottomNav() {
   const { location } = useRouterState();
+  const { userType } = useCommunity();
   const path = location.pathname;
+  const isB2B = userType.isB2B;
 
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
       style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
     >
-      <ul className="mx-auto max-w-md grid grid-cols-6">
+      <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-5"}`}>
         {items.slice(0, 3).map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));
           return (
@@ -44,23 +47,25 @@ export function BottomNav() {
           );
         })}
 
-        <li>
-          <Link
-            to="/create"
-            className="flex flex-col items-center justify-center gap-0.5 py-2 px-1"
-            aria-label="Criar"
-          >
-            <span className="h-10 w-10 rounded-xl bg-brand-gradient text-white grid place-items-center shadow-brand -mt-2">
-              <Plus size={22} strokeWidth={3} />
-            </span>
-            <span
-              className="text-[9px] font-semibold leading-tight"
-              style={{ color: "#d81e62", opacity: 0.55 }}
+        {isB2B && (
+          <li>
+            <Link
+              to="/create"
+              className="flex flex-col items-center justify-center gap-0.5 py-2 px-1"
+              aria-label="Criar"
             >
-              Criar
-            </span>
-          </Link>
-        </li>
+              <span className="h-10 w-10 rounded-xl bg-brand-gradient text-white grid place-items-center shadow-brand -mt-2">
+                <Plus size={22} strokeWidth={3} />
+              </span>
+              <span
+                className="text-[9px] font-semibold leading-tight"
+                style={{ color: "#d81e62", opacity: 0.55 }}
+              >
+                Criar
+              </span>
+            </Link>
+          </li>
+        )}
 
         {items.slice(3).map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));

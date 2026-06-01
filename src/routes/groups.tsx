@@ -5,6 +5,7 @@ import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { getMyGroups, getGroupMembers, createGroup } from "@/lib/mock-data";
 import { GroupImage } from "@/lib/group-utils";
+import { useCommunity } from "@/lib/community-store";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/groups")({
 function Groups() {
   const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { userType } = useCommunity();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (pathname !== "/groups") {
@@ -130,11 +132,13 @@ function Groups() {
           <p className="text-xs font-bold tracking-widest uppercase opacity-80">Seus grupos</p>
           <h2 className="mt-1 text-2xl font-extrabold">{myGroups.length} ativos</h2>
           <p className="text-sm opacity-90">Grupos privados que você participa</p>
-          <div className="mt-3">
-            <WButton variant="white" size="sm" onClick={() => setModalOpen(true)}>
-              <Plus size={14} /> Criar grupo
-            </WButton>
-          </div>
+          {userType.isB2B && (
+            <div className="mt-3">
+              <WButton variant="white" size="sm" onClick={() => setModalOpen(true)}>
+                <Plus size={14} /> Criar grupo
+              </WButton>
+            </div>
+          )}
         </div>
 
         {myGroups.length === 0 ? (
@@ -142,7 +146,9 @@ function Groups() {
             <Users size={40} className="mx-auto mb-3 opacity-40" />
             <p className="text-sm font-semibold">Você ainda não participa de nenhum grupo.</p>
             <p className="text-xs mt-1">
-              Crie um grupo privado ou aceite um convite para participar.
+              {userType.isB2B
+                ? "Crie um grupo privado ou aceite um convite para participar."
+                : "Aceite um convite para participar de um grupo."}
             </p>
           </div>
         ) : (
