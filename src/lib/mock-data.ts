@@ -934,6 +934,121 @@ export const topActive: MockRankingUser[] = [
   { id: "u10", name: "Gabriel Martins", avatar: "G", score: 650, badge: "🏆 Campeão" },
 ];
 
+import type { UserActivity } from "./engagement-engine";
+
+export const mockUserActivity: UserActivity[] = [
+  {
+    id: "u1",
+    name: "Ana Beatriz",
+    avatar: "A",
+    likesReceived: 1200,
+    commentsMade: 250,
+    sharesReceived: 120,
+    postsCount: 85,
+    weeklyGrowth: 15,
+    engagementRate: 12.5,
+  },
+  {
+    id: "u2",
+    name: "Rafael Costa",
+    avatar: "R",
+    likesReceived: 850,
+    commentsMade: 180,
+    sharesReceived: 90,
+    postsCount: 60,
+    weeklyGrowth: 22,
+    engagementRate: 9.8,
+  },
+  {
+    id: "u3",
+    name: "Júlia Lima",
+    avatar: "J",
+    likesReceived: 720,
+    commentsMade: 160,
+    sharesReceived: 75,
+    postsCount: 55,
+    weeklyGrowth: 18,
+    engagementRate: 11.2,
+  },
+  {
+    id: "u4",
+    name: "Pedro Santos",
+    avatar: "P",
+    likesReceived: 600,
+    commentsMade: 140,
+    sharesReceived: 60,
+    postsCount: 45,
+    weeklyGrowth: 25,
+    engagementRate: 8.5,
+  },
+  {
+    id: "u5",
+    name: "Carla Dias",
+    avatar: "C",
+    likesReceived: 500,
+    commentsMade: 120,
+    sharesReceived: 50,
+    postsCount: 40,
+    weeklyGrowth: 12,
+    engagementRate: 10.3,
+  },
+  {
+    id: "u6",
+    name: "Lucas Oliveira",
+    avatar: "L",
+    likesReceived: 420,
+    commentsMade: 100,
+    sharesReceived: 45,
+    postsCount: 35,
+    weeklyGrowth: 30,
+    engagementRate: 7.8,
+  },
+  {
+    id: "u7",
+    name: "Fernanda Souza",
+    avatar: "F",
+    likesReceived: 350,
+    commentsMade: 85,
+    sharesReceived: 35,
+    postsCount: 30,
+    weeklyGrowth: 10,
+    engagementRate: 9.1,
+  },
+  {
+    id: "u8",
+    name: "Marcos Paulo",
+    avatar: "M",
+    likesReceived: 300,
+    commentsMade: 70,
+    sharesReceived: 30,
+    postsCount: 25,
+    weeklyGrowth: 8,
+    engagementRate: 6.5,
+  },
+  {
+    id: "u9",
+    name: "Beatriz Rocha",
+    avatar: "B",
+    likesReceived: 250,
+    commentsMade: 60,
+    sharesReceived: 25,
+    postsCount: 20,
+    weeklyGrowth: 14,
+    engagementRate: 7.2,
+  },
+  {
+    id: "u10",
+    name: "Gabriel Martins",
+    avatar: "G",
+    likesReceived: 200,
+    commentsMade: 50,
+    sharesReceived: 20,
+    postsCount: 18,
+    weeklyGrowth: 5,
+    engagementRate: 8.0,
+  },
+];
+
 export interface MockPostComment {
   id: string;
   postId: string;
@@ -1141,9 +1256,16 @@ const STORAGE_KEY = "weaze_groups_persist";
 function persistGroups() {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      groups, groupMembers, groupMessages, userGroupIds, groupInviteCodes,
-    }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        groups,
+        groupMembers,
+        groupMessages,
+        userGroupIds,
+        groupInviteCodes,
+      }),
+    );
   } catch {}
 }
 
@@ -1153,10 +1275,14 @@ function restoreGroups() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const saved = JSON.parse(raw);
-    groups.length = 0; groups.push(...saved.groups);
-    groupMembers.length = 0; groupMembers.push(...saved.groupMembers);
-    groupMessages.length = 0; groupMessages.push(...saved.groupMessages);
-    userGroupIds.length = 0; userGroupIds.push(...saved.userGroupIds);
+    groups.length = 0;
+    groups.push(...saved.groups);
+    groupMembers.length = 0;
+    groupMembers.push(...saved.groupMembers);
+    groupMessages.length = 0;
+    groupMessages.push(...saved.groupMessages);
+    userGroupIds.length = 0;
+    userGroupIds.push(...saved.userGroupIds);
     Object.keys(groupInviteCodes).forEach((k) => delete groupInviteCodes[k]);
     Object.assign(groupInviteCodes, saved.groupInviteCodes);
   } catch {}

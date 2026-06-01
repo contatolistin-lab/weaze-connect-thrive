@@ -13,8 +13,11 @@ import {
   Flame,
 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
-import { metricsOverview, topActive } from "@/lib/mock-data";
+import { metricsOverview, mockUserActivity } from "@/lib/mock-data";
+import { computeRanking } from "@/lib/engagement-engine";
 import { useWeaze } from "@/lib/weaze-context";
+
+const ranking = computeRanking(mockUserActivity);
 
 export const Route = createFileRoute("/metricas")({
   head: () => ({ meta: [{ title: "Métricas — WEAZE" }] }),
@@ -36,6 +39,8 @@ const badgeIcons: Record<string, typeof Trophy> = {
   "💬 Conversador": MessageSquare,
   "👑 Rainha": Crown,
   "🏆 Campeão": Trophy,
+  "⚡ Raio": Zap,
+  "💚 Coração": Heart,
 };
 
 const baseMetrics = metricsOverview;
@@ -93,7 +98,7 @@ function Metricas() {
           </div>
 
           <div className="mt-4 space-y-2">
-            {topActive.map((u, i) => {
+            {ranking.map((u, i) => {
               const BadgeIcon = badgeIcons[u.badge] || Award;
               return (
                 <div
