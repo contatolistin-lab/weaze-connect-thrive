@@ -3,18 +3,29 @@ import { useState } from "react";
 import { ArrowRight, Home, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { WButton } from "@/components/weaze/WButton";
 import { useCommunity } from "@/lib/community-store";
+import { z } from "zod";
+import { communities } from "@/lib/mock-data";
+
+const CSearchSchema = z.object({
+  name: z.string().optional(),
+  desc: z.string().optional(),
+});
 
 export const Route = createFileRoute("/c/$slug")({
+  validateSearch: CSearchSchema,
   head: () => ({ meta: [{ title: "Comunidade — WEAZE" }] }),
   component: CommunityEntry,
 });
 
 function CommunityEntry() {
   const { slug } = Route.useParams();
+  const search = Route.useSearch();
   const nav = useNavigate();
   const { auth, userType } = useCommunity();
 
   let community: { name: string; description: string } | null = null;
+
+  // 1. Try localStorage (same browser that created the invite)
   try {
     if (typeof window !== "undefined") {
       const raw = localStorage.getItem("weaze_community_invites");
@@ -24,6 +35,21 @@ function CommunityEntry() {
       }
     }
   } catch {}
+
+  // 2. Fallback to URL query params (cross-device share links)
+  if (!community && search.name) {
+    community = { name: search.name, description: search.desc || "" };
+  }
+
+  // 3. Fallback to mock communities by slug
+  if (!community) {
+    const match = communities.find(
+      (c) => c.name.toLowerCase().replace(/\s+/g, "-") === slug,
+    );
+    if (match) {
+      community = { name: match.name, description: match.description };
+    }
+  }
 
   if (!community) {
     return (

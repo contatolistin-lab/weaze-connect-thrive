@@ -50,7 +50,7 @@ function Profile() {
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
-  const communityLink = `${origin}/c/${communitySlug}`;
+  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name)}&desc=${encodeURIComponent(community.description)}`;
 
   useEffect(() => {
     try {
