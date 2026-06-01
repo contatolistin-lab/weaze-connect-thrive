@@ -6,6 +6,9 @@ const sharedItems: { to: string; icon: typeof Home; label: string }[] = [
   { to: "/feed", icon: Home, label: "Feed" },
   { to: "/conversas", icon: MessageSquare, label: "Conversas" },
   { to: "/groups", icon: Users, label: "Grupos" },
+];
+
+const b2bItems: { to: string; icon: typeof Home; label: string }[] = [
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
 ];
 
@@ -20,8 +23,8 @@ export function BottomNav() {
       className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
       style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
     >
-      <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-5"}`}>
-        {sharedItems.slice(0, 3).map(({ to, icon: Icon, label }) => {
+      <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-4"}`}>
+        {sharedItems.map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));
           return (
             <li key={to}>
@@ -66,8 +69,8 @@ export function BottomNav() {
           </li>
         )}
 
-        {sharedItems.slice(3).map(({ to, icon: Icon, label }) => {
-          const active = path === to || (to !== "/feed" && path.startsWith(to));
+        {isB2B && b2bItems.map(({ to, icon: Icon, label }) => {
+          const active = path === to || path.startsWith(to);
           return (
             <li key={to}>
               <Link
