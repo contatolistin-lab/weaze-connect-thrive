@@ -15,6 +15,7 @@ import {
   X,
   Send,
   Check,
+  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
@@ -30,29 +31,49 @@ import {
   type MockPostComment,
 } from "@/lib/mock-data";
 import { useWeaze } from "@/lib/weaze-context";
+import { z } from "zod";
+
+const FeedSearchSchema = z.object({
+  comunidade: z.string().optional(),
+});
 
 export const Route = createFileRoute("/feed")({
+  validateSearch: FeedSearchSchema,
   head: () => ({ meta: [{ title: "Feed — WEAZE" }] }),
   component: Feed,
 });
 
 function Feed() {
+  const { comunidade } = Route.useSearch();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const allPosts = getAllPosts();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+
+  const filteredPosts = comunidade
+    ? allPosts.filter((p) => slugify(p.community.name) === comunidade)
+    : allPosts;
 
   return (
     <div className="min-h-dvh bg-black">
       <div className="mx-auto max-w-md min-h-dvh relative bg-black">
         <header className="absolute top-0 inset-x-0 z-30 pt-3 px-4 safe-pt">
           <div className="flex items-center justify-between">
-            <WeazeLogo size="sm" />
+            {comunidade ? (
+              <Link
+                to="/"
+                className="h-9 w-9 grid place-items-center rounded-full hover:bg-white/10 text-white"
+              >
+                <ArrowLeft size={20} />
+              </Link>
+            ) : (
+              <WeazeLogo size="sm" />
+            )}
             <FeedBell />
           </div>
         </header>
 
         <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide">
-          {allPosts.map((p) => (
+          {filteredPosts.map((p) => (
             <PostCard
               key={p.id}
               post={p}
@@ -60,9 +81,9 @@ function Feed() {
               onCommentClick={() => setCommentPostId(p.id)}
             />
           ))}
-          {allPosts.length === 0 && (
+          {filteredPosts.length === 0 && (
             <div className="h-dvh grid place-items-center text-white/50 text-sm">
-              Nenhuma postagem ainda.
+              Nenhuma postagem dessa comunidade ainda.
             </div>
           )}
         </div>
@@ -79,6 +100,10 @@ function Feed() {
       )}
     </div>
   );
+}
+
+function slugify(name: string) {
+  return name.toLowerCase().replace(/\s+/g, "-");
 }
 
 function FeedBell() {

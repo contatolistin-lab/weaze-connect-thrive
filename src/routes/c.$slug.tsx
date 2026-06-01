@@ -12,7 +12,7 @@ export const Route = createFileRoute("/c/$slug")({
 function CommunityEntry() {
   const { slug } = Route.useParams();
   const nav = useNavigate();
-  const { auth } = useCommunity();
+  const { auth, userType } = useCommunity();
 
   let community: { name: string; description: string } | null = null;
   try {
@@ -65,7 +65,7 @@ function CommunityEntry() {
           </p>
         </div>
 
-        <WButton variant="gradient" fullWidth onClick={() => nav({ to: "/feed" })}>
+        <WButton variant="gradient" fullWidth onClick={() => nav({ to: "/feed", search: { comunidade: slug } })}>
           <ArrowRight size={18} /> Ir para o Feed
         </WButton>
       </div>
@@ -81,7 +81,7 @@ function CommunitySignup({
   slug: string;
 }) {
   const nav = useNavigate();
-  const { auth } = useCommunity();
+  const { auth, userType } = useCommunity();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,7 +96,8 @@ function CommunitySignup({
     setLoading(true);
     setError("");
     auth.signup(name.trim(), email.trim(), password.trim());
-    setTimeout(() => nav({ to: "/feed" }), 400);
+    userType.setB2B(false);
+    setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -106,7 +107,8 @@ function CommunitySignup({
     setError("");
     const ok = auth.login(email.trim(), password.trim());
     if (ok) {
-      setTimeout(() => nav({ to: "/feed" }), 400);
+      userType.setB2B(false);
+      setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
     } else {
       setError("Email ou senha inválidos.");
       setLoading(false);
