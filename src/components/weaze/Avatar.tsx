@@ -26,7 +26,7 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
     : {};
   const inner = (
     <span
-      className="inline-flex items-center justify-center rounded-full overflow-hidden"
+      className="relative inline-flex items-center justify-center rounded-full overflow-hidden"
       style={{
         width: size,
         height: size,
@@ -34,7 +34,7 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
       }}
     >
       {src ? (
-        <img src={src} alt={name} className="h-full w-full object-cover" />
+        <img src={src} alt={name} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <span className="text-white font-bold" style={{ fontSize: size * 0.38 }}>
           {initials}
