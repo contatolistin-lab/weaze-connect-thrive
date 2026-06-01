@@ -276,15 +276,15 @@ function ConversationDetail() {
                         </button>
                       </div>
 
-                      {c.replies.length > 0 && (
+                      {safeReplies(c.replies).length > 0 && (
                         <div className="mt-3 ml-4 pl-3 border-l-2 border-border space-y-2">
-                          {c.replies.map((r, i) => {
+                          {safeReplies(c.replies).map((r, i) => {
                             const rKey = c.id + "-" + i;
                             const rLiked = likedReplies[rKey];
                             return (
                               <div key={i} className="text-sm">
-                                <span className="font-semibold">{r.author}</span>
-                                <span className="text-foreground/80"> {r.text}</span>
+                                <span className="font-semibold">{safeText(r.author, "Você")}</span>
+                                <span className="text-foreground/80"> {safeText(r.text)}</span>
                                 <div className="mt-1 flex items-center gap-2">
                                   <button
                                     onClick={() =>
@@ -298,10 +298,10 @@ function ConversationDetail() {
                                     }`}
                                   >
                                     <Heart size={10} fill={rLiked ? "#d81e62" : "none"} />{" "}
-                                    {r.likes + (rLiked ? 1 : 0)}
+                                    {(Number.isFinite(r.likes) ? r.likes : 0) + (rLiked ? 1 : 0)}
                                   </button>
                                   <span className="text-[10px] text-foreground/40">
-                                    {r.createdAt}
+                                    {safeText(r.createdAt, "agora")}
                                   </span>
                                 </div>
                               </div>
