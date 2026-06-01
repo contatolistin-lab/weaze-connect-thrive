@@ -31,6 +31,14 @@ export const Route = createFileRoute("/conversas/$id")({
 
 const CURRENT_USER = "Você";
 
+function safeText(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function safeReplies<T>(value: T[] | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function ConversationDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
@@ -93,6 +101,7 @@ function ConversationDetail() {
     if (!text) return;
     const c = comments.find((cm) => cm.id === commentId);
     if (c) {
+      c.replies = safeReplies(c.replies);
       c.replies.push({ author: CURRENT_USER, text, createdAt: "agora", likes: 0 });
     }
     setReplyContent("");
@@ -129,16 +138,16 @@ function ConversationDetail() {
 
         <div className="flex-1 overflow-y-auto">
           <div className="px-4 pt-4 pb-2 border-b border-border">
-            <h1 className="text-xl font-extrabold tracking-tight leading-snug">{conv.title}</h1>
-            <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{conv.description}</p>
+            <h1 className="text-xl font-extrabold tracking-tight leading-snug">{safeText(conv.title, "Nova conversa")}</h1>
+            <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{safeText(conv.description)}</p>
 
             <div className="mt-3 flex items-center gap-3 text-xs text-foreground/60">
               <span className="h-6 w-6 rounded-full bg-brand-gradient text-white grid place-items-center text-[10px] font-bold">
-                {conv.authorAvatar}
+                {safeText(conv.authorAvatar, safeText(conv.author, "Você").charAt(0).toUpperCase() || "V")}
               </span>
-              <span className="font-semibold text-foreground/80">{conv.author}</span>
+              <span className="font-semibold text-foreground/80">{safeText(conv.author, "Você")}</span>
               <span>·</span>
-              <span>{conv.createdAt}</span>
+              <span>{safeText(conv.createdAt, "agora")}</span>
             </div>
 
             <div className="mt-3 flex items-center gap-4 text-xs text-foreground/60">
