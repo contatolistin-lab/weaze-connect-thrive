@@ -24,7 +24,7 @@ function Login() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    userType.setB2B(false);
+    userType.setB2B(true);
     setTimeout(() => nav({ to: "/feed" }), 700);
   };
 

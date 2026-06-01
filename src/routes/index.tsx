@@ -54,7 +54,7 @@ function LandingPage() {
             </a>
           </nav>
           <div className="flex items-center gap-2">
-            <Link to="/b2b/login">
+            <Link to="/login">
               <WButton variant="ghost" size="sm">
                 Entrar
               </WButton>
