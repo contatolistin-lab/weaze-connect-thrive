@@ -26,21 +26,26 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
     : {};
   const inner = (
     <span
-      className="inline-flex items-center justify-center rounded-full text-white font-bold overflow-hidden bg-muted"
+      className="flex items-center justify-center rounded-full overflow-hidden"
       style={{
         width: size,
         height: size,
         background: src ? undefined : bg,
-        fontSize: size * 0.38,
       }}
     >
-      {src ? <img src={src} alt={name} className="h-full w-full object-cover" /> : initials}
+      {src ? (
+        <img src={src} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        <span className="text-white font-bold" style={{ fontSize: size * 0.38 }}>
+          {initials}
+        </span>
+      )}
     </span>
   );
   if (ring)
     return (
-      <span style={wrapperStyle} className="inline-flex">
-        <span className="block bg-white rounded-full p-[2px]">{inner}</span>
+      <span style={wrapperStyle} className="inline-flex shrink-0">
+        <span className="block bg-white rounded-full p-[2px] shrink-0">{inner}</span>
       </span>
     );
   return inner;
