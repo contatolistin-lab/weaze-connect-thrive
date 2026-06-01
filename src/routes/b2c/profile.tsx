@@ -12,10 +12,16 @@ export const Route = createFileRoute("/b2c/profile")({
 
 function B2CProfile() {
   const nav = useNavigate();
-  const { auth, userType } = useCommunity();
+  const { auth, userType, initialized } = useCommunity();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [avatar, setAvatar] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (initialized && userType.isB2B) {
+      nav({ to: "/profile" });
+    }
+  }, [initialized, userType.isB2B, nav]);
 
   useEffect(() => {
     const saved = localStorage.getItem("weaze_b2c_avatar");

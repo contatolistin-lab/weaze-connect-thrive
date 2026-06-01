@@ -25,12 +25,6 @@ function Groups() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { userType } = useCommunity();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (pathname !== "/groups") {
-    return <Outlet />;
-  }
-
-  const myGroups = getMyGroups();
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", image: "" });
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -43,6 +37,12 @@ function Groups() {
   const [copied, setCopied] = useState(false);
   const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "invite">("form");
+
+  if (pathname !== "/groups") {
+    return <Outlet />;
+  }
+
+  const myGroups = getMyGroups();
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,7 +90,9 @@ function Groups() {
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
-      } catch {}
+      } catch {
+        /* empty */
+      }
     } else {
       handleCopyLink();
     }
