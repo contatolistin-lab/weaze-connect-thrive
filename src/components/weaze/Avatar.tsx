@@ -26,7 +26,7 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
     : {};
   const inner = (
     <span
-      className="flex items-center justify-center rounded-full overflow-hidden"
+      className="inline-flex items-center justify-center rounded-full overflow-hidden"
       style={{
         width: size,
         height: size,
