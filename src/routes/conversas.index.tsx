@@ -246,11 +246,17 @@ function CriarConversaButton({
 
 function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
   const tags = Array.isArray(conv.tags) ? conv.tags : [];
+  const id = safeText(conv.id, `ucv_${Date.now()}`);
+  const title = safeText(conv.title, "Nova conversa");
+  const description = safeText(conv.description);
+  const author = safeText(conv.author, "Você");
+  const authorAvatar = safeText(conv.authorAvatar, author.charAt(0).toUpperCase() || "V");
+  const createdAt = safeText(conv.createdAt, "agora");
 
   return (
     <Link
       to="/conversas/$id"
-      params={{ id: conv.id }}
+      params={{ id }}
       className="block rounded-2xl bg-white border border-border p-4 shadow-soft hover:shadow-brand transition-shadow"
     >
       <div className="flex items-start justify-between gap-3">
@@ -259,18 +265,18 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
             {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
             {conv.trending && <Sparkles size={12} className="text-amber-500" />}
           </div>
-          <h3 className="mt-1 font-bold text-sm leading-snug">{conv.title}</h3>
-          <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{conv.description}</p>
+          <h3 className="mt-1 font-bold text-sm leading-snug">{title}</h3>
+          <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{description}</p>
         </div>
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-foreground/60">
         <div className="flex items-center gap-1">
           <span className="h-5 w-5 rounded-full bg-brand-gradient text-white grid place-items-center text-[9px] font-bold">
-            {conv.authorAvatar}
+            {authorAvatar}
           </span>
-          <span>{conv.author}</span>
+          <span>{author}</span>
           <span className="text-foreground/40">·</span>
-          <span>{conv.createdAt}</span>
+          <span>{createdAt}</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1">
