@@ -1,9 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, User, Mail, ArrowLeft } from "lucide-react";
-import { WButton } from "@/components/weaze/WButton";
+import { LogOut, User, Mail } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
-import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/b2c/profile")({
   head: () => ({ meta: [{ title: "Meu Perfil — WEAZE" }] }),
@@ -13,10 +11,6 @@ export const Route = createFileRoute("/b2c/profile")({
 function B2CProfile() {
   const nav = useNavigate();
   const { auth, userType } = useCommunity();
-  const [ready, setReady] = useState(false);
-  useEffect(() => { setReady(true); }, []);
-
-  if (!ready) return null;
 
   return (
     <AppShell title="Meu Perfil">

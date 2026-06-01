@@ -16,14 +16,11 @@ function Profile() {
   const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [ready, setReady] = useState(false);
-  useEffect(() => { setReady(true); }, []);
-
-  if (!ready) return null;
-  if (!userType.isB2B) {
-    nav({ to: "/b2c/profile" });
-    return null;
-  }
+  useEffect(() => {
+    if (!userType.isB2B) {
+      nav({ to: "/b2c/profile" });
+    }
+  }, [userType.isB2B]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
