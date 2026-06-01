@@ -13,6 +13,9 @@ import {
 import { WButton } from "@/components/weaze/WButton";
 import { useState, useRef } from "react";
 import { addUserPost } from "@/lib/mock-data";
+import { toast } from "sonner";
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 export const Route = createFileRoute("/create")({
   head: () => ({ meta: [{ title: "Criar postagem — WEAZE" }] }),
@@ -45,6 +48,11 @@ function Create() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (f.size > MAX_FILE_SIZE) {
+      toast.error(`Arquivo muito grande. Máximo permitido: ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)} MB`);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
     setFile(f);
     setFilePreview(URL.createObjectURL(f));
     setFileType(f.type.startsWith("video/") ? "video" : "image");

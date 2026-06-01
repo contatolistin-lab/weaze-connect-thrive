@@ -10,6 +10,7 @@ import {
 
 import { WeazeProvider } from "@/lib/weaze-context";
 import { CommunityProvider } from "@/lib/community-store";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -111,6 +112,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster />
         <Scripts />
       </body>
     </html>

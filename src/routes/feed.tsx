@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useReducer } from "react";
+import { useState, useReducer, useRef, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -108,8 +108,20 @@ function PostCard({
   onCommentClick: () => void;
 }) {
   const [liked, setLiked] = useState(false);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (playing) {
+      el.play().catch(() => setPlaying(false));
+    } else {
+      el.pause();
+    }
+  }, [playing]);
+
   const [editOpen, setEditOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [shared, setShared] = useState(false);
@@ -119,14 +131,15 @@ function PostCard({
   return (
     <article
       className={`snap-start-always relative h-dvh w-full ${!hasRealMedia ? `bg-gradient-to-br ${post.mediaColor}` : "bg-black"}`}
-      onClick={() => setPlaying((p) => !p)}
     >
       {hasRealMedia ? (
         post.mediaType === "video" ? (
           <video
+            ref={videoRef}
             src={post.mediaUrl}
             className="absolute inset-0 h-full w-full object-cover"
             loop
+            muted
             playsInline
             onClick={(e) => {
               e.stopPropagation();
@@ -144,7 +157,13 @@ function PostCard({
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
 
       {!playing && hasRealMedia && (
-        <div className="absolute inset-0 grid place-items-center">
+        <div
+          className="absolute inset-0 grid place-items-center z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            setPlaying(true);
+          }}
+        >
           <span className="h-20 w-20 grid place-items-center rounded-full bg-white/20 backdrop-blur">
             <Play size={32} className="text-white" />
           </span>
