@@ -56,11 +56,15 @@ export const Route = createFileRoute("/conversas/")({
 
 
 function isWithin24h(createdAt: string) {
-  const v = createdAt.trim().toLowerCase();
+  const v = String(createdAt || "").trim().toLowerCase();
   if (v === "agora") return true;
   // formatos curtos tipo "2m", "15m", "1h", "23h", "30s"
   if (/^\d+\s*(s|m|min|h|hora|horas|minutos?|segundos?)$/.test(v)) return true;
   return false;
+}
+
+function safeText(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
 }
 
 function Conversas() {
@@ -69,7 +73,8 @@ function Conversas() {
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
   const all = getAllConversations();
 
-  const filtered = all.filter((c) => c.title.toLowerCase().includes(q.trim().toLowerCase()));
+  const query = q.trim().toLowerCase();
+  const filtered = all.filter((c) => safeText(c.title).toLowerCase().includes(query));
 
   const pinned = filtered.filter((c) => c.pinned);
   const list =
@@ -91,8 +96,9 @@ function Conversas() {
 
         <CriarConversaButton
           onCriar={(dados) => {
-            const id = "ucv_" + Date.now();
             const title = dados.title.trim();
+            if (!title) return;
+            const id = `ucv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
             addUserConversation({
               id,
               title,
