@@ -1162,12 +1162,38 @@ export function getAllPosts(): MockPost[] {
 
 export const userConversations: MockConversation[] = [];
 
+function normalizeConversation(conv: Partial<MockConversation> & { id?: string }): MockConversation {
+  const title = typeof conv.title === "string" && conv.title.trim() ? conv.title.trim() : "Nova conversa";
+  const author = typeof conv.author === "string" && conv.author.trim() ? conv.author.trim() : "Você";
+
+  return {
+    id: typeof conv.id === "string" && conv.id.trim() ? conv.id : "ucv_" + Date.now(),
+    title,
+    description: typeof conv.description === "string" ? conv.description : "",
+    category: typeof conv.category === "string" && conv.category.trim() ? conv.category : "Geral",
+    author,
+    authorAvatar:
+      typeof conv.authorAvatar === "string" && conv.authorAvatar.trim()
+        ? conv.authorAvatar.trim().charAt(0).toUpperCase()
+        : author.charAt(0).toUpperCase() || "V",
+    replies: Number.isFinite(conv.replies) ? Number(conv.replies) : 0,
+    likes: Number.isFinite(conv.likes) ? Number(conv.likes) : 0,
+    views: Number.isFinite(conv.views) ? Number(conv.views) : 0,
+    pinned: Boolean(conv.pinned),
+    trending: Boolean(conv.trending),
+    createdAt: typeof conv.createdAt === "string" && conv.createdAt.trim() ? conv.createdAt : "agora",
+    lastActivity:
+      typeof conv.lastActivity === "string" && conv.lastActivity.trim() ? conv.lastActivity : "agora",
+    tags: Array.isArray(conv.tags) ? conv.tags.filter((tag): tag is string => typeof tag === "string") : [],
+  };
+}
+
 export function addUserConversation(conv: MockConversation) {
-  userConversations.unshift(conv);
+  userConversations.unshift(normalizeConversation(conv));
 }
 
 export function getAllConversations(): MockConversation[] {
-  return [...userConversations, ...conversations];
+  return [...userConversations, ...conversations].map(normalizeConversation);
 }
 
 export function deleteConversation(id: string) {
@@ -1219,7 +1245,8 @@ export function getConversationComments(conversationId: string): MockConversatio
 }
 
 export function getConversation(id: string): MockConversation | undefined {
-  return [...userConversations, ...conversations].find((c) => c.id === id);
+  const conversation = [...userConversations, ...conversations].find((c) => c.id === id);
+  return conversation ? normalizeConversation(conversation) : undefined;
 }
 
 export function likeConversation(id: string) {
