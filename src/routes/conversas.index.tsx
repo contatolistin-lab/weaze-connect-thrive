@@ -14,7 +14,7 @@ import {
 import { AppShell } from "@/components/weaze/AppShell";
 import { getAllConversations, addUserConversation } from "@/lib/mock-data";
 
-function ConversasError({ reset }: { reset: () => void }) {
+function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
 
   return (
@@ -24,6 +24,11 @@ function ConversasError({ reset }: { reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Não foi possível abrir as conversas. Tente novamente ou volte para o feed.
         </p>
+        <pre className="mt-4 mx-auto max-w-xs overflow-auto rounded-xl bg-red-50 p-3 text-left text-[11px] text-red-700 border border-red-200">
+          {error.message}
+          {"\n"}
+          {error.stack?.split("\n").slice(0, 3).join("\n")}
+        </pre>
         <div className="mt-6 flex justify-center gap-2">
           <button
             type="button"
@@ -50,7 +55,7 @@ function ConversasError({ reset }: { reset: () => void }) {
 export const Route = createFileRoute("/conversas/")({
   head: () => ({ meta: [{ title: "Conversas — WEAZE" }] }),
   component: Conversas,
-  errorComponent: ({ reset }) => <ConversasError reset={reset} />,
+  errorComponent: ({ error, reset }) => <ConversasError error={error} reset={reset} />,
 });
 
 
