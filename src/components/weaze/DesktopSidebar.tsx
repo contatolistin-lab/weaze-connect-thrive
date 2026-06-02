@@ -18,6 +18,7 @@ const HIDDEN_PATHS = ["/", "/login", "/signup", "/b2b/login", "/b2b/signup"];
 export function shouldShowDesktopShell(path: string) {
   if (HIDDEN_PATHS.includes(path)) return false;
   if (path.startsWith("/groups/invite/")) return false;
+  if (path.startsWith("/c/")) return false;
   return true;
 }
 
