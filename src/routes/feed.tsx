@@ -535,7 +535,7 @@ function CommentsModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3">
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 scrollbar-brand">
           {comments.length === 0 && (
             <p className="text-sm text-foreground/50 text-center py-8">Nenhum comentário ainda.</p>
           )}
