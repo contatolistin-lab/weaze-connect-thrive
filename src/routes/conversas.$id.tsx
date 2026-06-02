@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState, useEffect, useReducer } from "react";
 import {
   ArrowLeft,
@@ -24,9 +24,36 @@ import {
   viewConversation,
 } from "@/lib/mock-data";
 
+function ConversationDetailError({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
+      <div className="max-w-sm space-y-3">
+        <h1 className="text-xl font-extrabold">Esta conversa não carregou</h1>
+        <p className="text-sm text-foreground/60">Tente novamente ou volte para a lista de conversas.</p>
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={() => { router.invalidate(); reset(); }}
+            className="h-10 px-4 rounded-xl bg-brand-gradient text-white text-sm font-bold shadow-brand"
+          >
+            Tentar novamente
+          </button>
+          <button
+            onClick={() => router.history.push("/conversas")}
+            className="h-10 px-4 rounded-xl border border-border bg-white text-sm font-bold"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/conversas/$id")({
   head: () => ({ meta: [{ title: "Conversa — WEAZE" }] }),
   component: ConversationDetail,
+  errorComponent: ConversationDetailError,
 });
 
 const CURRENT_USER = "Você";
@@ -99,11 +126,19 @@ function ConversationDetail() {
   const handleReply = (commentId: string) => {
     const text = replyContent.trim();
     if (!text) return;
-    const c = comments.find((cm) => cm.id === commentId);
-    if (c) {
-      c.replies = safeReplies(c.replies);
-      c.replies.push({ author: CURRENT_USER, text, createdAt: "agora", likes: 0 });
-    }
+    setComments((prev) =>
+      prev.map((cm) =>
+        cm.id === commentId
+          ? {
+              ...cm,
+              replies: [
+                ...safeReplies(cm.replies),
+                { author: CURRENT_USER, text, createdAt: "agora", likes: 0 },
+              ],
+            }
+          : cm,
+      ),
+    );
     setReplyContent("");
     setReplyingTo(null);
     refresh();
@@ -163,9 +198,9 @@ function ConversationDetail() {
             </div>
 
             <div className="mt-3 flex gap-1.5">
-              {(Array.isArray(conv.tags) ? conv.tags : []).map((t) => (
+              {(Array.isArray(conv.tags) ? conv.tags : []).map((t, i) => (
                 <span
-                  key={t}
+                  key={t + i}
                   className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
                 >
                   #{t}
@@ -282,7 +317,7 @@ function ConversationDetail() {
                             const rKey = c.id + "-" + i;
                             const rLiked = likedReplies[rKey];
                             return (
-                              <div key={i} className="text-sm">
+                              <div key={rKey} className="text-sm">
                                 <span className="font-semibold">{safeText(r.author, "Você")}</span>
                                 <span className="text-foreground/80"> {safeText(r.text)}</span>
                                 <div className="mt-1 flex items-center gap-2">
@@ -353,22 +388,34 @@ function ConversationDetail() {
         </div>
 
         <div className="sticky bottom-0 bg-white border-t border-border px-4 py-3 safe-pb">
-          <div className="flex items-center gap-2">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Escreva um comentário..."
-              className="flex-1 h-11 rounded-2xl bg-muted px-4 text-sm outline-none"
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="h-11 w-11 rounded-2xl bg-brand-gradient text-white grid place-items-center shadow-pink disabled:opacity-50"
-            >
-              <Send size={18} />
-            </button>
-          </div>
+          {editingId ? (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-foreground/60 flex-1">Editando comentário...</p>
+              <button
+                onClick={() => { setEditingId(null); setEditText(""); }}
+                className="h-11 px-4 rounded-2xl bg-muted text-foreground text-sm font-semibold"
+              >
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Escreva um comentário..."
+                className="flex-1 h-11 rounded-2xl bg-muted px-4 text-sm outline-none"
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="h-11 w-11 rounded-2xl bg-brand-gradient text-white grid place-items-center shadow-pink disabled:opacity-50"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

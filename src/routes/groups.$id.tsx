@@ -56,7 +56,10 @@ function GroupChat() {
   }, []);
 
   useEffect(() => {
-    scrollToBottom();
+    const el = listRef.current;
+    if (!el) return;
+    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (dist < 50) scrollToBottom();
   }, [msgs.length]);
 
   const scrollToBottom = () => {

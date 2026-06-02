@@ -251,7 +251,7 @@ function CriarConversaButton({
 
 function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
   const tags = Array.isArray(conv.tags) ? conv.tags : [];
-  const id = safeText(conv.id, `ucv_${Date.now()}`);
+  const id = conv.id || `ucv_fallback_${conv.title || Math.random()}`;
   const title = safeText(conv.title, "Nova conversa");
   const description = safeText(conv.description);
   const author = safeText(conv.author, "Você");
@@ -296,9 +296,9 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
         </div>
       </div>
       <div className="mt-2 flex gap-1.5">
-        {tags.slice(0, 3).map((t) => (
+        {tags.slice(0, 3).map((t, i) => (
           <span
-            key={t}
+            key={t + i}
             className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
           >
             #{t}

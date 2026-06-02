@@ -28,26 +28,39 @@ export function WeazeProvider({ children }: { children: ReactNode }) {
   );
   const [unreadCount, setUnreadCount] = useState(notifications.length);
 
-  const addLike = useCallback((userName?: string) => {
-    const notif = service.generateLike(userName);
-    setNotifications((prev) => [notif, ...prev]);
-    setMetrics((prev) => ({ ...prev, likes: prev.likes + 1 }));
-    setUnreadCount((prev) => prev + 1);
-  }, []);
+  const MAX_NOTIFICATIONS = 100;
 
-  const addComment = useCallback((userName?: string) => {
-    const notif = service.generateComment(userName);
-    setNotifications((prev) => [notif, ...prev]);
-    setMetrics((prev) => ({ ...prev, comments: prev.comments + 1 }));
-    setUnreadCount((prev) => prev + 1);
-  }, []);
+  const addNotification = useCallback(
+    (notif: WeazeNotification) => {
+      setNotifications((prev) => [notif, ...prev].slice(0, MAX_NOTIFICATIONS));
+      setUnreadCount((prev) => prev + 1);
+    },
+    [],
+  );
+
+  const addLike = useCallback(
+    (userName?: string) => {
+      const notif = service.generateLike(userName);
+      addNotification(notif);
+      setMetrics((prev) => ({ ...prev, likes: prev.likes + 1 }));
+    },
+    [addNotification],
+  );
+
+  const addComment = useCallback(
+    (userName?: string) => {
+      const notif = service.generateComment(userName);
+      addNotification(notif);
+      setMetrics((prev) => ({ ...prev, comments: prev.comments + 1 }));
+    },
+    [addNotification],
+  );
 
   const addShare = useCallback(() => {
     const notif = service.generateShare();
-    setNotifications((prev) => [notif, ...prev]);
+    addNotification(notif);
     setMetrics((prev) => ({ ...prev, shares: prev.shares + 1 }));
-    setUnreadCount((prev) => prev + 1);
-  }, []);
+  }, [addNotification]);
 
   useEffect(() => {
     const actions = [addLike, addComment, addShare] as const;

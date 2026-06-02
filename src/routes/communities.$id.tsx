@@ -6,13 +6,30 @@ import { communities, posts } from "@/lib/mock-data";
 import { useState } from "react";
 
 export const Route = createFileRoute("/communities/$id")({
+  head: () => ({ meta: [{ title: "Comunidade — WEAZE" }] }),
   component: CommunityDetail,
 });
 
 function CommunityDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
-  const c = communities.find((x) => x.id === id) ?? communities[0];
+  const c = communities.find((x) => x.id === id);
+  if (!c) {
+    return (
+      <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
+        <div className="max-w-sm space-y-3">
+          <h1 className="text-xl font-extrabold">Comunidade não encontrada</h1>
+          <p className="text-sm text-foreground/60">Essa comunidade não existe ou foi removida.</p>
+          <button
+            onClick={() => nav({ to: "/communities" })}
+            className="h-10 px-4 rounded-xl bg-brand-gradient text-white text-sm font-bold shadow-brand"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
   const [joined, setJoined] = useState(false);
   const cPosts = posts.filter((p) => p.community.id === c.id);
 
