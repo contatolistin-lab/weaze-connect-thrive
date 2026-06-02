@@ -79,7 +79,7 @@ function Profile() {
             onClick={() => fileRef.current?.click()}
             className="relative shrink-0 group"
           >
-            <Avatar name={community.name || "C"} size={72} ring src={community.avatar} />
+            <Avatar name={community.name || "C"} size={72} src={community.avatar} />
             <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
               <Camera size={22} className="text-white" />
             </span>
