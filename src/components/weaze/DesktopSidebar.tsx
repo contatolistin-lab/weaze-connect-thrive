@@ -13,15 +13,24 @@ const baseItems: Item[] = [
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
 ];
 
+const HIDDEN_PATHS = ["/", "/login", "/signup", "/b2b/login", "/b2b/signup"];
+
+export function shouldShowDesktopShell(path: string) {
+  if (HIDDEN_PATHS.includes(path)) return false;
+  if (path.startsWith("/groups/invite/")) return false;
+  return true;
+}
+
 export function DesktopSidebar() {
   const { location } = useRouterState();
   const { userType } = useCommunity();
   const path = location.pathname;
 
+  if (!shouldShowDesktopShell(path)) return null;
+
   const profileTo = userType.isB2B ? "/profile" : "/b2c/profile";
   const items: Item[] = [
     ...baseItems.filter((it) => it.to !== "/create" || userType.isB2B),
-    ...(userType.isB2B ? [] : []),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
