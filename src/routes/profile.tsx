@@ -51,12 +51,12 @@ function Profile() {
     updateCommunity({ whatsapp });
   };
 
-  const communitySlug = community.name.toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
+  const communitySlug = community.name.trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
   const [origin, setOrigin] = useState("");
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
-  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name)}&desc=${encodeURIComponent(community.description)}`;
+  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`;
 
   useEffect(() => {
     try {
