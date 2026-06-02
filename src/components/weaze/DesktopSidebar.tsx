@@ -20,7 +20,8 @@ export function DesktopSidebar() {
 
   const profileTo = userType.isB2B ? "/profile" : "/b2c/profile";
   const items: Item[] = [
-    ...baseItems,
+    ...baseItems.filter((it) => it.to !== "/create" || userType.isB2B),
+    ...(userType.isB2B ? [] : []),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
@@ -29,9 +30,8 @@ export function DesktopSidebar() {
       className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col bg-white border-r border-border w-20 lg:w-60 px-3 lg:px-4 py-5 gap-2"
       style={{ boxShadow: "6px 0 24px -16px rgba(11,11,18,0.08)" }}
     >
-      <div className="flex items-center gap-2 px-1 lg:px-2 mb-4">
+      <div className="flex items-center justify-center lg:justify-start px-1 lg:px-2 mb-4">
         <WeazeLogo size="sm" />
-        <span className="hidden lg:inline font-bold text-base text-brand-gradient">Weaze</span>
       </div>
 
       <nav className="flex flex-col gap-1">
