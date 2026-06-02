@@ -11,6 +11,7 @@ import {
 import { WeazeProvider } from "@/lib/weaze-context";
 import { CommunityProvider } from "@/lib/community-store";
 import { Toaster } from "@/components/ui/sonner";
+import { DesktopSidebar } from "@/components/weaze/DesktopSidebar";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
