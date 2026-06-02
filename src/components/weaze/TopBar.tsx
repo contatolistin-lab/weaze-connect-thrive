@@ -10,7 +10,7 @@ interface TopBarProps {
   right?: React.ReactNode;
 }
 
-export function TopBar({ title, showSearch = true, showLogo = true, right }: TopBarProps) {
+export function TopBar({ title, showSearch = false, showLogo = true, right }: TopBarProps) {
   const { unreadCount } = useWeaze();
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-border safe-pt">
