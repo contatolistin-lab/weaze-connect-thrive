@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
       style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
     >
       <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-4"}`}>

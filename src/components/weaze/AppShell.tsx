@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { TopBar } from "./TopBar";
 import { WhatsAppButton } from "./WhatsAppButton";
-import { DesktopSidebar } from "./DesktopSidebar";
 
 interface AppShellProps {
   children: ReactNode;
@@ -21,15 +20,10 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="min-h-dvh bg-background md:bg-surface-muted">
-      <DesktopSidebar />
       <div className="mx-auto max-w-md min-h-dvh bg-background relative flex flex-col md:shadow-soft md:border-x md:border-border">
         {!hideTopBar && <TopBar title={title} />}
         <main className={`flex-1 ${fullBleed ? "" : "pb-24 md:pb-8"}`}>{children}</main>
-        {!hideBottomNav && (
-          <div className="md:hidden">
-            <BottomNav />
-          </div>
-        )}
+        {!hideBottomNav && <BottomNav />}
         <WhatsAppButton />
       </div>
     </div>
