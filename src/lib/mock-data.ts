@@ -1162,6 +1162,8 @@ export function getAllPosts(): MockPost[] {
 
 export const userConversations: MockConversation[] = [];
 
+let fallbackIdCounter = 0;
+
 function toRecord(value: unknown): Partial<MockConversation> & { id?: string } {
   return value && typeof value === "object" ? (value as Partial<MockConversation> & { id?: string }) : {};
 }
@@ -1178,13 +1180,20 @@ function normalizeTags(value: unknown): string[] {
     .filter(Boolean);
 }
 
+function ensureValidId(input: unknown): string {
+  const conv = toRecord(input);
+  if (typeof conv.id === "string" && conv.id.trim()) return conv.id.trim();
+  fallbackIdCounter++;
+  return "ucv_fallback_" + fallbackIdCounter;
+}
+
 function normalizeConversation(input: unknown): MockConversation {
   const conv = toRecord(input);
   const title = typeof conv.title === "string" && conv.title.trim() ? conv.title.trim() : "Nova conversa";
   const author = typeof conv.author === "string" && conv.author.trim() ? conv.author.trim() : "Você";
 
   return {
-    id: typeof conv.id === "string" && conv.id.trim() ? conv.id : "ucv_" + Date.now(),
+    id: ensureValidId(input),
     title,
     description: typeof conv.description === "string" ? conv.description : "",
     category: typeof conv.category === "string" && conv.category.trim() ? conv.category : "Geral",
@@ -1210,7 +1219,7 @@ export function addUserConversation(conv: Partial<MockConversation>) {
 }
 
 export function getAllConversations(): MockConversation[] {
-  return [...userConversations, ...conversations].map(normalizeConversation);
+  return [...userConversations, ...conversations];
 }
 
 export function deleteConversation(id: string) {
