@@ -53,6 +53,7 @@ const BADGE_TIERS = [
   { minScore: 2000, badge: "💜 Top" },
   { minScore: 1500, badge: "⭐ Destaque" },
   { minScore: 1100, badge: "👑 Rainha" },
+  { minScore: 900, badge: "🏅 Veterano" },
   { minScore: 700, badge: "🏆 Campeão" },
   { minScore: 400, badge: "💬 Conversador" },
   { minScore: 200, badge: "⚡ Raio" },

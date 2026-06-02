@@ -38,6 +38,7 @@ const badgeIcons: Record<string, typeof Trophy> = {
   "⭐ Destaque": Star,
   "💬 Conversador": MessageSquare,
   "👑 Rainha": Crown,
+  "🏅 Veterano": Award,
   "🏆 Campeão": Trophy,
   "⚡ Raio": Zap,
   "💚 Coração": Heart,
@@ -148,6 +149,12 @@ function Metricas() {
           <div className="mt-4 grid grid-cols-4 gap-3">
             {[
               { icon: Flame, label: "Fogo", desc: "Mais ativo do mês", color: "text-orange-500" },
+              {
+                icon: Heart,
+                label: "Top",
+                desc: "Alta performance",
+                color: "text-purple-500",
+              },
               {
                 icon: Star,
                 label: "Destaque",
