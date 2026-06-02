@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Lock, User } from "lucide-react";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
 import { WButton } from "@/components/weaze/WButton";
 import { Field } from "./login";
+import { useCommunity } from "@/lib/community-store";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -18,9 +19,11 @@ export const Route = createFileRoute("/signup")({
 function Signup() {
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  const { userType } = useCommunity();
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    userType.setB2B(false);
     setTimeout(() => nav({ to: "/feed" }), 700);
   };
 
