@@ -127,7 +127,10 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <WeazeProvider>
         <CommunityProvider>
-          <Outlet />
+          <DesktopSidebar />
+          <div className="md:pl-20 lg:pl-60">
+            <Outlet />
+          </div>
         </CommunityProvider>
       </WeazeProvider>
     </QueryClientProvider>
