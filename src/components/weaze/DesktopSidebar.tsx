@@ -30,7 +30,7 @@ export function DesktopSidebar() {
 
   const profileTo = userType.isB2B ? "/profile" : "/b2c/profile";
   const items: Item[] = [
-    ...baseItems.filter((it) => it.to !== "/create" || userType.isB2B),
+    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas") || userType.isB2B),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
