@@ -123,13 +123,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const showShell = shouldShowDesktopShell(path);
 
   return (
     <QueryClientProvider client={queryClient}>
       <WeazeProvider>
         <CommunityProvider>
           <DesktopSidebar />
-          <div className="md:pl-20 lg:pl-60">
+          <div className={showShell ? "md:pl-20 lg:pl-60" : ""}>
             <Outlet />
           </div>
         </CommunityProvider>
