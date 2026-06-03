@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Lock, Users, Plus, Copy, Check, Share2, ImageUp, ArrowRight, X } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
-import { getMyGroups, getGroupMembers, createGroup } from "@/lib/mock-data";
+import { getMyGroups, getGroupMembers, createGroup, currentUserId } from "@/lib/mock-data";
 import { GroupImage } from "@/lib/group-utils";
 import { useCommunity } from "@/lib/community-store";
 import {
@@ -57,7 +57,11 @@ function GroupsIndex() {
     );
   }
 
-  const myGroups = getMyGroups();
+  const myGroups = userType.isB2B
+    ? getMyGroups()
+    : getMyGroups().filter((g) =>
+        getGroupMembers(g.id).some((m) => m.userId === currentUserId)
+      );
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -155,7 +155,11 @@ function GroupChat() {
 
   const adminMember = members.find((m) => m.role === "admin");
 
-  const myGroups = getMyGroups ? getMyGroups() : [];
+  const myGroups = userType.isB2B
+    ? (getMyGroups ? getMyGroups() : [])
+    : (getMyGroups ? getMyGroups() : []).filter((g) =>
+        getGroupMembers(g.id).some((m) => m.userId === currentUserId)
+      );
 
   const chatPanel = (
     <div className="flex-1 flex flex-col min-h-0">
