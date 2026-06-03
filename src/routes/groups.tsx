@@ -21,13 +21,28 @@ export const Route = createFileRoute("/groups")({
 });
 
 function Groups() {
-  const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { userType } = useCommunity();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (pathname !== "/groups") {
     return <Outlet />;
+  }
+
+  return <GroupsIndex />;
+}
+
+function GroupsIndex() {
+  const nav = useNavigate();
+  const { userType, hydrated } = useCommunity();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (!hydrated) {
+    return (
+      <AppShell title="Grupos">
+        <div className="min-h-[50dvh] grid place-items-center">
+          <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
+        </div>
+      </AppShell>
+    );
   }
 
   const myGroups = getMyGroups();
