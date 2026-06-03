@@ -120,108 +120,135 @@ function Conversas() {
 
   const isB2B = userType.isB2B;
 
-  return (
-    <AppShell title="Conversas">
-      <div className="px-4 pt-3 space-y-4">
-        <div className="rounded-3xl bg-brand-gradient text-white p-5 shadow-brand">
-          <p className="text-xs font-bold tracking-widest uppercase opacity-80">Fórum WEAZE</p>
-          <h2 className="mt-1 text-2xl font-extrabold">Conversas da comunidade</h2>
-          <p className="text-sm opacity-90">
-            Participe das discussões, tire dúvidas e compartilhe conhecimento.
-          </p>
-        </div>
+  const toolbar = (
+    <div className="space-y-4">
+      <div className="rounded-3xl bg-brand-gradient text-white p-5 shadow-brand">
+        <p className="text-xs font-bold tracking-widest uppercase opacity-80">Fórum WEAZE</p>
+        <h2 className="mt-1 text-2xl font-extrabold">Conversas da comunidade</h2>
+        <p className="text-sm opacity-90">
+          Participe das discussões, tire dúvidas e compartilhe conhecimento.
+        </p>
+      </div>
 
-        <CriarConversaButton
-          onCriar={(dados) => {
-            const title = dados.title.trim();
-            if (!title) return;
-            const id = `ucv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-            addUserConversation({
-              id,
-              title,
-              description: dados.description,
-              category: "Geral",
-              author: "Você",
-              authorAvatar: title.at(0)?.toUpperCase() ?? "V",
-              replies: 0,
-              likes: 0,
-              views: 0,
-              pinned: false,
-              trending: false,
-              createdAt: "agora",
-              lastActivity: "agora",
-              tags: dados.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-            });
-            refreshList();
-          }}
+      <CriarConversaButton
+        onCriar={(dados) => {
+          const title = dados.title.trim();
+          if (!title) return;
+          const id = `ucv_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          addUserConversation({
+            id,
+            title,
+            description: dados.description,
+            category: "Geral",
+            author: "Você",
+            authorAvatar: title.at(0)?.toUpperCase() ?? "V",
+            replies: 0,
+            likes: 0,
+            views: 0,
+            pinned: false,
+            trending: false,
+            createdAt: "agora",
+            lastActivity: "agora",
+            tags: dados.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean),
+          });
+          refreshList();
+        }}
+      />
+
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-11">
+        <Search size={18} className="text-foreground/40" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar conversas..."
+          className="flex-1 bg-transparent outline-none text-sm"
         />
+      </div>
 
-        <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-11">
-          <Search size={18} className="text-foreground/40" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar conversas..."
-            className="flex-1 bg-transparent outline-none text-sm"
-          />
+      <div className="flex gap-2">
+        {(["recentes", "todas"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 h-9 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 ${
+              tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
+            }`}
+          >
+            <MessageSquare size={14} />
+            {t === "recentes" ? "Recentes" : "Todas"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const conversationList = (
+    <div className="space-y-2">
+      {pinned.length > 0 && (
+        <div>
+          <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2 flex items-center gap-1">
+            <Pin size={12} /> Fixadas
+          </p>
+          <div className="space-y-2">
+            {pinned.map((c) => (
+              <ConversationCard
+                key={c.id}
+                conv={c}
+                isB2B={isB2B}
+                onTogglePin={handleTogglePin}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className="flex gap-2">
-          {(["recentes", "todas"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 h-9 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 ${
-                tab === t ? "bg-brand-gradient text-white" : "bg-muted text-foreground/70"
-              }`}
-            >
-              <MessageSquare size={14} />
-              {t === "recentes" ? "Recentes" : "Todas"}
-            </button>
-          ))}
+      {list.map((c) => (
+        <ConversationCard
+          key={c.id}
+          conv={c}
+          isB2B={isB2B}
+          onTogglePin={handleTogglePin}
+          onDelete={handleDelete}
+        />
+      ))}
+      {list.length === 0 && (
+        <div className="text-center py-10 text-foreground/50 text-sm">
+          Nenhuma conversa encontrada.
         </div>
+      )}
+    </div>
+  );
 
+  return (
+    <>
+      {/* Mobile layout - unchanged */}
+      <div className="md:hidden">
+        <AppShell title="Conversas">
+          <div className="px-4 pt-3 space-y-4">
+            {toolbar}
+            {conversationList}
+          </div>
+        </AppShell>
+      </div>
 
-        {pinned.length > 0 && (
-          <div>
-            <p className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Pin size={12} /> Fixadas
-            </p>
-            <div className="space-y-2">
-              {pinned.map((c) => (
-                <ConversationCard
-                  key={c.id}
-                  conv={c}
-                  isB2B={isB2B}
-                  onTogglePin={handleTogglePin}
-                  onDelete={handleDelete}
-                />
-              ))}
+      {/* Desktop/tablet layout - dashboard */}
+      <div className="hidden md:block min-h-dvh bg-surface-muted">
+        <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 h-dvh">
+          <div className="w-80 xl:w-96 shrink-0 overflow-y-auto scrollbar-brand space-y-4">
+            {toolbar}
+          </div>
+          <div className="flex-1 overflow-y-auto scrollbar-brand pb-4">
+            <div className="max-w-3xl">
+              {conversationList}
             </div>
           </div>
-        )}
-
-        <div className="space-y-2 pb-4">
-          {list.map((c) => (
-            <ConversationCard
-              key={c.id}
-              conv={c}
-              isB2B={isB2B}
-              onTogglePin={handleTogglePin}
-              onDelete={handleDelete}
-            />
-          ))}
-          {list.length === 0 && (
-            <div className="text-center py-10 text-foreground/50 text-sm">
-              Nenhuma conversa encontrada.
-            </div>
-          )}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
 

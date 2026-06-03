@@ -79,134 +79,159 @@ function Profile() {
     );
   }
 
-  return (
-    <AppShell title="Painel da Comunidade">
-      <div className="px-4 pt-4 pb-24 space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="relative shrink-0 group"
-          >
-            <Avatar name={community.name || "C"} size={72} src={community.avatar} />
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera size={22} className="text-white" />
-            </span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
+  const headerSection = (
+    <div className="flex items-center gap-4">
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        className="relative shrink-0 group"
+      >
+        <Avatar name={community.name || "C"} size={72} src={community.avatar} />
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Camera size={22} className="text-white" />
+        </span>
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
+      <div className="flex-1 min-w-0">
+        <h1 className="text-lg font-extrabold tracking-tight truncate">
+          {community.name || "Minha Comunidade"}
+        </h1>
+        <p className="text-sm text-foreground/60 truncate">{communityEmail}</p>
+      </div>
+    </div>
+  );
+
+  const communityDataForm = (
+    <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+      <h2 className="text-sm font-extrabold tracking-tight mb-4">Dados da Comunidade</h2>
+      <div className="space-y-3">
+        <InputField
+          label="Nome da Comunidade"
+          value={form.name}
+          onChange={(v) => setForm((f) => ({ ...f, name: v }))}
+        />
+        <TextareaField
+          label="Descrição da Comunidade"
+          value={form.description}
+          onChange={(v) => setForm((f) => ({ ...f, description: v }))}
+        />
+        <InputField
+          label="Telefone"
+          value={form.phone}
+          onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
+        />
+        <div className="grid grid-cols-3 gap-2">
+          <InputField
+            label="Cidade"
+            value={form.city}
+            onChange={(v) => setForm((f) => ({ ...f, city: v }))}
           />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-extrabold tracking-tight truncate">
-              {community.name || "Minha Comunidade"}
-            </h1>
-            <p className="text-sm text-foreground/60 truncate">{communityEmail}</p>
+          <InputField
+            label="Estado"
+            value={form.state}
+            onChange={(v) => setForm((f) => ({ ...f, state: v }))}
+          />
+          <InputField
+            label="País"
+            value={form.country}
+            onChange={(v) => setForm((f) => ({ ...f, country: v }))}
+          />
+        </div>
+        <WButton variant="gradient" size="md" fullWidth onClick={handleSaveCommunity}>
+          Salvar
+        </WButton>
+      </div>
+    </section>
+  );
+
+  const sidePanel = (
+    <div className="space-y-6">
+      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+        <h2 className="text-sm font-extrabold tracking-tight mb-4">Contato da Comunidade</h2>
+        <p className="text-xs text-foreground/60 mb-3">
+          Informe o WhatsApp que será usado no botão de contato da sua comunidade.
+        </p>
+        <div className="space-y-2">
+          <InputField
+            label="WhatsApp da Comunidade"
+            placeholder="5511999999999 ou https://wa.me/5511999999999"
+            value={whatsapp}
+            onChange={setWhatsapp}
+          />
+          <WButton variant="gradient" size="md" fullWidth onClick={handleSaveWhatsapp}>
+            Salvar
+          </WButton>
+        </div>
+      </section>
+
+      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+        <h2 className="text-sm font-extrabold tracking-tight mb-1">Compartilhar Comunidade</h2>
+        <p className="text-xs text-foreground/60 mb-4">
+          Envie este link para que pessoas entrem diretamente na sua comunidade.
+        </p>
+        <input
+          readOnly
+          value={communityLink}
+          onClick={(e) => (e.target as HTMLInputElement).select()}
+          className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
+        />
+        <WButton
+          variant="gradient"
+          size="md"
+          fullWidth
+          onClick={() =>
+            window.open(`https://wa.me/?text=${encodeURIComponent(communityLink)}`, "_blank")
+          }
+        >
+          <Share2 size={16} />
+          Compartilhar no WhatsApp
+        </WButton>
+      </section>
+
+      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+        <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
+        <button
+          onClick={() => nav({ to: "/" })}
+          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#d81e62] font-bold hover:bg-muted transition-colors"
+        >
+          <LogOut size={18} /> Sair
+        </button>
+      </section>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="md:hidden">
+        <AppShell title="Painel da Comunidade">
+          <div className="px-4 pt-4 pb-24 space-y-6">
+            {headerSection}
+            {communityDataForm}
+            {sidePanel}
+          </div>
+        </AppShell>
+      </div>
+
+      <div className="hidden md:block min-h-dvh bg-surface-muted">
+        <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 min-h-dvh">
+          <div className="flex-1 space-y-6 overflow-y-auto scrollbar-brand pb-6">
+            {headerSection}
+            <div className="max-w-3xl">
+              {communityDataForm}
+            </div>
+          </div>
+          <div className="w-80 xl:w-96 shrink-0 overflow-y-auto scrollbar-brand pb-6">
+            {sidePanel}
           </div>
         </div>
-
-        {/* Dados da Comunidade */}
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-          <h2 className="text-sm font-extrabold tracking-tight mb-4">Dados da Comunidade</h2>
-          <div className="space-y-3">
-            <InputField
-              label="Nome da Comunidade"
-              value={form.name}
-              onChange={(v) => setForm((f) => ({ ...f, name: v }))}
-            />
-            <TextareaField
-              label="Descrição da Comunidade"
-              value={form.description}
-              onChange={(v) => setForm((f) => ({ ...f, description: v }))}
-            />
-            <InputField
-              label="Telefone"
-              value={form.phone}
-              onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
-            />
-            <div className="grid grid-cols-3 gap-2">
-              <InputField
-                label="Cidade"
-                value={form.city}
-                onChange={(v) => setForm((f) => ({ ...f, city: v }))}
-              />
-              <InputField
-                label="Estado"
-                value={form.state}
-                onChange={(v) => setForm((f) => ({ ...f, state: v }))}
-              />
-              <InputField
-                label="País"
-                value={form.country}
-                onChange={(v) => setForm((f) => ({ ...f, country: v }))}
-              />
-            </div>
-            <WButton variant="gradient" size="md" fullWidth onClick={handleSaveCommunity}>
-              Salvar
-            </WButton>
-          </div>
-        </section>
-
-        {/* Contato da Comunidade */}
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-          <h2 className="text-sm font-extrabold tracking-tight mb-4">Contato da Comunidade</h2>
-          <p className="text-xs text-foreground/60 mb-3">
-            Informe o WhatsApp que será usado no botão de contato da sua comunidade.
-          </p>
-          <div className="space-y-2">
-            <InputField
-              label="WhatsApp da Comunidade"
-              placeholder="5511999999999 ou https://wa.me/5511999999999"
-              value={whatsapp}
-              onChange={setWhatsapp}
-            />
-            <WButton variant="gradient" size="md" fullWidth onClick={handleSaveWhatsapp}>
-              Salvar
-            </WButton>
-          </div>
-        </section>
-
-        {/* Compartilhar Comunidade */}
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-          <h2 className="text-sm font-extrabold tracking-tight mb-1">Compartilhar Comunidade</h2>
-          <p className="text-xs text-foreground/60 mb-4">
-            Envie este link para que pessoas entrem diretamente na sua comunidade.
-          </p>
-          <input
-            readOnly
-            value={communityLink}
-            onClick={(e) => (e.target as HTMLInputElement).select()}
-            className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
-          />
-          <WButton
-            variant="gradient"
-            size="md"
-            fullWidth
-            onClick={() =>
-              window.open(`https://wa.me/?text=${encodeURIComponent(communityLink)}`, "_blank")
-            }
-          >
-            <Share2 size={16} />
-            Compartilhar no WhatsApp
-          </WButton>
-        </section>
-
-        {/* Conta */}
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-          <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
-          <button
-            onClick={() => nav({ to: "/" })}
-            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#d81e62] font-bold hover:bg-muted transition-colors"
-          >
-            <LogOut size={18} /> Sair
-          </button>
-        </section>
       </div>
-    </AppShell>
+    </>
   );
 }
 

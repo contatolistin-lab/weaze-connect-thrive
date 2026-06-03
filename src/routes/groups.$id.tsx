@@ -11,6 +11,7 @@ import {
   pinMessage,
   unpinMessage,
   currentUserId,
+  getMyGroups,
   type MockGroupMessage,
 } from "@/lib/mock-data";
 import { WButton } from "@/components/weaze/WButton";
@@ -131,42 +132,13 @@ function GroupChat() {
 
   const adminMember = members.find((m) => m.role === "admin");
 
-  return (
-    <div className="min-h-dvh bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-border safe-pt">
-        <div className="flex items-center gap-2 px-2 h-14">
-          <button
-            onClick={() => nav({ to: "/groups" })}
-            className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted shrink-0"
-          >
-            <ArrowLeft size={20} />
-          </button>
+  const myGroups = getMyGroups ? getMyGroups() : [];
 
-          <button
-            onClick={() => setShowInfo(true)}
-            className="flex items-center gap-2 flex-1 min-w-0 text-left"
-          >
-            <GroupImage src={group.image} className="h-9 w-9 shrink-0 rounded-full" />
-            <div className="min-w-0">
-              <p className="font-bold text-sm truncate">{group.name}</p>
-              <p className="text-[11px] text-foreground/40">{group.memberCount} membros</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setShowInfo(true)}
-            className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted shrink-0"
-          >
-            <Info size={19} className="text-foreground/60" />
-          </button>
-        </div>
-      </header>
-
-      {/* Messages */}
+  const chatPanel = (
+    <div className="flex-1 flex flex-col min-h-0">
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide"
+        className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-brand"
         style={{ background: "#f0edf3" }}
       >
         {pinnedMsg && (
@@ -265,8 +237,7 @@ function GroupChat() {
         )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-border bg-white safe-pb">
+      <div className="border-t border-border bg-white">
         <div className="flex items-center gap-2 px-3 py-2">
           <input
             ref={inputRef}
@@ -284,6 +255,88 @@ function GroupChat() {
           >
             <Send size={16} />
           </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile layout */}
+      <div className="md:hidden min-h-dvh bg-background flex flex-col">
+        <header className="sticky top-0 z-40 bg-white border-b border-border safe-pt">
+          <div className="flex items-center gap-2 px-2 h-14">
+            <button
+              onClick={() => nav({ to: "/groups" })}
+              className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted shrink-0"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <button
+              onClick={() => setShowInfo(true)}
+              className="flex items-center gap-2 flex-1 min-w-0 text-left"
+            >
+              <GroupImage src={group.image} className="h-9 w-9 shrink-0 rounded-full" />
+              <div className="min-w-0">
+                <p className="font-bold text-sm truncate">{group.name}</p>
+                <p className="text-[11px] text-foreground/40">{group.memberCount} membros</p>
+              </div>
+            </button>
+            <button
+              onClick={() => setShowInfo(true)}
+              className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted shrink-0"
+            >
+              <Info size={19} className="text-foreground/60" />
+            </button>
+          </div>
+        </header>
+        {chatPanel}
+      </div>
+
+      {/* Desktop/tablet layout - dashboard */}
+      <div className="hidden md:block min-h-dvh bg-surface-muted">
+        <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 h-dvh">
+          <div className="w-80 xl:w-96 shrink-0 space-y-4 overflow-y-auto scrollbar-brand">
+            <div className="rounded-3xl bg-brand-gradient text-white p-5 shadow-brand">
+              <p className="text-xs font-bold tracking-widest uppercase opacity-80">Seus grupos</p>
+              <h2 className="mt-1 text-2xl font-extrabold">{myGroups.length} ativos</h2>
+              <p className="text-sm opacity-90">Grupos privados que você participa</p>
+            </div>
+            <div className="space-y-2">
+              {myGroups.map((g2) => (
+                <button
+                  key={g2.id}
+                  onClick={() => nav({ to: "/groups/$id", params: { id: g2.id } })}
+                  className={`w-full text-left flex items-center gap-3 p-3 rounded-2xl border bg-white shadow-soft ${
+                    g2.id === id ? "border-brand-pink ring-1 ring-brand-pink" : "border-border"
+                  }`}
+                >
+                  <GroupImage src={g2.image} className="h-10 w-10 shrink-0 rounded-full" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{g2.name}</p>
+                    <p className="text-[10px] text-foreground/40">{g2.memberCount} membros</p>
+                  </div>
+                  <span className="text-xs font-bold text-[#d81e62]">Abrir</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 bg-white rounded-3xl border border-border shadow-soft flex flex-col min-h-0 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0 bg-white">
+              <GroupImage src={group.image} className="h-8 w-8 shrink-0 rounded-full" />
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm truncate">{group.name}</p>
+                <p className="text-[10px] text-foreground/40">{group.memberCount} membros</p>
+              </div>
+              <button
+                onClick={() => setShowInfo(true)}
+                className="h-8 w-8 grid place-items-center rounded-full hover:bg-muted shrink-0"
+              >
+                <Info size={18} className="text-foreground/60" />
+              </button>
+            </div>
+            {chatPanel}
+          </div>
         </div>
       </div>
 
@@ -362,6 +415,6 @@ function GroupChat() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
