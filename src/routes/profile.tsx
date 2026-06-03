@@ -12,15 +12,15 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { community, updateCommunity, userType } = useCommunity();
+  const { community, updateCommunity, userType, hydrated } = useCommunity();
   const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!userType.isB2B) {
+    if (hydrated && !userType.isB2B) {
       nav({ to: "/b2c/profile" });
     }
-  }, [userType.isB2B]);
+  }, [hydrated, userType.isB2B, nav]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,6 +68,16 @@ function Profile() {
       /* silent */
     }
   }, [community.name, community.description, communitySlug]);
+
+  if (!hydrated || !userType.isB2B) {
+    return (
+      <AppShell title="Painel da Comunidade">
+        <div className="min-h-[50dvh] grid place-items-center">
+          <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="Painel da Comunidade">

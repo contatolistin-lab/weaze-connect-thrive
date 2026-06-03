@@ -21,16 +21,19 @@ export const Route = createFileRoute("/groups")({
 });
 
 function Groups() {
-  const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { userType } = useCommunity();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (pathname !== "/groups") {
     return <Outlet />;
   }
 
-  const myGroups = getMyGroups();
+  return <GroupsIndex />;
+}
+
+function GroupsIndex() {
+  const nav = useNavigate();
+  const { userType, hydrated } = useCommunity();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", description: "", image: "" });
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -43,6 +46,18 @@ function Groups() {
   const [copied, setCopied] = useState(false);
   const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "invite">("form");
+
+  if (!hydrated) {
+    return (
+      <AppShell title="Grupos">
+        <div className="min-h-[50dvh] grid place-items-center">
+          <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const myGroups = getMyGroups();
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
