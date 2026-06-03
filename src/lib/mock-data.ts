@@ -1375,6 +1375,35 @@ export function joinGroup(groupId: string) {
   persistGroups();
 }
 
+export function joinGroupExclusive(groupId: string) {
+  // Remove B2C user from all other groups
+  const currentGroups = groups.filter((g) => userGroupIds.includes(g.id));
+  for (const g of currentGroups) {
+    g.memberCount = Math.max(1, g.memberCount - 1);
+  }
+  for (let i = groupMembers.length - 1; i >= 0; i--) {
+    if (groupMembers[i].userId === currentUserId) {
+      groupMembers.splice(i, 1);
+    }
+  }
+  userGroupIds.length = 0;
+
+  // Join only the invited group
+  userGroupIds.push(groupId);
+  const g = groups.find((x) => x.id === groupId);
+  if (g) g.memberCount += 1;
+  groupMembers.push({
+    id: "gm_" + Date.now(),
+    groupId,
+    userId: currentUserId,
+    name: currentUserName,
+    avatar: currentUserAvatar,
+    role: "member",
+    joinedAt: "agora",
+  });
+  persistGroups();
+}
+
 export function leaveGroup(groupId: string) {
   const idx = userGroupIds.indexOf(groupId);
   if (idx !== -1) {

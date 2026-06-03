@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Lock, UserPlus, ArrowRight } from "lucide-react";
-import { getGroupByInviteCode, joinGroup, isGroupMember } from "@/lib/mock-data";
+import { getGroupByInviteCode, joinGroup, joinGroupExclusive, isGroupMember } from "@/lib/mock-data";
 import { GroupImage } from "@/lib/group-utils";
 import { WButton } from "@/components/weaze/WButton";
+import { useCommunity } from "@/lib/community-store";
 
 export const Route = createFileRoute("/groups/invite/$code")({
   head: () => ({ meta: [{ title: "Convite — WEAZE" }] }),
@@ -14,6 +15,7 @@ function GroupInvite() {
   const { code } = Route.useParams();
   const nav = useNavigate();
   const [accepted, setAccepted] = useState(false);
+  const { userType, hydrated } = useCommunity();
   const group = getGroupByInviteCode(code);
 
   if (!group) {
@@ -35,7 +37,11 @@ function GroupInvite() {
 
   const handleAccept = () => {
     if (!alreadyMember) {
-      joinGroup(group.id);
+      if (hydrated && !userType.isB2B) {
+        joinGroupExclusive(group.id);
+      } else {
+        joinGroup(group.id);
+      }
     }
     setAccepted(true);
   };
