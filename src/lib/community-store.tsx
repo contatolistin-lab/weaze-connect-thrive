@@ -156,7 +156,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth }}>
+    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, hydrated }}>
       {children}
     </CommunityCtx.Provider>
   );
