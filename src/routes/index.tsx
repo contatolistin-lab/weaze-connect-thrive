@@ -4,13 +4,10 @@ import {
   Check,
   Users,
   MessageCircle,
-  Calendar,
   BarChart3,
   TrendingUp,
-  Video,
-  Bell,
-  Settings,
-  CreditCard,
+  Plus,
+  Share2,
   Sparkles,
   Heart,
   X,
@@ -293,7 +290,7 @@ function LandingPage() {
               {
                 n: "03",
                 t: "Publique e engaje",
-                d: "Crie posts, vídeos, agenda eventos. Tudo num só lugar para sua comunidade.",
+                d: "Crie posts, vídeos e fotos. Tudo num só lugar para sua comunidade.",
                 img: groupImages[2],
               },
             ].map((step) => (
@@ -333,18 +330,14 @@ function LandingPage() {
             Uma plataforma completa com as ferramentas que sua comunidade precisa.
           </p>
         </div>
-        <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
-            { icon: TrendingUp, t: "Feed", d: "Posts em vídeo, imagem ou texto" },
-            { icon: ArrowRight, t: "CTAs", d: "Comprar, agendar, orçamento, inscrição" },
-            { icon: Calendar, t: "Serviços", d: "Agendamentos com horários" },
-            { icon: Calendar, t: "Eventos", d: "Inscrições em eventos" },
-            { icon: Video, t: "Lives", d: "Adicione link para lives" },
-            { icon: MessageCircle, t: "Conversas", d: "Chat da comunidade" },
-            { icon: Users, t: "Membros", d: "Lista e gestão" },
-            { icon: BarChart3, t: "Dados", d: "Métricas e funil" },
-            { icon: Bell, t: "Notificações", d: "Alertas e pushes" },
-            { icon: Settings, t: "Sua marca", d: "Logo white-label" },
+            { icon: TrendingUp, t: "Feed", d: "Posts em vídeo, imagem ou texto com links" },
+            { icon: MessageCircle, t: "Conversas", d: "Interaja diretamente com seu cliente" },
+            { icon: Users, t: "Grupos", d: "Conversas mais próximas em grupos fechados" },
+            { icon: Plus, t: "Criar", d: "Adicione fotos e vídeos" },
+            { icon: BarChart3, t: "Métricas", d: "Acompanhe o engajamento e gamifique" },
+            { icon: Share2, t: "Compartilhar", d: "Link para convidar pessoas e clientes" },
           ].map(({ icon: Icon, t, d }) => (
             <div
               key={t}
