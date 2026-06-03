@@ -400,8 +400,6 @@ function LandingPage() {
             {[
               { r: "Feed próprio" },
               { r: "Mensagens da marca" },
-              { r: "Dados da audiência" },
-              { r: "Membros ilimitados" },
               { r: "Sem algoritmos" },
               { r: "Sua marca" },
             ].map(({ r }) => (
