@@ -389,39 +389,45 @@ function LandingPage() {
       </section>
 
       {/* COMPARATIVO */}
-      <section className="mx-auto max-w-6xl px-5 py-20">
-        <div className="text-center max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            Weaze vs Redes Sociais
-          </h2>
-        </div>
-        <div className="mt-12 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-4 pr-8 font-semibold text-foreground/50">Recurso</th>
-                <th className="text-center py-4 px-6 font-semibold text-foreground/50">Redes</th>
-                <th className="text-center py-4 px-6 font-semibold text-brand-gradient">Weaze</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { r: "Feed próprio", rede: "❌", weaze: "✅" },
-                { r: "Mensagens da marca", rede: "❌", weaze: "✅" },
-                { r: "Agenda integrada", rede: "❌", weaze: "✅" },
-                { r: "Dados da audiência", rede: "❌", weaze: "✅" },
-                { r: "Membros ilimitados", rede: "❌", weaze: "✅" },
-                { r: "Sem algoritmos", rede: "❌", weaze: "✅" },
-                { r: "Sua marca", rede: "❌", weaze: "✅" },
-              ].map((row) => (
-                <tr key={row.r} className="border-b border-border/50">
-                  <td className="py-4 pr-8 font-medium">{row.r}</td>
-                  <td className="text-center py-4 px-6 text-lg">{row.rede}</td>
-                  <td className="text-center py-4 px-6 text-lg">{row.weaze}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <section className="bg-[#fafafa] border-t border-border">
+        <div className="mx-auto max-w-4xl px-5 py-20">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              Weaze vs Redes Sociais
+            </h2>
+          </div>
+          <div className="mt-12 space-y-3">
+            {[
+              { r: "Feed próprio" },
+              { r: "Mensagens da marca" },
+              { r: "Agenda integrada" },
+              { r: "Dados da audiência" },
+              { r: "Membros ilimitados" },
+              { r: "Sem algoritmos" },
+              { r: "Sua marca" },
+            ].map(({ r }) => (
+              <div
+                key={r}
+                className="flex items-center justify-between bg-white rounded-2xl px-6 py-4 border border-border shadow-soft"
+              >
+                <span className="font-semibold text-sm md:text-base flex-1">{r}</span>
+                <div className="flex items-center gap-6 md:gap-16">
+                  <div className="flex flex-col items-center gap-1 w-14">
+                    <span className="h-7 w-7 rounded-full bg-red-50 grid place-items-center">
+                      <X size={14} className="text-red-500" strokeWidth={3} />
+                    </span>
+                    <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider">Redes</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 w-14">
+                    <span className="h-7 w-7 rounded-full bg-green-50 grid place-items-center">
+                      <Check size={14} className="text-green-600" strokeWidth={3} />
+                    </span>
+                    <span className="text-[10px] font-semibold text-brand-gradient uppercase tracking-wider">Weaze</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
