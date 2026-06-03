@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Feed, mensagens, agenda e dados em um único app com a sua marca. Pare de depender de algoritmos.",
+          "Feed, mensagens e dados em um único app com a sua marca. Pare de depender de algoritmos.",
       },
       { property: "og:title", content: "WEAZE — Sua comunidade, sua marca, sua receita" },
       {
@@ -85,7 +85,7 @@ function LandingPage() {
               <span className="text-brand-gradient">comunidade que gera receita</span>.
             </h1>
             <p className="mt-5 text-base md:text-lg text-foreground/70 max-w-xl leading-relaxed">
-              Feed, mensagens, agenda e dados em um único app com a sua marca. Pare de depender de
+              Feed, mensagens e dados em um único app com a sua marca. Pare de depender de
               algoritmos — construa um ativo que é só seu.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
