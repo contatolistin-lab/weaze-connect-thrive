@@ -37,6 +37,10 @@ function GroupChat() {
 
   const [text, setText] = useState("");
   const [msgs, setMsgs] = useState<MockGroupMessage[]>(messages);
+
+  useEffect(() => {
+    setMsgs(getGroupMessages(id));
+  }, [id]);
   const [showInfo, setShowInfo] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -187,13 +191,14 @@ function GroupChat() {
 
         {msgs
           .filter((m) => !m.isPinned)
-          .map((msg, i) => {
+          .map((msg, i, arr) => {
             const isOwn = msg.authorId === currentUserId;
             const isAdminAuthor =
               msg.authorId !== currentUserId &&
               members.find((m) => m.userId === msg.authorId)?.role === "admin";
+            const prev = arr[i - 1];
             const showAvatar =
-              i === 0 || msgs[i - 1]?.authorId !== msg.authorId || msgs[i - 1]?.isPinned;
+              i === 0 || !prev || prev.authorId !== msg.authorId;
 
             return (
               <div
