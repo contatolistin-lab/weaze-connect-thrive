@@ -30,12 +30,9 @@ function Login() {
 
   return (
     <div className="min-h-dvh bg-white flex flex-col">
-      <header className="px-4 h-14 flex items-center justify-between border-b border-border">
+      <header className="px-4 h-14 flex items-center border-b border-border">
         <Link to="/" className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted">
           <ArrowLeft size={20} />
-        </Link>
-        <Link to="/b2b/login" className="text-xs font-semibold text-[#630091]">
-          Sou uma marca →
         </Link>
       </header>
       <div className="flex-1 flex flex-col px-6 pt-10 pb-8 max-w-md mx-auto w-full">
