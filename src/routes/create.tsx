@@ -20,22 +20,35 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
 
 export const Route = createFileRoute("/create")({
   head: () => ({ meta: [{ title: "Criar postagem — WEAZE" }] }),
-  component: Create,
+  component: CreateGuard,
 });
+
+function CreateGuard() {
+  const { userType, hydrated } = useCommunity();
+  const nav = useNavigate();
+
+  useEffect(() => {
+    if (hydrated && !userType.isB2B) {
+      nav({ to: "/feed", replace: true });
+    }
+  }, [hydrated, userType.isB2B, nav]);
+
+  if (!hydrated || !userType.isB2B) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-background">
+        <div className="h-8 w-8 rounded-full border-2 border-[#d81e62] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  return <Create />;
+}
 
 type MediaTab = "upload" | "link";
 
 function Create() {
   const nav = useNavigate();
-  const { userType, hydrated } = useCommunity();
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    if (!userType.isB2B) {
-      nav({ to: "/feed" });
-    }
-  }, [hydrated, userType.isB2B, nav]);
 
   const [mediaTab, setMediaTab] = useState<MediaTab>("upload");
   const [file, setFile] = useState<File | null>(null);
