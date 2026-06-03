@@ -43,7 +43,7 @@ function Signup() {
         <p className="mt-1 text-foreground/60">Entre nas comunidades que você ama.</p>
 
         <form onSubmit={submit} className="mt-8 space-y-4">
-          <Field icon={User} placeholder="Seu nome" />
+          <Field icon={User} placeholder="Nome da comunidade" />
           <Field icon={Mail} type="email" placeholder="seu@email.com" />
           <Field icon={Lock} type="password" placeholder="Crie uma senha" />
           <WButton type="submit" variant="gradient" size="lg" fullWidth loading={loading}>
