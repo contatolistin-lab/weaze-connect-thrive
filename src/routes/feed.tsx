@@ -46,13 +46,13 @@ export const Route = createFileRoute("/feed")({
 
 function Feed() {
   const { comunidade: searchComunidade } = Route.useSearch();
-  const { userType } = useCommunity();
+  const { userType, hydrated } = useCommunity();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const allPosts = getAllPosts();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
 
   let b2cSlug: string | undefined;
-  if (!userType.isB2B) {
+  if (hydrated && !userType.isB2B && typeof window !== "undefined") {
     try {
       const raw = localStorage.getItem("weaze_b2c_community");
       if (raw) b2cSlug = JSON.parse(raw).slug;
