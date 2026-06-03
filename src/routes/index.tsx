@@ -198,8 +198,8 @@ function LandingPage() {
                 d: "Seu alcance é controlado pela plataforma. A cada mudança de feed, menos pessoas veem seu conteúdo.",
               },
               {
-                t: "Não consegue manter contato",
-                d: "Após publicar, não há como falar diretamente com quem te seguiu.",
+                t: "Conversas rasas e dispersas",
+                d: "As mensagens se perdem em caixas de entrada cheias e você não tem um canal direto e permanente com seu público.",
               },
               {
                 t: "Seguidores não viram clientes",
