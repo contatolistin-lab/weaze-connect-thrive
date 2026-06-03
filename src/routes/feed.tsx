@@ -83,7 +83,7 @@ function Feed() {
           </div>
         </header>
 
-        <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide md:scrollbar-brand">
+        <div className="h-dvh overflow-y-auto snap-y-mandatory scrollbar-hide scrollbar-feed-md">
           {filteredPosts.map((p) => (
             <PostCard
               key={p.id}

@@ -166,6 +166,23 @@
     scrollbar-color: #d81e62 transparent;
   }
 
+  @media (min-width: 768px) {
+    .scrollbar-feed-md::-webkit-scrollbar {
+      width: 4px;
+    }
+    .scrollbar-feed-md::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scrollbar-feed-md::-webkit-scrollbar-thumb {
+      background: #d81e62;
+      border-radius: 9999px;
+    }
+    .scrollbar-feed-md {
+      scrollbar-width: thin;
+      scrollbar-color: #d81e62 transparent;
+    }
+  }
+
   .snap-y-mandatory {
     scroll-snap-type: y mandatory;
   }
