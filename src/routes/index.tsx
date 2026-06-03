@@ -77,9 +77,6 @@ function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-pink-50 via-white to-white pointer-events-none" />
         <div className="mx-auto max-w-6xl px-5 pt-16 pb-20 md:pt-24 md:pb-28 grid md:grid-cols-2 gap-12 items-center relative">
           <div className="relative">
-            <span className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase bg-white border border-border rounded-full px-3 py-1.5 shadow-soft">
-              <Sparkles size={14} className="text-[#d81e62]" /> Sua comunidade, sua marca
-            </span>
             <h1 className="mt-5 text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.05] text-foreground">
               Transforme sua audiência em uma{" "}
               <span className="text-brand-gradient">comunidade que gera receita</span>.
