@@ -34,6 +34,7 @@ interface CommunityContextType {
   updateCommunity: (data: Partial<CommunityData>) => void;
   userType: UserTypeContext;
   auth: AuthContext;
+  hydrated: boolean;
 }
 
 const defaultCommunity: CommunityData = {
