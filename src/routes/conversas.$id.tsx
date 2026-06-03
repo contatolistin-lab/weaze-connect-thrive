@@ -446,6 +446,13 @@ function ConversationDetail() {
   );
 }
 
+function isWithin24h(createdAt: string) {
+  const v = String(createdAt || "").trim().toLowerCase();
+  if (v === "agora") return true;
+  if (/^\d+\s*(s|m|min|h|hora|horas|minutos?|segundos?)$/.test(v)) return true;
+  return false;
+}
+
 function DesktopToolbar() {
   const nav = useNavigate();
   const [q, setQ] = useState("");
