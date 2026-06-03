@@ -24,14 +24,15 @@ export function shouldShowDesktopShell(path: string) {
 
 export function DesktopSidebar() {
   const { location } = useRouterState();
-  const { userType } = useCommunity();
+  const { userType, hydrated } = useCommunity();
   const path = location.pathname;
 
   if (!shouldShowDesktopShell(path)) return null;
 
-  const profileTo = userType.isB2B ? "/profile" : "/b2c/profile";
+  const showB2BOnly = hydrated && userType.isB2B;
+  const profileTo = showB2BOnly ? "/profile" : "/b2c/profile";
   const items: Item[] = [
-    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas") || userType.isB2B),
+    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas") || showB2BOnly),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 

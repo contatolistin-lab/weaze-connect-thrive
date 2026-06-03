@@ -34,6 +34,7 @@ interface CommunityContextType {
   updateCommunity: (data: Partial<CommunityData>) => void;
   userType: UserTypeContext;
   auth: AuthContext;
+  hydrated: boolean;
 }
 
 const defaultCommunity: CommunityData = {
@@ -79,6 +80,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   const [community, setCommunity] = useState<CommunityData>(defaultCommunity);
   const [isB2B, setB2BState] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -94,6 +96,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
       const session = getStoredSession();
       if (session) setUser(session);
     } catch { /* silent */ }
+    setHydrated(true);
   }, []);
 
   const updateCommunity = useCallback((data: Partial<CommunityData>) => {
@@ -153,7 +156,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth }}>
+    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, hydrated }}>
       {children}
     </CommunityCtx.Provider>
   );
