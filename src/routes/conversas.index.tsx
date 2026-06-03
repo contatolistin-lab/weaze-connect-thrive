@@ -10,9 +10,17 @@ import {
   Sparkles,
   X,
   Check,
+  Trash2,
+  PinOff,
 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
-import { getAllConversations, addUserConversation } from "@/lib/mock-data";
+import {
+  getAllConversations,
+  addUserConversation,
+  togglePinConversation,
+  deleteConversation,
+} from "@/lib/mock-data";
+import { useCommunity } from "@/lib/community-store";
 
 function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
@@ -76,6 +84,7 @@ function Conversas() {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
+  const { userType } = useCommunity();
   const all = getAllConversations();
 
   const query = q.trim().toLowerCase();
@@ -87,6 +96,18 @@ function Conversas() {
       ? filtered.filter((c) => !c.pinned && isWithin24h(c.createdAt))
       : filtered.filter((c) => !c.pinned && !isWithin24h(c.createdAt));
 
+  const handleTogglePin = (id: string) => {
+    togglePinConversation(id);
+    refreshList();
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta conversa?")) return;
+    deleteConversation(id);
+    refreshList();
+  };
+
+  const isB2B = userType.isB2B;
 
   return (
     <AppShell title="Conversas">
@@ -160,7 +181,13 @@ function Conversas() {
             </p>
             <div className="space-y-2">
               {pinned.map((c) => (
-                <ConversationCard key={c.id} conv={c} />
+                <ConversationCard
+                  key={c.id}
+                  conv={c}
+                  isB2B={isB2B}
+                  onTogglePin={handleTogglePin}
+                  onDelete={handleDelete}
+                />
               ))}
             </div>
           </div>
@@ -168,7 +195,13 @@ function Conversas() {
 
         <div className="space-y-2 pb-4">
           {list.map((c) => (
-            <ConversationCard key={c.id} conv={c} />
+            <ConversationCard
+              key={c.id}
+              conv={c}
+              isB2B={isB2B}
+              onTogglePin={handleTogglePin}
+              onDelete={handleDelete}
+            />
           ))}
           {list.length === 0 && (
             <div className="text-center py-10 text-foreground/50 text-sm">
@@ -249,7 +282,17 @@ function CriarConversaButton({
   );
 }
 
-function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversations>[number] }) {
+function ConversationCard({
+  conv,
+  isB2B,
+  onTogglePin,
+  onDelete,
+}: {
+  conv: ReturnType<typeof getAllConversations>[number];
+  isB2B: boolean;
+  onTogglePin: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
   const tags = Array.isArray(conv.tags) ? conv.tags : [];
   const id = conv.id || `ucv_fallback_${conv.title || Math.random()}`;
   const title = safeText(conv.title, "Nova conversa");
@@ -258,53 +301,80 @@ function ConversationCard({ conv }: { conv: ReturnType<typeof getAllConversation
   const authorAvatar = safeText(conv.authorAvatar, author.charAt(0).toUpperCase() || "V");
   const createdAt = safeText(conv.createdAt, "agora");
 
+  const canDelete = isB2B || author === "Você";
+
   return (
-    <Link
-      to="/conversas/$id"
-      params={{ id }}
-      className="block rounded-2xl bg-white border border-border p-4 shadow-soft hover:shadow-brand transition-shadow"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
-            {conv.trending && <Sparkles size={12} className="text-amber-500" />}
+    <div className="rounded-2xl bg-white border border-border shadow-soft hover:shadow-brand transition-shadow">
+      <Link
+        to="/conversas/$id"
+        params={{ id }}
+        className="block p-4 pb-2"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
+              {conv.trending && <Sparkles size={12} className="text-amber-500" />}
+            </div>
+            <h3 className="mt-1 font-bold text-sm leading-snug">{title}</h3>
+            <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{description}</p>
           </div>
-          <h3 className="mt-1 font-bold text-sm leading-snug">{title}</h3>
-          <p className="mt-1 text-xs text-foreground/60 line-clamp-2">{description}</p>
         </div>
-      </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-foreground/60">
-        <div className="flex items-center gap-1">
-          <span className="h-5 w-5 rounded-full bg-brand-gradient text-white grid place-items-center text-[9px] font-bold">
-            {authorAvatar}
-          </span>
-          <span>{author}</span>
-          <span className="text-foreground/40">·</span>
-          <span>{createdAt}</span>
+        <div className="mt-3 flex items-center justify-between text-xs text-foreground/60">
+          <div className="flex items-center gap-1">
+            <span className="h-5 w-5 rounded-full bg-brand-gradient text-white grid place-items-center text-[9px] font-bold">
+              {authorAvatar}
+            </span>
+            <span>{author}</span>
+            <span className="text-foreground/40">·</span>
+            <span>{createdAt}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <Heart size={12} /> {conv.likes}
+            </span>
+            <span className="flex items-center gap-1">
+              <MessageSquare size={12} /> {conv.replies}
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye size={12} /> {conv.views}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1">
-            <Heart size={12} /> {conv.likes}
-          </span>
-          <span className="flex items-center gap-1">
-            <MessageSquare size={12} /> {conv.replies}
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye size={12} /> {conv.views}
-          </span>
+        <div className="mt-2 flex gap-1.5">
+          {tags.slice(0, 3).map((t, i) => (
+            <span
+              key={t + i}
+              className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
+            >
+              #{t}
+            </span>
+          ))}
         </div>
-      </div>
-      <div className="mt-2 flex gap-1.5">
-        {tags.slice(0, 3).map((t, i) => (
-          <span
-            key={t + i}
-            className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#630091] font-semibold"
+      </Link>
+      <div className="flex items-center justify-end gap-1 px-4 pb-3 border-t border-border/50 pt-2">
+        {isB2B && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onTogglePin(id); }}
+            className="h-7 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1 hover:bg-muted transition-colors"
+            title={conv.pinned ? "Desafixar" : "Fixar"}
           >
-            #{t}
-          </span>
-        ))}
+            {conv.pinned ? <PinOff size={13} /> : <Pin size={13} />}
+            {conv.pinned ? "Desafixar" : "Fixar"}
+          </button>
+        )}
+        {canDelete && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete(id); }}
+            className="h-7 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1 text-red-500 hover:bg-red-50 transition-colors"
+            title="Excluir"
+          >
+            <Trash2 size={13} /> Excluir
+          </button>
+        )}
       </div>
-    </Link>
+    </div>
   );
 }

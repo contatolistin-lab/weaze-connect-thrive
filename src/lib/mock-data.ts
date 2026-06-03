@@ -1222,6 +1222,14 @@ export function getAllConversations(): MockConversation[] {
   return [...userConversations, ...conversations];
 }
 
+export function togglePinConversation(id: string) {
+  const all = [...userConversations, ...conversations];
+  const conv = all.find((c) => c.id === id);
+  if (conv) {
+    conv.pinned = !conv.pinned;
+  }
+}
+
 export function deleteConversation(id: string) {
   const idx = userConversations.findIndex((c) => c.id === id);
   if (idx !== -1) {
