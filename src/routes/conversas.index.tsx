@@ -88,7 +88,18 @@ function Conversas() {
   const all = getAllConversations();
 
   const query = q.trim().toLowerCase();
-  const filtered = all.filter((c) => safeText(c.title).toLowerCase().includes(query));
+  const filtered = all.filter((c) => {
+    if (!query) return true;
+    const searchable = [
+      safeText(c.title),
+      safeText(c.description),
+      safeText(c.author),
+      ...(Array.isArray(c.tags) ? c.tags : []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return searchable.includes(query);
+  });
 
   const pinned = filtered.filter((c) => c.pinned);
   const list =
