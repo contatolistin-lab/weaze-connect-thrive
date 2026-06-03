@@ -214,8 +214,8 @@ function LandingPage() {
                 d: "Você não sabe quem é sua audiência de verdade. Não consegue medir retenção.",
               },
               {
-                t: "Precisa de várias ferramentas",
-                d: "Você usa Instagram, WhatsApp, Calendly, Shopify. Tudo separado.",
+                t: "Nenhum espaço próprio",
+                d: "Seu conteúdo, conversas e comunidade ficam espalhados em plataformas que você não controla.",
               },
             ].map((item) => (
               <div
