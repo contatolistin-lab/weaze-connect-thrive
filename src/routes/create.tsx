@@ -27,14 +27,15 @@ type MediaTab = "upload" | "link";
 
 function Create() {
   const nav = useNavigate();
-  const { userType } = useCommunity();
+  const { userType, hydrated } = useCommunity();
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!userType.isB2B) {
       nav({ to: "/feed" });
     }
-  }, []);
+  }, [hydrated, userType.isB2B, nav]);
 
   const [mediaTab, setMediaTab] = useState<MediaTab>("upload");
   const [file, setFile] = useState<File | null>(null);
