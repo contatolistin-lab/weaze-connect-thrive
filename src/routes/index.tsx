@@ -291,7 +291,7 @@ function LandingPage() {
                 n: "03",
                 t: "Publique e engaje",
                 d: "Crie posts, vídeos e fotos. Tudo num só lugar para sua comunidade.",
-                img: groupImages[2],
+                img: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600&q=80",
               },
             ].map((step) => (
               <div
