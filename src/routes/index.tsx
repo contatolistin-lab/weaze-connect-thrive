@@ -65,7 +65,7 @@ function LandingPage() {
             <Link to="/login">
               <WButton variant="ghost" size="sm">Entrar</WButton>
             </Link>
-            <Link to="/b2b/signup">
+            <Link to="/signup">
               <WButton variant="gradient" size="sm">Criar comunidade</WButton>
             </Link>
           </div>
@@ -89,7 +89,7 @@ function LandingPage() {
               algoritmos — construa um ativo que é só seu.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/b2b/signup">
+              <Link to="/signup">
                 <WButton variant="gradient" size="xl">
                   Criar minha comunidade <ArrowRight size={18} />
                 </WButton>
@@ -508,7 +508,7 @@ function LandingPage() {
             <p className="mt-4 text-xs opacity-70">Mesmo acesso completo. Melhor custo-benefício.</p>
             <p className="mt-1 text-xs opacity-60">Ideal para quem quer crescer e construir sua comunidade no longo prazo.</p>
             <div className="mt-6">
-              <Link to="/b2b/signup">
+              <Link to="/signup">
                 <WButton variant="white" fullWidth>
                   Escolher plano anual
                 </WButton>
@@ -537,7 +537,7 @@ function LandingPage() {
             <p className="mt-4 text-xs text-foreground/50">Cancele quando quiser</p>
             <p className="mt-1 text-xs text-foreground/50">Ideal para quem deseja começar sem compromisso.</p>
             <div className="mt-6">
-              <Link to="/b2b/signup">
+              <Link to="/signup">
                 <WButton variant="gradient" fullWidth>
                   Começar agora
                 </WButton>
@@ -561,7 +561,7 @@ function LandingPage() {
             passo da sua marca.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/b2b/signup">
+            <Link to="/signup">
               <WButton variant="white" size="xl">
                 Criar minha comunidade <ArrowRight size={18} />
               </WButton>
