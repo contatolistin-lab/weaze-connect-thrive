@@ -14,9 +14,9 @@ const b2bItems: { to: string; icon: typeof Home; label: string }[] = [
 
 export function BottomNav() {
   const { location } = useRouterState();
-  const { userType } = useCommunity();
+  const { userType, hydrated } = useCommunity();
   const path = location.pathname;
-  const isB2B = userType.isB2B;
+  const isB2B = hydrated && userType.isB2B;
 
   return (
     <nav
