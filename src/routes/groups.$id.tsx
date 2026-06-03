@@ -12,6 +12,7 @@ import {
   unpinMessage,
   currentUserId,
   getMyGroups,
+  isGroupMember,
   type MockGroupMessage,
 } from "@/lib/mock-data";
 import { WButton } from "@/components/weaze/WButton";
@@ -19,6 +20,7 @@ import { Avatar } from "@/components/weaze/Avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GroupImage } from "@/lib/group-utils";
 import { cn } from "@/lib/utils";
+import { useCommunity } from "@/lib/community-store";
 
 export const Route = createFileRoute("/groups/$id")({
   head: () => ({ meta: [{ title: "Grupo — WEAZE" }] }),
@@ -114,11 +116,32 @@ function GroupChat() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const { userType, hydrated } = useCommunity();
+
   if (!group) {
     return (
       <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
         <div className="max-w-sm space-y-3">
           <h1 className="text-xl font-extrabold">Grupo não encontrado</h1>
+          <button
+            onClick={() => nav({ to: "/groups" })}
+            className="text-sm text-[#d81e62] font-semibold underline"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (hydrated && !userType.isB2B && !isGroupMember(id)) {
+    return (
+      <div className="min-h-dvh bg-background grid place-items-center px-6 text-center">
+        <div className="max-w-sm space-y-3">
+          <h1 className="text-xl font-extrabold">Acesso restrito</h1>
+          <p className="text-sm text-foreground/60">
+            Você só pode acessar grupos pelos quais foi convidado.
+          </p>
           <button
             onClick={() => nav({ to: "/groups" })}
             className="text-sm text-[#d81e62] font-semibold underline"
