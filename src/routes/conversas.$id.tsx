@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
 import { useState, useEffect, useReducer } from "react";
 import {
   ArrowLeft,
