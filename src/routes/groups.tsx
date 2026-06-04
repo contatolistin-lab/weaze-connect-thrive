@@ -206,7 +206,7 @@ function GroupsIndex() {
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {g.inviteCode && userType.isB2B && (
+{g.inviteCode && userType.isB2B && (
                 <button
                   onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!)}
                   className="h-7 w-7 rounded-full bg-muted grid place-items-center hover:bg-foreground/10 transition-colors"

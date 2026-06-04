@@ -419,7 +419,7 @@ function GroupChat() {
             </div>
 
             <div className="space-y-2">
-              {isAdmin && group.inviteCode && (
+              {userType.isB2B && isAdmin && group.inviteCode && (
                 <WButton variant="outline" fullWidth className="text-xs" onClick={handleCopyInvite}>
                   {copiedLink ? (
                     <>
