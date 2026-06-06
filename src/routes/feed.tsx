@@ -643,6 +643,8 @@ function CommentItem({
   comment,
   isEditing,
   editText,
+  canEdit,
+  canDelete,
   onEdit,
   onEditChange,
   onSaveEdit,
@@ -652,6 +654,8 @@ function CommentItem({
   comment: MockPostComment;
   isEditing: boolean;
   editText: string;
+  canEdit: boolean;
+  canDelete: boolean;
   onEdit: () => void;
   onEditChange: (v: string) => void;
   onSaveEdit: () => void;
@@ -659,6 +663,7 @@ function CommentItem({
   onDelete: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const showMenu = canEdit || canDelete;
 
   return (
     <div className="flex gap-3">
@@ -696,7 +701,7 @@ function CommentItem({
           <p className="text-sm text-foreground/80">{comment.text}</p>
         )}
       </div>
-      {!isEditing && (
+      {!isEditing && showMenu && (
         <div className="relative shrink-0">
           <button
             onClick={() => setMenuOpen((v) => !v)}
@@ -708,24 +713,28 @@ function CommentItem({
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
               <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-soft border border-border overflow-hidden min-w-[130px]">
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onEdit();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
-                >
-                  <Pencil size={13} /> Editar
-                </button>
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onDelete();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#d81e62] hover:bg-muted"
-                >
-                  <Trash2 size={13} /> Excluir
-                </button>
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onEdit();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                  >
+                    <Pencil size={13} /> Editar
+                  </button>
+                )}
+                {canDelete && (
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onDelete();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#d81e62] hover:bg-muted"
+                  >
+                    <Trash2 size={13} /> Excluir
+                  </button>
+                )}
               </div>
             </>
           )}
