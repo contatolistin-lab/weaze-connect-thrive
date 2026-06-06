@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { BottomNav } from "@/components/weaze/BottomNav";
 import { WeazeLogo } from "@/components/weaze/WeazeLogo";
+import { Avatar } from "@/components/weaze/Avatar";
 import {
   getAllPosts,
   updatePost,
@@ -489,7 +490,7 @@ function CommentsModal({
   onClose: () => void;
   onChange: () => void;
 }) {
-  const { userType } = useCommunity();
+  const { userType, profileAvatar, auth } = useCommunity();
   const [comments, setComments] = useState(() => getPostComments(postId));
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -508,7 +509,7 @@ function CommentsModal({
       setEditingId(null);
       setEditText("");
     } else {
-      addComment(postId, text);
+      addComment(postId, text, auth.user?.name || "Você", profileAvatar || "V");
       setInput("");
     }
     refresh();
@@ -579,9 +580,7 @@ function CommentsModal({
         </div>
 
         <div className="flex items-center gap-2 px-5 py-3 border-t border-border shrink-0">
-          <span className="shrink-0 h-8 w-8 rounded-full bg-brand-gradient grid place-items-center text-white text-xs font-bold">
-            V
-          </span>
+          <Avatar name={auth.user?.name || "Você"} src={profileAvatar} size={32} />
           {editingId ? (
             <div className="flex-1 flex items-center gap-2">
               <input
@@ -667,9 +666,11 @@ function CommentItem({
 
   return (
     <div className="flex gap-3">
-      <span className="shrink-0 h-8 w-8 rounded-full bg-brand-gradient grid place-items-center text-white text-xs font-bold">
-        {comment.authorAvatar}
-      </span>
+      <Avatar
+        name={comment.author}
+        src={comment.authorAvatar.startsWith("data:image/") ? comment.authorAvatar : undefined}
+        size={32}
+      />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-bold text-sm">{comment.author}</span>

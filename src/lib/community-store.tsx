@@ -35,6 +35,8 @@ interface CommunityContextType {
   userType: UserTypeContext;
   auth: AuthContext;
   hydrated: boolean;
+  profileAvatar: string | undefined;
+  setProfileAvatar: (url: string | undefined) => void;
 }
 
 const defaultCommunity: CommunityData = {
@@ -80,6 +82,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   const [community, setCommunity] = useState<CommunityData>(defaultCommunity);
   const [isB2B, setB2BState] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [profileAvatar, setProfileAvatarState] = useState<string | undefined>(undefined);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -95,6 +98,15 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     try {
       const session = getStoredSession();
       if (session) setUser(session);
+    } catch { /* silent */ }
+    try {
+      const b2c = localStorage.getItem("weaze_b2c_avatar");
+      if (b2c) {
+        setProfileAvatarState(b2c);
+      } else {
+        const communityData = JSON.parse(localStorage.getItem("weaze_community") || "{}");
+        if (communityData.avatar) setProfileAvatarState(communityData.avatar);
+      }
     } catch { /* silent */ }
     setHydrated(true);
   }, []);
@@ -117,6 +129,15 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("weaze_user_b2b", String(v));
     } catch {
       /* silent */
+    }
+  }, []);
+
+  const setProfileAvatar = useCallback((url: string | undefined) => {
+    setProfileAvatarState(url);
+    if (url) {
+      try { localStorage.setItem("weaze_b2c_avatar", url); } catch { /* silent */ }
+    } else {
+      try { localStorage.removeItem("weaze_b2c_avatar"); } catch { /* silent */ }
     }
   }, []);
 
@@ -156,7 +177,7 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, hydrated }}>
+    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, hydrated, profileAvatar, setProfileAvatar }}>
       {children}
     </CommunityCtx.Provider>
   );

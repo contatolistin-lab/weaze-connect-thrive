@@ -32,6 +32,7 @@ import {
   deleteConversation,
 } from "@/lib/mock-data";
 import { useCommunity } from "@/lib/community-store";
+import { Avatar } from "@/components/weaze/Avatar";
 
 function ConversationDetailError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
@@ -78,6 +79,7 @@ function safeReplies<T>(value: T[] | undefined): T[] {
 function ConversationDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const { profileAvatar } = useCommunity();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
   const [conv, setConv] = useState(() => getConversation(id) ?? null);
   const [liked, setLiked] = useState(false);
@@ -166,9 +168,11 @@ function ConversationDetail() {
           <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{safeText(conv.description)}</p>
 
           <div className="mt-3 flex items-center gap-3 text-xs text-foreground/60">
-            <span className="h-6 w-6 rounded-full bg-brand-gradient text-white grid place-items-center text-[10px] font-bold">
-              {safeText(conv.authorAvatar, safeText(conv.author, "Você").charAt(0).toUpperCase() || "V")}
-            </span>
+            <Avatar
+              name={safeText(conv.author, "Você")}
+              size={24}
+              src={safeText(conv.author, "Você") === "Você" ? profileAvatar : undefined}
+            />
             <span className="font-semibold text-foreground/80">{safeText(conv.author, "Você")}</span>
             <span>·</span>
             <span>{safeText(conv.createdAt, "agora")}</span>
@@ -230,9 +234,11 @@ function ConversationDetail() {
                 className="rounded-2xl bg-white border border-border p-4 shadow-soft"
               >
                 <div className="flex items-start gap-3">
-                  <span className="shrink-0 h-8 w-8 rounded-full bg-brand-gradient text-white grid place-items-center text-xs font-bold">
-                    {c.authorAvatar}
-                  </span>
+                  <Avatar
+                    name={c.author}
+                    size={32}
+                    src={c.authorAvatar?.startsWith("data:image/") ? c.authorAvatar : undefined}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm">{c.author}</span>

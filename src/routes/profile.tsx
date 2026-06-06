@@ -12,7 +12,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { community, updateCommunity, userType, hydrated } = useCommunity();
+  const { community, updateCommunity, userType, hydrated, setProfileAvatar } = useCommunity();
   const nav = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -27,7 +27,9 @@ function Profile() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      updateCommunity({ avatar: reader.result as string });
+      const url = reader.result as string;
+      updateCommunity({ avatar: url });
+      setProfileAvatar(url);
     };
     reader.readAsDataURL(file);
   };

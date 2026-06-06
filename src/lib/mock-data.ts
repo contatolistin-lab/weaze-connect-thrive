@@ -1090,13 +1090,13 @@ export const postComments: Record<string, MockPostComment[]> = {
   ],
 };
 
-export function addComment(postId: string, text: string) {
+export function addComment(postId: string, text: string, authorName = "Você", authorAvatar = "V") {
   if (!postComments[postId]) postComments[postId] = [];
   const comment: MockPostComment = {
     id: "pc_" + Date.now(),
     postId,
-    author: "Você",
-    authorAvatar: "V",
+    author: authorName,
+    authorAvatar,
     text,
     createdAt: "agora",
   };

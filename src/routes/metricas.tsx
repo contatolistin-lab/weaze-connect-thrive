@@ -12,10 +12,12 @@ import {
   Star,
   Flame,
 } from "lucide-react";
+import { Avatar } from "@/components/weaze/Avatar";
 import { AppShell } from "@/components/weaze/AppShell";
 import { metricsOverview, mockUserActivity } from "@/lib/mock-data";
 import { computeRanking } from "@/lib/engagement-engine";
 import { useWeaze } from "@/lib/weaze-context";
+import { useCommunity } from "@/lib/community-store";
 
 const ranking = computeRanking(mockUserActivity);
 
@@ -48,6 +50,7 @@ const baseMetrics = metricsOverview;
 
 function Metricas() {
   const { metrics } = useWeaze();
+  const { profileAvatar } = useCommunity();
   const allMetrics = [
     { ...baseMetrics[0], value: metrics.likes },
     { ...baseMetrics[1], value: metrics.comments },
@@ -115,9 +118,11 @@ function Metricas() {
               >
                 {i + 1}
               </span>
-              <span className="shrink-0 h-9 w-9 rounded-full bg-brand-gradient text-white grid place-items-center text-sm font-bold">
-                {u.avatar}
-              </span>
+              <Avatar
+                name={u.name}
+                size={36}
+                src={u.name === "Você" ? profileAvatar : undefined}
+              />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{u.name}</p>
                 <p className="text-[10px] text-foreground/50">{u.score} pontos</p>

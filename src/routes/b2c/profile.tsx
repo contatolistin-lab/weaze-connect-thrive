@@ -12,15 +12,14 @@ export const Route = createFileRoute("/b2c/profile")({
 
 function B2CProfile() {
   const nav = useNavigate();
-  const { auth, userType } = useCommunity();
+  const { auth, userType, profileAvatar, setProfileAvatar } = useCommunity();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [avatar, setAvatar] = useState<string | undefined>(undefined);
+  const [avatar, setAvatar] = useState<string | undefined>(profileAvatar);
 
   useEffect(() => {
-    const saved = localStorage.getItem("weaze_b2c_avatar");
-    if (saved) setAvatar(saved);
-  }, []);
+    setAvatar(profileAvatar);
+  }, [profileAvatar]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,7 +28,7 @@ function B2CProfile() {
     reader.onload = () => {
       const dataUrl = reader.result as string;
       setAvatar(dataUrl);
-      localStorage.setItem("weaze_b2c_avatar", dataUrl);
+      setProfileAvatar(dataUrl);
     };
     reader.readAsDataURL(file);
   };

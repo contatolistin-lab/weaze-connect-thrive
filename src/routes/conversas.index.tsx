@@ -14,6 +14,7 @@ import {
   PinOff,
 } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
+import { Avatar } from "@/components/weaze/Avatar";
 import {
   getAllConversations,
   addUserConversation,
@@ -84,7 +85,7 @@ function Conversas() {
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"recentes" | "todas">("recentes");
   const [, refreshList] = useReducer((value: number) => value + 1, 0);
-  const { userType } = useCommunity();
+  const { userType, profileAvatar } = useCommunity();
   const all = getAllConversations();
 
   const query = q.trim().toLowerCase();
@@ -141,7 +142,7 @@ function Conversas() {
             description: dados.description,
             category: "Geral",
             author: "Você",
-            authorAvatar: title.at(0)?.toUpperCase() ?? "V",
+            authorAvatar: profileAvatar || (title.at(0)?.toUpperCase() ?? "V"),
             replies: 0,
             likes: 0,
             views: 0,
@@ -331,6 +332,7 @@ function ConversationCard({
   onTogglePin: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
+  const { profileAvatar } = useCommunity();
   const tags = Array.isArray(conv.tags) ? conv.tags : [];
   const id = conv.id || `ucv_fallback_${conv.title || Math.random()}`;
   const title = safeText(conv.title, "Nova conversa");
@@ -360,9 +362,7 @@ function ConversationCard({
         </div>
         <div className="mt-3 flex items-center justify-between text-xs text-foreground/60">
           <div className="flex items-center gap-1">
-            <span className="h-5 w-5 rounded-full bg-brand-gradient text-white grid place-items-center text-[9px] font-bold">
-              {authorAvatar}
-            </span>
+            <Avatar name={author} size={20} src={author === "Você" ? profileAvatar : undefined} />
             <span>{author}</span>
             <span className="text-foreground/40">·</span>
             <span>{createdAt}</span>

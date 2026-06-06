@@ -17,10 +17,10 @@ import {
 } from "@/lib/mock-data";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
+import { useCommunity } from "@/lib/community-store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { GroupImage } from "@/lib/group-utils";
 import { cn } from "@/lib/utils";
-import { useCommunity } from "@/lib/community-store";
 
 export const Route = createFileRoute("/groups/$id")({
   head: () => ({ meta: [{ title: "Grupo — WEAZE" }] }),
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/groups/$id")({
 function GroupChat() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const { profileAvatar } = useCommunity();
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -210,6 +211,8 @@ function GroupChat() {
                 <div className="shrink-0 self-end">
                   {showAvatar && !isOwn ? (
                     <Avatar name={msg.authorName} size={30} />
+                  ) : showAvatar && isOwn ? (
+                    <Avatar name={msg.authorName} size={30} src={profileAvatar} />
                   ) : (
                     <div className="w-[30px]" />
                   )}
@@ -401,7 +404,12 @@ function GroupChat() {
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {members.map((m) => (
                   <div key={m.id} className="flex items-center gap-2.5 py-1.5">
-                    <Avatar name={m.name} size={32} brand={m.role === "admin"} />
+                    <Avatar
+                      name={m.name}
+                      size={32}
+                      brand={m.role === "admin"}
+                      src={m.name === "Você" ? profileAvatar : undefined}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className="text-sm font-semibold truncate">{m.name}</p>
