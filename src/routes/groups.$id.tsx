@@ -125,7 +125,7 @@ function GroupChat() {
           <h1 className="text-xl font-extrabold">Grupo não encontrado</h1>
           <button
             onClick={() => nav({ to: "/groups" })}
-            className="text-sm text-[#630091] font-semibold underline"
+            className="text-sm text-[#000000] font-semibold underline"
           >
             Voltar
           </button>
@@ -144,7 +144,7 @@ function GroupChat() {
           </p>
           <button
             onClick={() => nav({ to: "/groups" })}
-            className="text-sm text-[#630091] font-semibold underline"
+            className="text-sm text-[#000000] font-semibold underline"
           >
             Voltar
           </button>
@@ -343,7 +343,7 @@ function GroupChat() {
                     <p className="font-bold text-sm truncate">{g2.name}</p>
                     <p className="text-[10px] text-foreground/40">{g2.memberCount} membros</p>
                   </div>
-                  <span className="text-xs font-bold text-[#630091]">Abrir</span>
+                  <span className="text-xs font-bold text-[#000000]">Abrir</span>
                 </button>
               ))}
             </div>

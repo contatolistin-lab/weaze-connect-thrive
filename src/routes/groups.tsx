@@ -219,7 +219,7 @@ function GroupsIndex() {
                   )}
                 </button>
               )}
-              <span className="text-xs font-bold text-[#630091]">Abrir</span>
+              <span className="text-xs font-bold text-[#000000]">Abrir</span>
             </div>
           </button>
         );

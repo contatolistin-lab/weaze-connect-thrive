@@ -81,7 +81,7 @@ function Chat() {
 
         <div className="border-t border-border bg-white px-3 py-2 safe-pb">
           <div className="flex items-center gap-2">
-            <button className="h-10 w-10 rounded-full bg-muted grid place-items-center text-[#630091]">
+            <button className="h-10 w-10 rounded-full bg-muted grid place-items-center text-[#000000]">
               <Plus size={20} />
             </button>
             <div className="flex-1 flex items-center gap-2 rounded-full bg-muted px-4 h-10">

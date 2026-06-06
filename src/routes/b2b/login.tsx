@@ -54,7 +54,7 @@ function B2BLogin() {
 
         <p className="mt-auto text-center text-sm text-foreground/60">
           Nova marca?{" "}
-          <Link to="/b2b/signup" className="text-[#630091] font-semibold">
+          <Link to="/b2b/signup" className="text-[#000000] font-semibold">
             Criar comunidade
           </Link>
         </p>

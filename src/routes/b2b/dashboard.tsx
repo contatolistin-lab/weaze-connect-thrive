@@ -39,7 +39,7 @@ function B2BDashboard() {
             </div>
           </div>
           <div className="mt-5 flex items-center gap-3">
-            <span className="h-14 w-14 rounded-2xl bg-white text-[#630091] grid place-items-center font-extrabold text-2xl">
+            <span className="h-14 w-14 rounded-2xl bg-white text-[#000000] grid place-items-center font-extrabold text-2xl">
               N
             </span>
             <div>
@@ -82,7 +82,7 @@ function B2BDashboard() {
                 className="rounded-2xl bg-white border border-border p-4 shadow-soft"
               >
                 <div className="flex items-center justify-between">
-                  <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#630091] grid place-items-center">
+                  <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#000000] grid place-items-center">
                     <k.icon size={18} />
                   </span>
                   <span className="text-[10px] font-bold text-emerald-600">{k.trend}</span>
@@ -102,7 +102,7 @@ function B2BDashboard() {
                 <p className="text-sm font-bold">Crescimento semanal</p>
                 <p className="text-xs text-foreground/60">Últimos 7 dias</p>
               </div>
-              <BarChart3 size={20} className="text-[#630091]" />
+              <BarChart3 size={20} className="text-[#000000]" />
             </div>
             <div className="mt-4 h-40 flex items-end gap-2">
               {[35, 55, 40, 70, 60, 85, 95].map((h, i) => (

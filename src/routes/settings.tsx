@@ -65,7 +65,7 @@ function Settings() {
                 {g.items.map((i) => (
                   <li key={i.label}>
                     <button className="w-full flex items-center gap-3 px-4 py-3.5">
-                      <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#630091] grid place-items-center">
+                      <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#000000] grid place-items-center">
                         <i.icon size={16} />
                       </span>
                       <span className="flex-1 text-left text-sm font-semibold">{i.label}</span>
@@ -79,7 +79,7 @@ function Settings() {
 
           <Link
             to="/"
-            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#630091] font-bold"
+            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#000000] font-bold"
           >
             <LogOut size={18} /> Sair
           </Link>

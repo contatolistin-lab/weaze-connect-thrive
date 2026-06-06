@@ -61,7 +61,7 @@ function B2BSignup() {
 
         <p className="mt-auto text-center text-sm text-foreground/60">
           Já tem conta?{" "}
-          <Link to="/b2b/login" className="text-[#630091] font-semibold">
+          <Link to="/b2b/login" className="text-[#000000] font-semibold">
             Entrar
           </Link>
         </p>

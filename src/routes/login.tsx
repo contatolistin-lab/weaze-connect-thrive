@@ -58,9 +58,9 @@ function Login() {
           />
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-foreground/70">
-              <input type="checkbox" className="accent-[#630091]" /> Lembrar
+              <input type="checkbox" className="accent-[#000000]" /> Lembrar
             </label>
-            <a href="#" className="text-[#630091] font-semibold">
+            <a href="#" className="text-[#000000] font-semibold">
               Esqueci a senha
             </a>
           </div>
@@ -83,7 +83,7 @@ function Login() {
 
         <p className="mt-auto text-center text-sm text-foreground/60">
           Novo por aqui?{" "}
-          <Link to="/signup" className="text-[#630091] font-semibold">
+          <Link to="/signup" className="text-[#000000] font-semibold">
             Criar conta
           </Link>
         </p>
@@ -94,7 +94,7 @@ function Login() {
 
 export function Field({ icon: Icon, right, ...props }: any) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#630091] transition-shadow">
+    <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
       <Icon size={18} className="text-foreground/40" />
       <input
         {...props}

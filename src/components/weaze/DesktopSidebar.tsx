@@ -69,7 +69,7 @@ export function DesktopSidebar() {
                 }`}
                 style={
                   !isCreate
-                    ? { color: "#630091", opacity: active ? 1 : 0.7 }
+                    ? { color: "#000000", opacity: active ? 1 : 0.7 }
                     : undefined
                 }
               >
@@ -77,7 +77,7 @@ export function DesktopSidebar() {
               </span>
               <span
                 className="hidden lg:inline text-sm font-semibold"
-                style={{ color: "#630091", opacity: active ? 1 : 0.75 }}
+                style={{ color: "#000000", opacity: active ? 1 : 0.75 }}
               >
                 {label}
               </span>

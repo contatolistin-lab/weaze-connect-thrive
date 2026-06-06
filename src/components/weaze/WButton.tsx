@@ -37,11 +37,11 @@ export const WButton = forwardRef<HTMLButtonElement, Props>(function WButton(
   const variants: Record<Variant, string> = {
     gradient:
       "bg-brand-gradient text-white shadow-brand hover:shadow-pink focus-visible:ring-[--brand-pink]",
-    purple: "bg-[#630091] text-white hover:opacity-90 shadow-brand",
-    pink: "bg-[#630091] text-white hover:opacity-90 shadow-pink",
+    purple: "bg-[#000000] text-white hover:opacity-90 shadow-brand",
+    pink: "bg-[#000000] text-white hover:opacity-90 shadow-pink",
     ghost: "bg-transparent text-foreground hover:bg-muted",
     outline: "bg-white text-foreground border border-border hover:bg-muted",
-    white: "bg-white text-[#630091] shadow-soft hover:shadow-brand",
+    white: "bg-white text-[#000000] shadow-soft hover:shadow-brand",
   };
   return (
     <button

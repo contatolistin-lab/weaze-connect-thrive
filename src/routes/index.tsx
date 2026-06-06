@@ -474,7 +474,7 @@ function LandingPage() {
         <div className="mt-12 grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Annual */}
           <div className="rounded-3xl p-8 bg-brand-gradient text-white shadow-brand relative order-2 md:order-1">
-            <span className="absolute -top-3 right-6 bg-white text-[#630091] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
+            <span className="absolute -top-3 right-6 bg-white text-[#000000] text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow">
               MAIS ESCOLHIDO
             </span>
             <p className="text-sm font-semibold opacity-80">Plano Anual</p>
@@ -519,7 +519,7 @@ function LandingPage() {
             <ul className="mt-6 space-y-2 text-sm">
               {["Todos os recursos da plataforma", "Comunidade ilimitada", "Feed completo", "Mensagens", "Grupos", "Conteúdos"].map((f) => (
                 <li key={f} className="flex items-center gap-2">
-                  <Check size={16} className="text-[#630091] shrink-0" />
+                  <Check size={16} className="text-[#000000] shrink-0" />
                   {f}
                 </li>
               ))}

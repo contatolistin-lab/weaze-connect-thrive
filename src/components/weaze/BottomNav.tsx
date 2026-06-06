@@ -36,11 +36,11 @@ export function BottomNav() {
                 <Icon
                   size={20}
                   strokeWidth={active ? 2.6 : 2}
-                  style={{ color: "#630091", opacity: active ? 1 : 0.55 }}
+                  style={{ color: "#000000", opacity: active ? 1 : 0.55 }}
                 />
                 <span
                   className="text-[9px] font-semibold leading-tight"
-                  style={{ color: "#630091", opacity: active ? 1 : 0.55 }}
+                  style={{ color: "#000000", opacity: active ? 1 : 0.55 }}
                 >
                   {label}
                 </span>
@@ -61,7 +61,7 @@ export function BottomNav() {
               </span>
               <span
                 className="text-[9px] font-semibold leading-tight"
-                style={{ color: "#630091", opacity: 0.55 }}
+                style={{ color: "#000000", opacity: 0.55 }}
               >
                 Criar
               </span>
@@ -81,11 +81,11 @@ export function BottomNav() {
                 <Icon
                   size={20}
                   strokeWidth={active ? 2.6 : 2}
-                  style={{ color: "#630091", opacity: active ? 1 : 0.55 }}
+                  style={{ color: "#000000", opacity: active ? 1 : 0.55 }}
                 />
                 <span
                   className="text-[9px] font-semibold leading-tight"
-                  style={{ color: "#630091", opacity: active ? 1 : 0.55 }}
+                  style={{ color: "#000000", opacity: active ? 1 : 0.55 }}
                 >
                   {label}
                 </span>
@@ -103,11 +103,11 @@ export function BottomNav() {
             <User
               size={20}
               strokeWidth={path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 2.6 : 2}
-              style={{ color: "#630091", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
+              style={{ color: "#000000", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
             />
             <span
               className="text-[9px] font-semibold leading-tight"
-              style={{ color: "#630091", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
+              style={{ color: "#000000", opacity: path.startsWith("/profile") || path.startsWith("/b2c/profile") ? 1 : 0.55 }}
             >
               Perfil
             </span>
