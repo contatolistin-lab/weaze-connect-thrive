@@ -103,9 +103,6 @@ function LandingPage() {
                   />
                 ))}
               </div>
-              <span>
-                <b className="text-foreground">+12k</b> marcas já estão dentro
-              </span>
             </div>
           </div>
 
