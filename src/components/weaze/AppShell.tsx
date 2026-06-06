@@ -24,8 +24,8 @@ export function AppShell({
         {!hideTopBar && <TopBar title={title} />}
         <main className={`flex-1 ${fullBleed ? "" : "pb-24 md:pb-8"}`}>{children}</main>
         {!hideBottomNav && <BottomNav />}
-        <WhatsAppButton />
       </div>
+      <WhatsAppButton />
     </div>
   );
 }
