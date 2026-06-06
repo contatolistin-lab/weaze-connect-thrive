@@ -20,9 +20,9 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
     .slice(0, 2)
     .join("")
     .toUpperCase();
-  const bg = brand ? "linear-gradient(135deg,#630091,#630091)" : colorFromName(name);
+  const bg = brand ? "linear-gradient(135deg,#630091,#d81e62)" : colorFromName(name);
   const wrapperStyle: React.CSSProperties = ring
-    ? { padding: 2, background: "linear-gradient(135deg,#630091,#630091)", borderRadius: "9999px" }
+    ? { padding: 2, background: "linear-gradient(135deg,#630091,#d81e62)", borderRadius: "9999px" }
     : {};
   const inner = (
     <span
