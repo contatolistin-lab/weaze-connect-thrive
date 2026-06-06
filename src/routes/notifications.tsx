@@ -17,12 +17,12 @@ export const Route = createFileRoute("/notifications")({
 });
 
 const iconMap: Record<string, { I: LucideIcon; color: string }> = {
-  like: { I: Heart, color: "#d81e62" },
+  like: { I: Heart, color: "#630091" },
   comment: { I: MessageCircle, color: "#630091" },
-  share: { I: Share2, color: "#d81e62" },
-  follow: { I: UserPlus, color: "#d81e62" },
+  share: { I: Share2, color: "#630091" },
+  follow: { I: UserPlus, color: "#630091" },
   brand: { I: Sparkles, color: "#630091" },
-  live: { I: Radio, color: "#d81e62" },
+  live: { I: Radio, color: "#630091" },
 };
 
 function Notifications() {

@@ -62,7 +62,7 @@ function CommunityDetail() {
               <h1 className="text-xl font-extrabold tracking-tight flex items-center gap-1">
                 {c.name}
                 {c.verified && (
-                  <span className="h-4 w-4 rounded-full bg-[#d81e62] grid place-items-center text-[10px] text-white">
+                  <span className="h-4 w-4 rounded-full bg-[#630091] grid place-items-center text-[10px] text-white">
                     ✓
                   </span>
                 )}

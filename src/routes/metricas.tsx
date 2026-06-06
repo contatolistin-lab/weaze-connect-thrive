@@ -136,7 +136,7 @@ function Metricas() {
   const badgesSection = (
     <div className="rounded-3xl bg-white border border-border p-5 shadow-soft">
       <div className="flex items-center gap-2">
-        <Award size={20} className="text-[#d81e62]" />
+        <Award size={20} className="text-[#630091]" />
         <div>
           <p className="font-bold text-sm">Medalhas e conquistas</p>
           <p className="text-[11px] text-foreground/60">Badges disponíveis na plataforma</p>
@@ -149,7 +149,7 @@ function Metricas() {
           { icon: Star, label: "Destaque", desc: "Post mais curtido", color: "text-yellow-500" },
           { icon: Crown, label: "Rainha/Rey", desc: "Top engajamento", color: "text-purple-500" },
           { icon: Trophy, label: "Campeão", desc: "Primeiro lugar", color: "text-amber-500" },
-          { icon: Heart, label: "Coração", desc: "Mais comentários", color: "text-[#d81e62]" },
+          { icon: Heart, label: "Coração", desc: "Mais comentários", color: "text-[#630091]" },
           { icon: MessageSquare, label: "Conversador", desc: "Mais respostas", color: "text-[#630091]" },
           { icon: Zap, label: "Raio", desc: "Crescimento rápido", color: "text-blue-500" },
           { icon: Award, label: "Veterano", desc: "Desde o início", color: "text-emerald-500" },

@@ -43,7 +43,7 @@
 
   /* Brand — exact hex from spec */
   --brand-purple: #630091;
-  --brand-pink: #d81e62;
+  --brand-pink: #630091;
 
   --background: #ffffff;
   --foreground: #0b0b12;
@@ -68,7 +68,7 @@
 
   --border: #ece8f1;
   --input: #ece8f1;
-  --ring: #d81e62;
+  --ring: #630091;
 
   --gradient-brand: linear-gradient(135deg, #630091 0%, #d81e62 100%);
   --gradient-brand-soft: linear-gradient(135deg, rgba(99, 0, 145, 0.08), rgba(216, 30, 98, 0.08));
@@ -86,7 +86,7 @@
   --card-foreground: #ffffff;
   --popover: #14121a;
   --popover-foreground: #ffffff;
-  --primary: #d81e62;
+  --primary: #630091;
   --primary-foreground: #ffffff;
   --secondary: #2a1f33;
   --secondary-foreground: #ffffff;
@@ -96,7 +96,7 @@
   --accent-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #d81e62;
+  --ring: #630091;
 }
 
 @layer base {
@@ -158,12 +158,12 @@
     background: transparent;
   }
   .scrollbar-brand::-webkit-scrollbar-thumb {
-    background: #d81e62;
+    background: #630091;
     border-radius: 9999px;
   }
   .scrollbar-brand {
     scrollbar-width: thin;
-    scrollbar-color: #d81e62 transparent;
+    scrollbar-color: #630091 transparent;
   }
 
   @media (min-width: 768px) {
@@ -174,12 +174,12 @@
       background: transparent;
     }
     .scrollbar-feed-md::-webkit-scrollbar-thumb {
-      background: #d81e62;
+      background: #630091;
       border-radius: 9999px;
     }
     .scrollbar-feed-md {
       scrollbar-width: thin;
-      scrollbar-color: #d81e62 transparent;
+      scrollbar-color: #630091 transparent;
     }
   }
 

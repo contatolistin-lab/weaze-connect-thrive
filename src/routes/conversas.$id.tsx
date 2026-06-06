@@ -109,7 +109,7 @@ function ConversationDetail() {
           <p className="text-foreground/50">Conversa não encontrada.</p>
           <button
             onClick={() => nav({ to: "/conversas" })}
-            className="mt-3 text-sm text-[#d81e62] font-semibold"
+            className="mt-3 text-sm text-[#630091] font-semibold"
           >
             Voltar
           </button>
@@ -210,7 +210,7 @@ function ConversationDetail() {
               }}
               className={`flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-semibold border transition-colors ${
                 liked
-                  ? "bg-[#d81e62] text-white border-[#d81e62]"
+                  ? "bg-[#630091] text-white border-[#630091]"
                   : "bg-white border-border text-foreground/70"
               }`}
             >
@@ -254,7 +254,7 @@ function ConversationDetail() {
                               setEditText("");
                             }
                           }}
-                          className="flex-1 h-9 rounded-lg border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+                          className="flex-1 h-9 rounded-lg border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#630091]"
                           autoFocus
                         />
                         <button
@@ -283,10 +283,10 @@ function ConversationDetail() {
                           setLikedComments((prev) => ({ ...prev, [c.id]: !prev[c.id] }))
                         }
                         className={`flex items-center gap-1 text-xs ${
-                          likedComments[c.id] ? "text-[#d81e62]" : "text-foreground/50"
-                        } hover:text-[#d81e62]`}
+                          likedComments[c.id] ? "text-[#630091]" : "text-foreground/50"
+                        } hover:text-[#630091]`}
                       >
-                        <Heart size={12} fill={likedComments[c.id] ? "#d81e62" : "none"} />{" "}
+                        <Heart size={12} fill={likedComments[c.id] ? "#630091" : "none"} />{" "}
                         {c.likes + (likedComments[c.id] ? 1 : 0)}
                       </button>
                       <button
@@ -315,10 +315,10 @@ function ConversationDetail() {
                                     }))
                                   }
                                   className={`flex items-center gap-0.5 text-[10px] ${
-                                    rLiked ? "text-[#d81e62]" : "text-foreground/40"
+                                    rLiked ? "text-[#630091]" : "text-foreground/40"
                                   }`}
                                 >
-                                  <Heart size={10} fill={rLiked ? "#d81e62" : "none"} />{" "}
+                                  <Heart size={10} fill={rLiked ? "#630091" : "none"} />{" "}
                                   {(Number.isFinite(r.likes) ? r.likes : 0) + (rLiked ? 1 : 0)}
                                 </button>
                                 <span className="text-[10px] text-foreground/40">
@@ -541,8 +541,8 @@ function DesktopToolbar() {
             className="w-full text-left rounded-xl bg-white border border-border p-3 shadow-soft hover:shadow-brand transition-shadow"
           >
             <div className="flex items-center gap-1">
-              <Pin size={10} className="text-[#d81e62]" />
-              <span className="text-xs font-bold text-[#d81e62]">Fixada</span>
+              <Pin size={10} className="text-[#630091]" />
+              <span className="text-xs font-bold text-[#630091]">Fixada</span>
             </div>
             <p className="mt-1 text-sm font-semibold line-clamp-1">{c.title}</p>
           </button>
@@ -591,7 +591,7 @@ function CommentMenu({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =>
                 setOpen(false);
                 onDelete();
               }}
-              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#d81e62] hover:bg-muted"
+              className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#630091] hover:bg-muted"
             >
               <Trash2 size={13} /> Excluir
             </button>

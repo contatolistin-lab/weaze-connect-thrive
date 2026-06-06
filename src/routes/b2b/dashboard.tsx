@@ -102,7 +102,7 @@ function B2BDashboard() {
                 <p className="text-sm font-bold">Crescimento semanal</p>
                 <p className="text-xs text-foreground/60">Últimos 7 dias</p>
               </div>
-              <BarChart3 size={20} className="text-[#d81e62]" />
+              <BarChart3 size={20} className="text-[#630091]" />
             </div>
             <div className="mt-4 h-40 flex items-end gap-2">
               {[35, 55, 40, 70, 60, 85, 95].map((h, i) => (

@@ -292,20 +292,20 @@ function CriarConversaButton({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título da conversa"
-            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#630091]"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição (opcional)"
             rows={3}
-            className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62] resize-none"
+            className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#630091] resize-none"
           />
           <input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Tags: separadas por vírgula"
-            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#d81e62]"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#630091]"
           />
           <button
             type="submit"
@@ -351,7 +351,7 @@ function ConversationCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              {conv.pinned && <Pin size={12} className="text-[#d81e62]" />}
+              {conv.pinned && <Pin size={12} className="text-[#630091]" />}
               {conv.trending && <Sparkles size={12} className="text-amber-500" />}
             </div>
             <h3 className="mt-1 font-bold text-sm leading-snug">{title}</h3>

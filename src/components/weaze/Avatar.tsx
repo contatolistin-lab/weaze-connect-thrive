@@ -9,7 +9,7 @@ interface AvatarProps {
 function colorFromName(name: string) {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  const palette = ["#630091", "#d81e62", "#8a2be2", "#ff4d8d", "#5b21b6", "#be185d"];
+  const palette = ["#630091", "#630091", "#8a2be2", "#ff4d8d", "#5b21b6", "#be185d"];
   return palette[h % palette.length];
 }
 
