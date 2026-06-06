@@ -489,6 +489,7 @@ function CommentsModal({
   onClose: () => void;
   onChange: () => void;
 }) {
+  const { userType } = useCommunity();
   const [comments, setComments] = useState(() => getPostComments(postId));
   const [input, setInput] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
