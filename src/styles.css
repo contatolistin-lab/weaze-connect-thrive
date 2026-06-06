@@ -158,12 +158,12 @@
     background: transparent;
   }
   .scrollbar-brand::-webkit-scrollbar-thumb {
-    background: #000000;
+    background: #d1d1d1;
     border-radius: 9999px;
   }
   .scrollbar-brand {
     scrollbar-width: thin;
-    scrollbar-color: #000000 transparent;
+    scrollbar-color: #d1d1d1 transparent;
   }
 
   @media (min-width: 768px) {
@@ -174,12 +174,12 @@
       background: transparent;
     }
     .scrollbar-feed-md::-webkit-scrollbar-thumb {
-      background: #000000;
+      background: #d1d1d1;
       border-radius: 9999px;
     }
     .scrollbar-feed-md {
       scrollbar-width: thin;
-      scrollbar-color: #000000 transparent;
+      scrollbar-color: #d1d1d1 transparent;
     }
   }
 

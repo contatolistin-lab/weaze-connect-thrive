@@ -24,7 +24,7 @@ function Messages() {
             placeholder="Buscar conversas"
             className="flex-1 bg-transparent outline-none text-sm"
           />
-          <button className="h-8 w-8 rounded-full bg-brand-gradient grid place-items-center text-white">
+          <button className="h-8 w-8 rounded-full bg-white text-[#000000] grid place-items-center shadow-brand">
             <Edit3 size={14} />
           </button>
         </div>
