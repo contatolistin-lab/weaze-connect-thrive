@@ -540,35 +540,42 @@ function CommentsModal({
           {comments.length === 0 && (
             <p className="text-sm text-foreground/50 text-center py-8">Nenhum comentário ainda.</p>
           )}
-          {comments.map((c) => (
-            <CommentItem
-              key={c.id}
-              comment={c}
-              isEditing={editingId === c.id}
-              editText={editText}
-              onEdit={() => {
-                setEditingId(c.id);
-                setEditText(c.text);
-              }}
-              onEditChange={setEditText}
-              onSaveEdit={() => {
-                const t = editText.trim();
-                if (!t) return;
-                updateComment(c.id, t);
-                setEditingId(null);
-                setEditText("");
-                refresh();
-              }}
-              onCancelEdit={() => {
-                setEditingId(null);
-                setEditText("");
-              }}
-              onDelete={() => {
-                deleteComment(c.id, postId);
-                refresh();
-              }}
-            />
-          ))}
+          {comments.map((c) => {
+            const isOwn = c.author === "Você";
+            const canEdit = isOwn;
+            const canDelete = isOwn || userType.isB2B;
+            return (
+              <CommentItem
+                key={c.id}
+                comment={c}
+                isEditing={editingId === c.id}
+                editText={editText}
+                canEdit={canEdit}
+                canDelete={canDelete}
+                onEdit={() => {
+                  setEditingId(c.id);
+                  setEditText(c.text);
+                }}
+                onEditChange={setEditText}
+                onSaveEdit={() => {
+                  const t = editText.trim();
+                  if (!t) return;
+                  updateComment(c.id, t);
+                  setEditingId(null);
+                  setEditText("");
+                  refresh();
+                }}
+                onCancelEdit={() => {
+                  setEditingId(null);
+                  setEditText("");
+                }}
+                onDelete={() => {
+                  deleteComment(c.id, postId);
+                  refresh();
+                }}
+              />
+            );
+          })}
         </div>
 
         <div className="flex items-center gap-2 px-5 py-3 border-t border-border shrink-0">
