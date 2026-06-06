@@ -38,7 +38,7 @@ export const WButton = forwardRef<HTMLButtonElement, Props>(function WButton(
     gradient:
       "bg-brand-gradient text-white shadow-brand hover:shadow-pink focus-visible:ring-[--brand-pink]",
     purple: "bg-[#630091] text-white hover:opacity-90 shadow-brand",
-    pink: "bg-[#d81e62] text-white hover:opacity-90 shadow-pink",
+    pink: "bg-[#630091] text-white hover:opacity-90 shadow-pink",
     ghost: "bg-transparent text-foreground hover:bg-muted",
     outline: "bg-white text-foreground border border-border hover:bg-muted",
     white: "bg-white text-[#630091] shadow-soft hover:shadow-brand",
