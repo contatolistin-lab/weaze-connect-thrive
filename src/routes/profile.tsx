@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, Camera } from "lucide-react";
+import { LogOut, Camera, Copy, Check } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
@@ -48,6 +48,17 @@ function Profile() {
   };
 
   const communitySlug = community.name.trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`;
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(communityLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   useEffect(() => {
     try {
@@ -143,6 +154,22 @@ function Profile() {
 
   const sidePanel = (
     <div className="space-y-6">
+      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+        <h2 className="text-sm font-extrabold tracking-tight mb-1">Compartilhar Comunidade</h2>
+        <p className="text-xs text-foreground/60 mb-4">
+          Envie este link para que pessoas entrem diretamente na sua comunidade.
+        </p>
+        <input
+          readOnly
+          value={communityLink}
+          onClick={(e) => (e.target as HTMLInputElement).select()}
+          className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
+        />
+        <WButton variant="gradient" size="md" fullWidth onClick={handleCopyLink}>
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+          {copied ? "Link copiado!" : "Copiar Link"}
+        </WButton>
+      </section>
       <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
         <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
         <button
