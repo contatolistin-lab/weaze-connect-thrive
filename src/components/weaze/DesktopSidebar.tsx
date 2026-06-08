@@ -32,11 +32,13 @@ export function DesktopSidebar() {
 
   const isB2B = hydrated && userType.isB2B;
   const profileTo = isB2B ? "/profile" : "/b2c/profile";
+  const atendimentoTo = isB2B ? "/atendimento" : "/b2c/atendimento";
   const items: Item[] = [
     ...baseItems.filter((it) => {
       if (isB2B) return true;
-      return it.to !== "/create" && it.to !== "/metricas";
+      return it.to !== "/create" && it.to !== "/metricas" && it.to !== "/atendimento";
     }),
+    { to: atendimentoTo, icon: Headset, label: "Atendimento" },
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
@@ -55,7 +57,8 @@ export function DesktopSidebar() {
             path === to ||
             (to !== "/feed" && to !== "/" && path.startsWith(to)) ||
             (to === profileTo && (path.startsWith("/profile") || path.startsWith("/b2c/profile"))) ||
-            (to === "/atendimento" && path.startsWith("/b2c/atendimento"));
+            (to === "/atendimento" && path.startsWith("/b2c/atendimento")) ||
+            (to === "/b2c/atendimento" && path.startsWith("/atendimento"));
           const isCreate = to === "/create";
           return (
             <Link
