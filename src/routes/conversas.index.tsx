@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useReducer, useState } from "react";
+import { startTransition, useReducer, useState } from "react";
 import {
   Search,
   Pin,
@@ -110,13 +110,13 @@ function Conversas() {
 
   const handleTogglePin = (id: string) => {
     togglePinConversation(id);
-    refreshList();
+    startTransition(() => { refreshList(); });
   };
 
   const handleDelete = (id: string) => {
     if (!window.confirm("Tem certeza que deseja excluir esta conversa?")) return;
     deleteConversation(id);
-    refreshList();
+    startTransition(() => { refreshList(); });
   };
 
   const isB2B = userType.isB2B;
@@ -155,7 +155,7 @@ function Conversas() {
               .map((t) => t.trim())
               .filter(Boolean),
           });
-          refreshList();
+          startTransition(() => { refreshList(); });
         }}
       />
 
