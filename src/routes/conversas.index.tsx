@@ -273,7 +273,7 @@ function CriarConversaButton({
   };
 
   return (
-    <>
+    <div className="space-y-3">
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
@@ -284,7 +284,7 @@ function CriarConversaButton({
       </button>
 
       {aberto && (
-        <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
+        <div key="form" className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -314,7 +314,7 @@ function CriarConversaButton({
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
