@@ -30,10 +30,13 @@ export function DesktopSidebar() {
 
   if (!shouldShowDesktopShell(path)) return null;
 
-  const showB2BOnly = hydrated && userType.isB2B;
-  const profileTo = showB2BOnly ? "/profile" : "/b2c/profile";
+  const isB2B = hydrated && userType.isB2B;
+  const profileTo = isB2B ? "/profile" : "/b2c/profile";
   const items: Item[] = [
-    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas" && it.to !== "/atendimento") || showB2BOnly),
+    ...baseItems.filter((it) => {
+      if (isB2B) return true;
+      return it.to !== "/create" && it.to !== "/metricas";
+    }),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
@@ -51,7 +54,8 @@ export function DesktopSidebar() {
           const active =
             path === to ||
             (to !== "/feed" && to !== "/" && path.startsWith(to)) ||
-            (to === profileTo && (path.startsWith("/profile") || path.startsWith("/b2c/profile")));
+            (to === profileTo && (path.startsWith("/profile") || path.startsWith("/b2c/profile"))) ||
+            (to === "/atendimento" && path.startsWith("/b2c/atendimento"));
           const isCreate = to === "/create";
           return (
             <Link

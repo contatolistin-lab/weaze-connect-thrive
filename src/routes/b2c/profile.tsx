@@ -1,11 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, User, Mail, Camera, Headset, MessageSquare, Lightbulb, Bug } from "lucide-react";
+import { LogOut, User, Mail, Camera } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
 import { Avatar } from "@/components/weaze/Avatar";
 import { WButton } from "@/components/weaze/WButton";
-import { SupportRequestModal } from "@/components/weaze/SupportRequestModal";
-import { SupportType } from "@/hooks/useSupportMessages";
 import { useState, useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/b2c/profile")({
@@ -19,8 +17,6 @@ function B2CProfile() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [avatar, setAvatar] = useState<string | undefined>(profileAvatar);
-  const [supportOpen, setSupportOpen] = useState(false);
-  const [supportType, setSupportType] = useState<SupportType>("duvida");
 
   useEffect(() => {
     setAvatar(profileAvatar);
@@ -78,47 +74,6 @@ function B2CProfile() {
             <span className="text-sm">{auth.user?.email || "—"}</span>
           </div>
         </div>
-
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft space-y-3">
-          <div className="flex items-center gap-2">
-            <Headset className="w-5 h-5" />
-            <h2 className="text-sm font-extrabold tracking-tight">Central de Atendimento</h2>
-          </div>
-          <p className="text-xs text-foreground/60">Entre em contato com a equipe da comunidade.</p>
-          <div className="grid gap-2">
-            <button
-              onClick={() => { setSupportType("duvida"); setSupportOpen(true); }}
-              className="w-full flex items-center gap-3 h-auto py-3 px-4 rounded-xl border border-border bg-white hover:bg-muted transition-colors text-left"
-            >
-              <MessageSquare className="w-5 h-5 text-blue-500 shrink-0" />
-              <span className="text-sm font-bold">Enviar Dúvida</span>
-            </button>
-            <button
-              onClick={() => { setSupportType("sugestao"); setSupportOpen(true); }}
-              className="w-full flex items-center gap-3 h-auto py-3 px-4 rounded-xl border border-border bg-white hover:bg-muted transition-colors text-left"
-            >
-              <Lightbulb className="w-5 h-5 text-amber-500 shrink-0" />
-              <span className="text-sm font-bold">Enviar Sugestão</span>
-            </button>
-            <button
-              onClick={() => { setSupportType("problema"); setSupportOpen(true); }}
-              className="w-full flex items-center gap-3 h-auto py-3 px-4 rounded-xl border border-border bg-white hover:bg-muted transition-colors text-left"
-            >
-              <Bug className="w-5 h-5 text-red-500 shrink-0" />
-              <span className="text-sm font-bold">Reportar Problema</span>
-            </button>
-          </div>
-        </section>
-
-        <SupportRequestModal
-          open={supportOpen}
-          onClose={() => setSupportOpen(false)}
-          communityId={community.name || "default"}
-          userId={auth.user?.email || "unknown"}
-          userName={auth.user?.name || "Usuário"}
-          userEmail={auth.user?.email || ""}
-          defaultType={supportType}
-        />
 
         <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
           <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>

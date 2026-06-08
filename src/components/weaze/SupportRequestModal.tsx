@@ -10,6 +10,7 @@ type Props = {
   userName: string;
   userEmail: string;
   defaultType: SupportType;
+  onSuccess?: () => void;
 };
 
 const typeLabels: Record<SupportType, string> = {
@@ -44,6 +45,7 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
     setSubject("");
     setMessage("");
     onClose();
+    onSuccess?.();
   };
 
   return (
