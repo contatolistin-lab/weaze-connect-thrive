@@ -11,7 +11,6 @@ const baseItems: Item[] = [
   { to: "/groups", icon: Users, label: "Grupos" },
   { to: "/create", icon: Plus, label: "Criar" },
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
-  { to: "/atendimento", icon: Headset, label: "Atendimento" },
 ];
 
 const HIDDEN_PATHS = ["/", "/login", "/signup", "/b2b/login", "/b2b/signup"];
@@ -36,7 +35,7 @@ export function DesktopSidebar() {
   const items: Item[] = [
     ...baseItems.filter((it) => {
       if (isB2B) return true;
-      return it.to !== "/create" && it.to !== "/metricas" && it.to !== "/atendimento";
+      return it.to !== "/create" && it.to !== "/metricas";
     }),
     { to: atendimentoTo, icon: Headset, label: "Atendimento" },
     { to: profileTo, icon: User, label: "Perfil" },
