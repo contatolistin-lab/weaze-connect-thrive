@@ -135,6 +135,7 @@ function RootComponent() {
           <div className={showShell ? "md:pl-20 lg:pl-60" : ""}>
             <Outlet />
           </div>
+          <WhatsAppButton />
         </CommunityProvider>
       </WeazeProvider>
     </QueryClientProvider>
