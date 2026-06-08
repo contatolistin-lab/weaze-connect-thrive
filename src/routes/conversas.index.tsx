@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useReducer, useState, type FormEvent } from "react";
+import { useReducer, useState } from "react";
 import {
   Search,
   Pin,
@@ -263,8 +263,7 @@ function CriarConversaButton({
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
 
-  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
+  const handleSubmit = () => {
     if (!title.trim()) return;
     onCriar({ title: title.trim(), description: description.trim(), tags: tags.trim() });
     setTitle("");
@@ -285,10 +284,7 @@ function CriarConversaButton({
       </button>
 
       {aberto && (
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft"
-        >
+        <div className="rounded-2xl bg-white border border-border p-4 space-y-3 shadow-soft">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -309,13 +305,14 @@ function CriarConversaButton({
             className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
           />
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={!title.trim()}
             className="w-full h-10 rounded-xl bg-white text-[#000000] font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             <Check size={16} /> Publicar conversa
           </button>
-        </form>
+        </div>
       )}
     </>
   );
