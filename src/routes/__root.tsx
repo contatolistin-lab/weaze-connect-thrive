@@ -13,6 +13,7 @@ import { WeazeProvider } from "@/lib/weaze-context";
 import { CommunityProvider } from "@/lib/community-store";
 import { Toaster } from "@/components/ui/sonner";
 import { DesktopSidebar, shouldShowDesktopShell } from "@/components/weaze/DesktopSidebar";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -134,6 +135,7 @@ function RootComponent() {
           <div className={showShell ? "md:pl-20 lg:pl-60" : ""}>
             <Outlet />
           </div>
+          
         </CommunityProvider>
       </WeazeProvider>
     </QueryClientProvider>
