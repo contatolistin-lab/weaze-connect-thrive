@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, User, Mail, Camera } from "lucide-react";
+import { LogOut, User, Mail, Camera, HelpCircle, Lightbulb, Bug, ChevronRight } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
 import { Avatar } from "@/components/weaze/Avatar";
+import { SupportRequestModal } from "@/components/weaze/SupportRequestModal";
+import type { SupportType } from "@/lib/support-store";
 import { useState, useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/b2c/profile")({
@@ -16,6 +18,8 @@ function B2CProfile() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [avatar, setAvatar] = useState<string | undefined>(profileAvatar);
+  const [supportType, setSupportType] = useState<SupportType | null>(null);
+
 
   useEffect(() => {
     setAvatar(profileAvatar);
@@ -75,6 +79,36 @@ function B2CProfile() {
         </div>
 
         <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+          <h2 className="text-sm font-extrabold tracking-tight mb-1">Central de Atendimento</h2>
+          <p className="text-xs text-foreground/60 mb-4">
+            Fale com a equipe da comunidade. Sua mensagem será respondida em breve.
+          </p>
+          <ul className="rounded-2xl border border-border overflow-hidden divide-y divide-border">
+            {([
+              { type: "duvida" as const, icon: HelpCircle, label: "Enviar Dúvida", emoji: "📩" },
+              { type: "sugestao" as const, icon: Lightbulb, label: "Enviar Sugestão", emoji: "💡" },
+              { type: "problema" as const, icon: Bug, label: "Reportar Problema", emoji: "🐞" },
+            ]).map((opt) => (
+              <li key={opt.type}>
+                <button
+                  onClick={() => setSupportType(opt.type)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-muted text-left"
+                >
+                  <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#630091] grid place-items-center">
+                    <opt.icon size={18} />
+                  </span>
+                  <span className="flex-1 text-sm font-semibold">
+                    <span className="mr-2">{opt.emoji}</span>
+                    {opt.label}
+                  </span>
+                  <ChevronRight size={18} className="text-foreground/40" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
           <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
           <button
             onClick={() => {
@@ -88,6 +122,12 @@ function B2CProfile() {
           </button>
         </section>
       </div>
+
+      <SupportRequestModal
+        open={supportType !== null}
+        type={supportType}
+        onClose={() => setSupportType(null)}
+      />
     </AppShell>
   );
 }
