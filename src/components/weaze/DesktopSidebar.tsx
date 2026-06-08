@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessageSquare, Users, Plus, BarChart3, User } from "lucide-react";
+import { Home, MessageSquare, Users, Plus, BarChart3, User, Headset } from "lucide-react";
 import { WeazeLogo } from "./WeazeLogo";
 import { useCommunity } from "@/lib/community-store";
 
@@ -11,6 +11,7 @@ const baseItems: Item[] = [
   { to: "/groups", icon: Users, label: "Grupos" },
   { to: "/create", icon: Plus, label: "Criar" },
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
+  { to: "/atendimento", icon: Headset, label: "Atendimento" },
 ];
 
 const HIDDEN_PATHS = ["/", "/login", "/signup", "/b2b/login", "/b2b/signup"];
@@ -32,7 +33,7 @@ export function DesktopSidebar() {
   const showB2BOnly = hydrated && userType.isB2B;
   const profileTo = showB2BOnly ? "/profile" : "/b2c/profile";
   const items: Item[] = [
-    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas") || showB2BOnly),
+    ...baseItems.filter((it) => (it.to !== "/create" && it.to !== "/metricas" && it.to !== "/atendimento") || showB2BOnly),
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 

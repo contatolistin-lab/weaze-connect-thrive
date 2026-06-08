@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessageSquare, Users, BarChart3, User, Plus } from "lucide-react";
+import { Home, MessageSquare, Users, BarChart3, User, Plus, Headset } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 
 const sharedItems: { to: string; icon: typeof Home; label: string }[] = [
@@ -10,6 +10,7 @@ const sharedItems: { to: string; icon: typeof Home; label: string }[] = [
 
 const b2bItems: { to: string; icon: typeof Home; label: string }[] = [
   { to: "/metricas", icon: BarChart3, label: "Métricas" },
+  { to: "/atendimento", icon: Headset, label: "Atendimento" },
 ];
 
 export function BottomNav() {
@@ -23,7 +24,7 @@ export function BottomNav() {
       className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
       style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
     >
-      <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-4"}`}>
+      <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-7" : "grid-cols-4"}`}>
         {sharedItems.map(({ to, icon: Icon, label }) => {
           const active = path === to || (to !== "/feed" && path.startsWith(to));
           return (

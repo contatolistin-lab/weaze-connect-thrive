@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { TopBar } from "./TopBar";
-import { WhatsAppButton } from "./WhatsAppButton";
 
 interface AppShellProps {
   children: ReactNode;
@@ -25,7 +24,6 @@ export function AppShell({
         <main className={`flex-1 ${fullBleed ? "" : "pb-24 md:pb-8"}`}>{children}</main>
         {!hideBottomNav && <BottomNav />}
       </div>
-      <WhatsAppButton />
     </div>
   );
 }

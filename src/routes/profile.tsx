@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, Share2, Camera } from "lucide-react";
+import { LogOut, Camera } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
@@ -43,22 +43,11 @@ function Profile() {
     country: community.country,
   });
 
-  const [whatsapp, setWhatsapp] = useState(community.whatsapp);
-
   const handleSaveCommunity = () => {
     updateCommunity(form);
   };
 
-  const handleSaveWhatsapp = () => {
-    updateCommunity({ whatsapp });
-  };
-
   const communitySlug = community.name.trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
-  const [origin, setOrigin] = useState("");
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
-  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`;
 
   useEffect(() => {
     try {
@@ -154,48 +143,6 @@ function Profile() {
 
   const sidePanel = (
     <div className="space-y-6">
-      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-        <h2 className="text-sm font-extrabold tracking-tight mb-4">Contato da Comunidade</h2>
-        <p className="text-xs text-foreground/60 mb-3">
-          Informe o WhatsApp que será usado no botão de contato da sua comunidade.
-        </p>
-        <div className="space-y-2">
-          <InputField
-            label="WhatsApp da Comunidade"
-            placeholder="5511999999999 ou https://wa.me/5511999999999"
-            value={whatsapp}
-            onChange={setWhatsapp}
-          />
-          <WButton variant="gradient" size="md" fullWidth onClick={handleSaveWhatsapp}>
-            Salvar
-          </WButton>
-        </div>
-      </section>
-
-      <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-        <h2 className="text-sm font-extrabold tracking-tight mb-1">Compartilhar Comunidade</h2>
-        <p className="text-xs text-foreground/60 mb-4">
-          Envie este link para que pessoas entrem diretamente na sua comunidade.
-        </p>
-        <input
-          readOnly
-          value={communityLink}
-          onClick={(e) => (e.target as HTMLInputElement).select()}
-          className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm font-mono text-foreground/80 border border-border mb-4 outline-none cursor-text"
-        />
-        <WButton
-          variant="gradient"
-          size="md"
-          fullWidth
-          onClick={() =>
-            window.open(`https://wa.me/?text=${encodeURIComponent(communityLink)}`, "_blank")
-          }
-        >
-          <Share2 size={16} />
-          Compartilhar no WhatsApp
-        </WButton>
-      </section>
-
       <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
         <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
         <button
