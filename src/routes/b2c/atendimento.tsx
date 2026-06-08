@@ -83,48 +83,124 @@ function B2CAtendimento() {
     setTimeout(() => setSuccessMessage(false), 4000);
   };
 
-  return (
-    <AppShell title="Atendimento">
-      <div className="px-4 pt-4 pb-24 space-y-6">
-        <div>
-          <h1 className="text-lg font-extrabold tracking-tight">Central de Atendimento</h1>
-          <p className="text-sm text-foreground/60 mt-1">Como podemos ajudar você?</p>
+  const cardsSection = (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-lg font-extrabold tracking-tight">Central de Atendimento</h1>
+        <p className="text-sm text-foreground/60 mt-1">Como podemos ajudar você?</p>
+      </div>
+
+      {successMessage && (
+        <div className="rounded-2xl bg-green-50 border border-green-200 p-4 shadow-soft">
+          <p className="text-sm font-bold text-green-700">Mensagem enviada com sucesso.</p>
+          <p className="text-xs text-green-600 mt-1">
+            A administração da comunidade recebeu sua solicitação.
+          </p>
         </div>
+      )}
 
-        {successMessage && (
-          <div className="rounded-2xl bg-green-50 border border-green-200 p-4 shadow-soft">
-            <p className="text-sm font-bold text-green-700">Mensagem enviada com sucesso.</p>
-            <p className="text-xs text-green-600 mt-1">
-              A administração da comunidade recebeu sua solicitação.
-            </p>
-          </div>
-        )}
+      <div className="grid gap-4">
+        {cardOptions.map((card) => (
+          <button
+            key={card.type}
+            type="button"
+            onClick={() => {
+              setSupportType(card.type);
+              setSupportOpen(true);
+            }}
+            className="w-full text-left rounded-2xl bg-white border border-border p-5 shadow-soft hover:border-primary/30 transition-colors space-y-3"
+          >
+            <div className="flex items-center gap-3">
+              {card.icon}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-extrabold tracking-tight">{card.title}</h3>
+                <p className="text-xs text-foreground/60 mt-0.5">{card.description}</p>
+              </div>
+            </div>
+            <div className="w-full h-10 rounded-xl bg-secondary flex items-center justify-center">
+              <span className="text-sm font-bold text-foreground">{card.buttonLabel}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
-        <div className="grid gap-4">
-          {cardOptions.map((card) => (
-            <button
-              key={card.type}
-              type="button"
-              onClick={() => {
-                setSupportType(card.type);
-                setSupportOpen(true);
-              }}
-              className="w-full text-left rounded-2xl bg-white border border-border p-5 shadow-soft hover:border-primary/30 transition-colors space-y-3"
+  const solicitationsSection = (
+    <div className="space-y-3">
+      <h2 className="text-sm font-extrabold tracking-tight">Minhas Solicitações</h2>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
+        </div>
+      ) : userMessages.length === 0 ? (
+        <div className="rounded-2xl bg-white border border-border p-8 shadow-soft text-center">
+          <MessageSquare className="w-10 h-10 mx-auto mb-3 text-foreground/20" />
+          <p className="text-sm text-foreground/40">Nenhuma solicitação encontrada</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {userMessages.map((msg) => (
+            <div
+              key={msg.id}
+              className="rounded-2xl bg-white border border-border p-4 shadow-soft space-y-2"
             >
-              <div className="flex items-center gap-3">
-                {card.icon}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-extrabold tracking-tight">{card.title}</h3>
-                  <p className="text-xs text-foreground/60 mt-0.5">{card.description}</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[msg.type].color} ${typeConfig[msg.type].bg}`}>
+                    {typeConfig[msg.type].label}
+                  </span>
                 </div>
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusConfig[msg.status].color}`}>
+                  {statusConfig[msg.status].icon}
+                  {statusConfig[msg.status].label}
+                </span>
               </div>
-              <div className="w-full h-10 rounded-xl bg-secondary flex items-center justify-center">
-                <span className="text-sm font-bold text-foreground">{card.buttonLabel}</span>
+              <p className="text-sm font-bold truncate">{msg.subject}</p>
+              <div className="flex items-center gap-1 text-xs text-foreground/40">
+                <Calendar className="w-3 h-3" />
+                {formatDate(msg.created_at)}
               </div>
-            </button>
+            </div>
           ))}
         </div>
+      )}
+    </div>
+  );
 
+  return (
+    <>
+      <div className="md:hidden">
+        <AppShell title="Atendimento">
+          <div className="px-4 pt-4 pb-24 space-y-6">
+            {cardsSection}
+            <SupportRequestModal
+              open={supportOpen}
+              onClose={() => setSupportOpen(false)}
+              communityId={community.name || "default"}
+              userId={auth.user?.email || "unknown"}
+              userName={auth.user?.name || "Usuário"}
+              userEmail={auth.user?.email || ""}
+              defaultType={supportType}
+              onSuccess={handleSuccess}
+            />
+            {solicitationsSection}
+          </div>
+        </AppShell>
+      </div>
+
+      <div className="hidden md:block min-h-dvh bg-surface-muted">
+        <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 h-dvh">
+          <div className="w-80 xl:w-96 shrink-0 overflow-y-auto scrollbar-brand space-y-4">
+            {cardsSection}
+          </div>
+          <div className="flex-1 overflow-y-auto scrollbar-brand pb-4">
+            <div className="max-w-3xl">
+              {solicitationsSection}
+            </div>
+          </div>
+        </div>
         <SupportRequestModal
           open={supportOpen}
           onClose={() => setSupportOpen(false)}
@@ -135,48 +211,7 @@ function B2CAtendimento() {
           defaultType={supportType}
           onSuccess={handleSuccess}
         />
-
-        <section className="space-y-3">
-          <h2 className="text-sm font-extrabold tracking-tight">Minhas Solicitações</h2>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
-            </div>
-          ) : userMessages.length === 0 ? (
-            <div className="rounded-2xl bg-white border border-border p-8 shadow-soft text-center">
-              <MessageSquare className="w-10 h-10 mx-auto mb-3 text-foreground/20" />
-              <p className="text-sm text-foreground/40">Nenhuma solicitação encontrada</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {userMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className="rounded-2xl bg-white border border-border p-4 shadow-soft space-y-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[msg.type].color} ${typeConfig[msg.type].bg}`}>
-                        {typeConfig[msg.type].label}
-                      </span>
-                    </div>
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusConfig[msg.status].color}`}>
-                      {statusConfig[msg.status].icon}
-                      {statusConfig[msg.status].label}
-                    </span>
-                  </div>
-                  <p className="text-sm font-bold truncate">{msg.subject}</p>
-                  <div className="flex items-center gap-1 text-xs text-foreground/40">
-                    <Calendar className="w-3 h-3" />
-                    {formatDate(msg.created_at)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
       </div>
-    </AppShell>
+    </>
   );
 }
