@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, Home, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { WButton } from "@/components/weaze/WButton";
 import { useCommunity } from "@/lib/community-store";
@@ -71,7 +71,9 @@ function CommunityEntry() {
   }
 
   // Ensure B2C mode when visiting a community share link
-  userType.setB2B(false);
+  useEffect(() => {
+    userType.setB2B(false);
+  }, []);
 
   return (
     <div className="min-h-dvh bg-background grid place-items-center px-6">
