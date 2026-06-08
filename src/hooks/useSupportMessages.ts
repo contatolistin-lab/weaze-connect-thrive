@@ -1,54 +1,32 @@
 import { useState, useEffect, useCallback } from "react";
+import {
+  getSupportMessages,
+  createSupportMessage as apiCreate,
+  updateSupportStatus as apiUpdateStatus,
+  type SupportType,
+  type SupportStatus,
+  type SupportMessage,
+} from "@/lib/api/support-messages";
 
-export type SupportType = "duvida" | "sugestao" | "problema";
-export type SupportStatus = "pendente" | "em_analise" | "respondido";
-
-export type SupportMessage = {
-  id: string;
-  community_id: string;
-  user_id: string;
-  user_name: string;
-  user_email: string;
-  type: SupportType;
-  subject: string;
-  message: string;
-  status: SupportStatus;
-  created_at: string;
-  updated_at: string;
-};
-
-const STORAGE_KEY = "weaze_support_messages";
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-}
-
-function loadAll(): SupportMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(messages: SupportMessage[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-}
+export type { SupportType, SupportStatus, SupportMessage };
 
 export function useSupportMessages(communityId?: string) {
-  const [messages, setMessages] = useState<SupportMessage[]>(() => loadAll());
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    saveAll(messages);
-  }, [messages]);
-
-  const filtered = communityId
-    ? messages.filter((m) => m.community_id === communityId)
-    : messages;
+    if (!communityId) {
+      setLoading(false);
+      return;
+    }
+    getSupportMessages({ data: { communityId } }).then((data) => {
+      setMessages(data);
+      setLoading(false);
+    });
+  }, [communityId]);
 
   const create = useCallback(
-    (data: {
+    async (data: {
       community_id: string;
       user_id: string;
       user_name: string;
@@ -57,14 +35,7 @@ export function useSupportMessages(communityId?: string) {
       subject: string;
       message: string;
     }) => {
-      const now = new Date().toISOString();
-      const msg: SupportMessage = {
-        id: generateId(),
-        ...data,
-        status: "pendente",
-        created_at: now,
-        updated_at: now,
-      };
+      const msg = await apiCreate({ data });
       setMessages((prev) => [msg, ...prev]);
       return msg;
     },
@@ -72,12 +43,9 @@ export function useSupportMessages(communityId?: string) {
   );
 
   const updateStatus = useCallback(
-    (id: string, status: SupportStatus) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === id ? { ...m, status, updated_at: new Date().toISOString() } : m
-        )
-      );
+    async (id: string, status: SupportStatus) => {
+      const updated = await apiUpdateStatus({ data: { id, status } });
+      setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
     },
     []
   );
@@ -88,11 +56,11 @@ export function useSupportMessages(communityId?: string) {
   );
 
   const stats = {
-    pendentes: filtered.filter((m) => m.status === "pendente").length,
-    em_analise: filtered.filter((m) => m.status === "em_analise").length,
-    respondidos: filtered.filter((m) => m.status === "respondido").length,
-    total: filtered.length,
+    pendentes: messages.filter((m) => m.status === "pendente").length,
+    em_analise: messages.filter((m) => m.status === "em_analise").length,
+    respondidos: messages.filter((m) => m.status === "respondido").length,
+    total: messages.length,
   };
 
-  return { messages: filtered, create, updateStatus, getById, stats };
+  return { messages, create, updateStatus, getById, stats, loading };
 }

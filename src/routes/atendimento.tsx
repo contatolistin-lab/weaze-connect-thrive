@@ -47,7 +47,7 @@ function Atendimento() {
   const nav = useNavigate();
 
   const communityId = community.name || "default";
-  const { messages, updateStatus, getById, stats } = useSupportMessages(communityId);
+  const { messages, updateStatus, getById, stats, loading } = useSupportMessages(communityId);
 
   const [filter, setFilter] = useState<FilterType>("todos");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -90,6 +90,16 @@ function Atendimento() {
 
   if (!userType.isB2B) {
     return null;
+  }
+
+  if (loading) {
+    return (
+      <AppShell title="Atendimento">
+        <div className="min-h-[50dvh] grid place-items-center">
+          <div className="h-8 w-8 rounded-full border-2 border-brand-pink border-t-transparent animate-spin" />
+        </div>
+      </AppShell>
+    );
   }
 
   const formatDate = (iso: string) => {
@@ -159,9 +169,9 @@ function Atendimento() {
         <span className="text-xs text-foreground/50">Mensagem:</span>
         <p className="mt-1 text-sm bg-surface-muted rounded-xl p-3 whitespace-pre-wrap">{selected.message}</p>
       </div>
-      <WButton variant="outline" size="md" fullWidth onClick={() => {
+      <WButton variant="outline" size="md" fullWidth onClick={async () => {
         const next = getNextStatus(selected.status);
-        updateStatus(selected.id, next);
+        await updateStatus(selected.id, next);
       }}>
         {getNextStatusLabel(selected.status)}
       </WButton>

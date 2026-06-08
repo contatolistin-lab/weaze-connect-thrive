@@ -31,7 +31,7 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
     if (!message.trim()) return;
 
     setSending(true);
-    create({
+    await create({
       community_id: communityId,
       user_id: userId,
       user_name: userName || "Usuário",
@@ -61,7 +61,7 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Digite o assunto"
               maxLength={200}
-              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] bg-white"
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-ring bg-white"
             />
           </div>
           <div>
@@ -71,7 +71,7 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Digite sua mensagem"
               rows={5}
-              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] resize-none bg-white"
+              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-ring resize-none bg-white"
             />
           </div>
           <WButton variant="gradient" size="md" fullWidth onClick={handleSubmit} disabled={sending}>
