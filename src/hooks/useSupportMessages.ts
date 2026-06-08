@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getSupportMessages,
   createSupportMessage as apiCreate,
@@ -13,17 +13,31 @@ export type { SupportType, SupportStatus, SupportMessage };
 export function useSupportMessages(communityId?: string) {
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchMessages = useCallback(async () => {
+    if (!communityId) return;
+    try {
+      const data = await getSupportMessages({ data: { communityId } });
+      setMessages(data);
+    } catch (e) {
+      console.error("Failed to fetch support messages:", e);
+    }
+  }, [communityId]);
 
   useEffect(() => {
-    if (!communityId) {
-      setLoading(false);
-      return;
-    }
-    getSupportMessages({ data: { communityId } }).then((data) => {
-      setMessages(data);
-      setLoading(false);
-    });
-  }, [communityId]);
+    setLoading(true);
+    fetchMessages().then(() => setLoading(false));
+
+    intervalRef.current = setInterval(fetchMessages, 5000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [fetchMessages]);
 
   const create = useCallback(
     async (data: {
@@ -44,8 +58,12 @@ export function useSupportMessages(communityId?: string) {
 
   const updateStatus = useCallback(
     async (id: string, status: SupportStatus) => {
-      const updated = await apiUpdateStatus({ data: { id, status } });
-      setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+      try {
+        const updated = await apiUpdateStatus({ data: { id, status } });
+        setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+      } catch (e) {
+        console.error("Failed to update support message status:", e);
+      }
     },
     []
   );
