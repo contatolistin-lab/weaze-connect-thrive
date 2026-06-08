@@ -19,7 +19,7 @@ const typeLabels: Record<SupportType, string> = {
   problema: "Reportar Problema",
 };
 
-export function SupportRequestModal({ open, onClose, communityId, userId, userName, userEmail, defaultType }: Props) {
+export function SupportRequestModal({ open, onClose, communityId, userId, userName, userEmail, defaultType, onSuccess }: Props) {
   const { create } = useSupportMessages();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
