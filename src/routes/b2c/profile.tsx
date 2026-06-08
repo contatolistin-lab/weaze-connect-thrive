@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { LogOut, User, Mail, Camera } from "lucide-react";
+import { LogOut, User, Mail, Camera, HelpCircle, Lightbulb, Bug, ChevronRight } from "lucide-react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
 import { Avatar } from "@/components/weaze/Avatar";
+import { SupportRequestModal } from "@/components/weaze/SupportRequestModal";
+import type { SupportType } from "@/lib/support-store";
 import { useState, useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/b2c/profile")({
@@ -16,6 +18,8 @@ function B2CProfile() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [avatar, setAvatar] = useState<string | undefined>(profileAvatar);
+  const [supportType, setSupportType] = useState<SupportType | null>(null);
+
 
   useEffect(() => {
     setAvatar(profileAvatar);
