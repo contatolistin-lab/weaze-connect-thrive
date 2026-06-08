@@ -23,6 +23,11 @@ function CommunityEntry() {
   const nav = useNavigate();
   const { auth, userType } = useCommunity();
 
+  // Ensure B2C mode when visiting a community share link
+  useEffect(() => {
+    userType.setB2B(false);
+  }, []);
+
   let community: { name: string; description: string } | null = null;
 
   // 1. Try localStorage (same browser that created the invite)
@@ -69,11 +74,6 @@ function CommunityEntry() {
   if (!auth.isAuthenticated) {
     return <CommunitySignup community={community} slug={slug} />;
   }
-
-  // Ensure B2C mode when visiting a community share link
-  useEffect(() => {
-    userType.setB2B(false);
-  }, []);
 
   return (
     <div className="min-h-dvh bg-background grid place-items-center px-6">
