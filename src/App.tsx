@@ -120,6 +120,7 @@ const WaitingApproval = lazy(() => import("./pages/WaitingApproval"));
 const BlockedPage = lazy(() => import("./pages/BlockedPage"));
 const CommunityCreate = lazy(() => import("./pages/auth/CommunityCreate"));
 const CommunityFeedEmpty = lazy(() => import("./pages/CommunityFeedEmpty"));
+const Atendimento = lazy(() => import("./pages/Atendimento"));
 
 const Protected = ({ children }: { children: JSX.Element }) => {
   const { user, initializing } = useAuth();
@@ -253,6 +254,7 @@ const App = () => (
                     <Route path="/groups/member/:groupId" element={<Protected><GroupDetailB2C /></Protected>} />
                     <Route path="/groups/:groupId" element={<Protected><GroupDetail /></Protected>} />
                     <Route path="/profile" element={<Protected><B2COnly><Profile /></B2COnly></Protected>} />
+                    <Route path="/atendimento" element={<Protected><B2BOnly><Atendimento /></B2BOnly></Protected>} />
                     <Route path="/offline" element={<Offline />} />
                     <Route path="/blocked" element={<BlockedPage />} />
                     <Route path="*" element={<Navigate to="/feed" replace />} />

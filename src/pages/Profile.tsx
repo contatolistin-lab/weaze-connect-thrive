@@ -8,8 +8,10 @@ import BottomNav from "@/components/layout/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, Upload, MapPin, Copy, ExternalLink, Link2 } from "lucide-react";
+import { LogOut, Upload, MapPin, Headset, MessageSquare, Lightbulb, Bug } from "lucide-react";
 import { toast } from "sonner";
+import SupportRequestModal from "@/components/weaze/SupportRequestModal";
+import { SupportType } from "@/hooks/useSupportMessages";
 
 const LoadingSpinner = () => (
   <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
@@ -47,8 +49,6 @@ export default function Profile() {
     return <Navigate to={communityPath} replace />;
   }
 
-  const canShare = false; // B2C não compartilha comunidade via /profile
-
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -63,12 +63,8 @@ export default function Profile() {
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
   
-  const [copied, setCopied] = useState(false);
-  
-  // Gerar link de compartilhamento da comunidade
-  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const shareLink = tenant?.slug ? `${baseUrl}/m/${tenant.slug}` : "";
-  
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [supportType, setSupportType] = useState<SupportType>("duvida");
   
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,43 +204,58 @@ export default function Profile() {
           </Button>
         </section>
 
-{canShare && tenant?.slug && (
-          <section className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border border-purple-200 p-5 space-y-4">
+{tenant?.id && (
+          <section className="bg-card rounded-2xl border border-border p-5 space-y-4 shadow-soft">
             <div className="flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-purple-600" />
-              <h2 className="font-semibold text-purple-900">Compartilhar Comunidade</h2>
+              <Headset className="h-5 w-5" />
+              <h2 className="font-semibold">Central de Atendimento</h2>
             </div>
-            <p className="text-sm text-purple-700">Envie este link para que pessoas entrem diretamente na sua comunidade.</p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 bg-white rounded-lg px-4 py-3 border border-purple-200 text-sm text-gray-700 truncate">
-                {shareLink}
-              </div>
+            <p className="text-sm text-muted-foreground">Entre em contato com a equipe da comunidade.</p>
+            <div className="grid gap-2">
               <Button
-                size="sm"
                 variant="outline"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(shareLink);
-                  setCopied(true);
-                  toast.success("Link copiado!");
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                className="bg-white border-purple-300 text-purple-700 hover:bg-purple-50"
+                className="justify-start gap-3 h-auto py-3"
+                onClick={() => { setSupportType("duvida"); setSupportOpen(true); }}
               >
-                <Copy className="h-4 w-4 mr-1" />
-                {copied ? "Copiado!" : "Copiar"}
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Enviar Dúvida</p>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start gap-3 h-auto py-3"
+                onClick={() => { setSupportType("sugestao"); setSupportOpen(true); }}
+              >
+                <Lightbulb className="h-5 w-5 text-amber-500" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Enviar Sugestão</p>
+                </div>
+              </Button>
+              <Button
+                variant="outline"
+                className="justify-start gap-3 h-auto py-3"
+                onClick={() => { setSupportType("problema"); setSupportOpen(true); }}
+              >
+                <Bug className="h-5 w-5 text-red-500" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Reportar Problema</p>
+                </div>
               </Button>
             </div>
-            <Button
-              variant="outline"
-              className="w-full bg-white border-purple-300 text-purple-700 hover:bg-purple-50"
-              asChild
-            >
-              <a href={`https://wa.me/?text=Venha%20participar%20da%20comunidade%20${encodeURIComponent(tenant?.name ?? "")}%20${encodeURIComponent(shareLink)}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Compartilhar no WhatsApp
-              </a>
-            </Button>
           </section>
+        )}
+
+        {tenant?.id && user && (
+          <SupportRequestModal
+            open={supportOpen}
+            onOpenChange={setSupportOpen}
+            communityId={tenant.id}
+            userId={user.id}
+            userName={name || user.email || "Usuário"}
+            userEmail={user.email || ""}
+            defaultType={supportType}
+          />
         )}
 
         <Button variant="ghost" onClick={async () => { await signOut(); nav("/auth"); }} className="w-full text-destructive">

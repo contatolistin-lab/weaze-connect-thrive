@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, MessageSquare, MessageCircle, User, BarChart3, Bell, Plus, Users, Folder, Building2 } from "lucide-react";
+import { Home, MessageSquare, MessageCircle, User, BarChart3, Bell, Plus, Users, Folder, Building2, Headset } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTenant } from "@/contexts/TenantContext";
@@ -26,6 +26,7 @@ export default function AppSidebar() {
     ...(showAdminItems ? [{ to: "/metrics", icon: BarChart3, label: "Métricas" }] : []),
     ...(showAdminItems ? [{ to: "/members", icon: Users, label: "Membros" }] : []),
     ...(showAdminItems ? [{ to: "/groups", icon: Folder, label: "Grupos" }] : []),
+    ...(showAdminItems ? [{ to: "/atendimento", icon: Headset, label: "Atendimento" }] : []),
     ...(showB2CItems ? [{ to: "/groups/b2c", icon: Folder, label: "Grupos" }] : []),
     ...(showAdminItems && tenant?.slug ? [{ to: `/m/${tenant.slug}`, icon: Building2, label: "Comunidade" }] : []),
     ...(showB2CItems ? [{ to: "/profile", icon: User, label: "Perfil" }] : []),
