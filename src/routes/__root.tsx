@@ -13,6 +13,7 @@ import { WeazeProvider } from "@/lib/weaze-context";
 import { CommunityProvider } from "@/lib/community-store";
 import { Toaster } from "@/components/ui/sonner";
 import { DesktopSidebar, shouldShowDesktopShell } from "@/components/weaze/DesktopSidebar";
+import { WhatsAppButton } from "@/components/weaze/WhatsAppButton";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
