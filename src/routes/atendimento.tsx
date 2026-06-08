@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { createFileRoute, useNavigate, redirect } from "@tanstack/react-router";
+import { useState, useMemo, useEffect } from "react";
 import { useCommunity } from "@/lib/community-store";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
@@ -9,6 +9,14 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/atendimento")({
+  beforeLoad: () => {
+    if (typeof window !== "undefined") {
+      const isB2B = localStorage.getItem("weaze_user_b2b");
+      if (isB2B !== "true") {
+        throw redirect({ to: "/feed" });
+      }
+    }
+  },
   head: () => ({ meta: [{ title: "Atendimento — WEAZE" }] }),
   component: Atendimento,
 });
@@ -45,6 +53,12 @@ function Atendimento() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    if (hydrated && !userType.isB2B) {
+      nav({ to: "/feed" });
+    }
+  }, [hydrated, userType.isB2B, nav]);
+
   const filtered = useMemo(() => {
     let list = messages;
     if (filter !== "todos") {
@@ -75,7 +89,6 @@ function Atendimento() {
   }
 
   if (!userType.isB2B) {
-    nav({ to: "/feed" });
     return null;
   }
 
@@ -129,7 +142,7 @@ function Atendimento() {
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
           selected.status === "pendente" ? "bg-secondary text-secondary-foreground" :
-          selected.status === "em_analise" ? "bg-[#000000] text-white" :
+          selected.status === "em_analise" ? "bg-primary text-primary-foreground" :
           "bg-transparent text-foreground border-border"
         }`}>
           {statusLabels[selected.status]}
@@ -164,7 +177,7 @@ function Atendimento() {
           placeholder="Buscar..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-10 pl-9 pr-3 rounded-xl border border-border text-sm outline-none focus:ring-2 focus:ring-[#000000] bg-white"
+          className="w-full h-10 pl-9 pr-3 rounded-xl border border-border text-sm outline-none focus:ring-2 focus:ring-ring bg-white"
         />
       </div>
 
@@ -175,7 +188,7 @@ function Atendimento() {
             onClick={() => setFilter(opt.value)}
             className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
               filter === opt.value
-                ? "bg-[#000000] text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-foreground/60 hover:text-foreground"
             }`}
           >
@@ -198,8 +211,8 @@ function Atendimento() {
           <button
             key={msg.id}
             onClick={() => setSelectedId(msg.id)}
-            className={`w-full text-left rounded-2xl bg-white border p-4 hover:border-[#000000]/20 transition-colors space-y-2 shadow-soft ${
-              selectedId === msg.id ? "border-[#000000] ring-1 ring-[#000000]" : "border-border"
+            className={`w-full text-left rounded-2xl bg-white border p-4 hover:border-primary/20 transition-colors space-y-2 shadow-soft ${
+              selectedId === msg.id ? "border-primary ring-1 ring-primary" : "border-border"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -211,7 +224,7 @@ function Atendimento() {
               </div>
               <span className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
                 msg.status === "pendente" ? "bg-secondary text-secondary-foreground" :
-                msg.status === "em_analise" ? "bg-[#000000] text-white" :
+                msg.status === "em_analise" ? "bg-primary text-primary-foreground" :
                 "bg-transparent text-foreground border-border"
               }`}>
                 {statusLabels[msg.status]}
@@ -281,25 +294,8 @@ function Atendimento() {
 
           {/* Right panel: search, filters, list */}
           <div className="flex-1 space-y-5 overflow-y-auto scrollbar-brand pb-6">
-            {selected && (
-              <div className="hidden lg:block">
-                {detailView}
-              </div>
-            )}
-
-            {!selected && (
-              <>
-                {searchAndFilters}
-                {messagesList}
-              </>
-            )}
-
-            {selected && (
-              <div className="lg:hidden">
-                {searchAndFilters}
-                {messagesList}
-              </div>
-            )}
+            {searchAndFilters}
+            {messagesList}
           </div>
         </div>
       </div>
