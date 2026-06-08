@@ -21,12 +21,7 @@ function CommunityEntry() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
   const nav = useNavigate();
-  const { auth, userType } = useCommunity();
-
-  // Ensure B2C mode when visiting a community share link
-  useEffect(() => {
-    userType.setB2B(false);
-  }, []);
+  const { auth, userType, updateCommunity } = useCommunity();
 
   let community: { name: string; description: string } | null = null;
 
@@ -55,6 +50,15 @@ function CommunityEntry() {
       community = { name: match.name, description: match.description };
     }
   }
+
+  // Ensure B2C mode and persist community to context/localStorage
+  useEffect(() => {
+    userType.setB2B(false);
+    if (community) {
+      updateCommunity({ name: community.name, description: community.description });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!community) {
     return (
@@ -112,7 +116,7 @@ function CommunitySignup({
   slug: string;
 }) {
   const nav = useNavigate();
-  const { auth, userType } = useCommunity();
+  const { auth, userType, updateCommunity } = useCommunity();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -134,6 +138,7 @@ function CommunitySignup({
     setError("");
     auth.signup(name.trim(), email.trim(), password.trim());
     userType.setB2B(false);
+    updateCommunity({ name: community.name, description: community.description });
     saveB2CCommunity(community.name);
     setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
   };
@@ -146,6 +151,7 @@ function CommunitySignup({
     const ok = auth.login(email.trim(), password.trim());
     if (ok) {
       userType.setB2B(false);
+      updateCommunity({ name: community.name, description: community.description });
       saveB2CCommunity(community.name);
       setTimeout(() => nav({ to: "/feed", search: { comunidade: slug } }), 400);
     } else {
