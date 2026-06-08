@@ -22,7 +22,7 @@ function CommunityDetail() {
           <p className="text-sm text-foreground/60">Essa comunidade não existe ou foi removida.</p>
           <button
             onClick={() => nav({ to: "/communities" })}
-            className="h-10 px-4 rounded-xl bg-white text-[#000000] text-sm font-bold shadow-brand"
+            className="h-10 px-4 rounded-xl bg-[#000000] text-white text-sm font-bold shadow-brand"
           >
             Voltar
           </button>

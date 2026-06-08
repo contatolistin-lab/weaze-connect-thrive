@@ -96,7 +96,7 @@ function Chat() {
             </div>
             <button
               onClick={send}
-              className="h-10 w-10 rounded-full bg-white text-[#000000] grid place-items-center shadow-pink"
+              className="h-10 w-10 rounded-full bg-[#000000] text-white grid place-items-center shadow-pink"
             >
               <Send size={18} />
             </button>

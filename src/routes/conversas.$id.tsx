@@ -44,13 +44,13 @@ function ConversationDetailError({ error, reset }: { error: Error; reset: () => 
         <div className="flex justify-center gap-2">
           <button
             onClick={() => { router.invalidate(); reset(); }}
-            className="h-10 px-4 rounded-xl bg-white text-[#000000] text-sm font-bold shadow-brand"
+            className="h-10 px-4 rounded-xl bg-[#000000] text-white text-sm font-bold shadow-brand"
           >
             Tentar novamente
           </button>
           <button
             onClick={() => router.history.push("/conversas")}
-            className="h-10 px-4 rounded-xl border border-border bg-white text-sm font-bold"
+            className="h-10 px-4 rounded-xl bg-[#000000] text-white border border-border text-sm font-bold"
           >
             Voltar
           </button>
@@ -509,7 +509,7 @@ function DesktopToolbar() {
 
       <Link
         to="/conversas"
-        className="w-full h-11 rounded-2xl bg-white text-[#000000] font-bold text-sm flex items-center justify-center gap-2 shadow-brand"
+        className="w-full h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand"
       >
         <Plus size={18} /> Criar conversa
       </Link>

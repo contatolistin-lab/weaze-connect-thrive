@@ -174,7 +174,7 @@ function Profile() {
         <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
         <button
           onClick={() => nav({ to: "/" })}
-          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#000000] font-bold hover:bg-muted transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#000000] text-white border border-border font-bold hover:bg-muted transition-colors"
         >
           <LogOut size={18} /> Sair
         </button>

@@ -36,12 +36,12 @@ export const WButton = forwardRef<HTMLButtonElement, Props>(function WButton(
     "inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
   const variants: Record<Variant, string> = {
     gradient:
-      "bg-white text-[#000000] shadow-brand hover:shadow-pink focus-visible:ring-[--brand-pink]",
-    purple: "bg-white text-[#000000] hover:opacity-90 shadow-brand",
-    pink: "bg-white text-[#000000] hover:opacity-90 shadow-pink",
+      "bg-[#000000] text-white shadow-brand hover:shadow-pink focus-visible:ring-[--brand-pink]",
+    purple: "bg-[#000000] text-white hover:opacity-90 shadow-brand",
+    pink: "bg-[#000000] text-white hover:opacity-90 shadow-pink",
     ghost: "bg-transparent text-foreground hover:bg-muted",
-    outline: "bg-white text-foreground border border-border hover:bg-muted",
-    white: "bg-white text-[#000000] shadow-soft hover:shadow-brand",
+    outline: "bg-[#000000] text-white border border-border hover:bg-muted",
+    white: "bg-[#000000] text-white shadow-soft hover:shadow-brand",
   };
   return (
     <button

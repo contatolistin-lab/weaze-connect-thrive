@@ -45,7 +45,7 @@ function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="h-10 px-4 rounded-xl bg-white text-[#000000] text-sm font-bold shadow-brand"
+            className="h-10 px-4 rounded-xl bg-[#000000] text-white text-sm font-bold shadow-brand"
           >
             Tentar novamente
           </button>
@@ -277,7 +277,7 @@ function CriarConversaButton({
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
-        className="w-full h-11 rounded-2xl bg-white text-[#000000] font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
+        className="w-full h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
       >
         {aberto ? <X size={18} /> : <Plus size={18} />}
         {aberto ? "Cancelar" : "Criar conversa"}
@@ -308,7 +308,7 @@ function CriarConversaButton({
             type="button"
             onClick={handleSubmit}
             disabled={!title.trim()}
-            className="w-full h-10 rounded-xl bg-white text-[#000000] font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
+            className="w-full h-10 rounded-xl bg-[#000000] text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             <Check size={16} /> Publicar conversa
           </button>

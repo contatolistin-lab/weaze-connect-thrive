@@ -435,7 +435,7 @@ function EditModal({
               updatePost(post.id, { title, caption });
               onSave();
             }}
-            className="w-full h-11 rounded-2xl bg-white text-[#000000] font-bold text-sm shadow-brand"
+            className="w-full h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm shadow-brand"
           >
             Salvar
           </button>
@@ -471,7 +471,7 @@ function DeleteConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfir
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-11 rounded-2xl bg-white text-[#000000] font-bold text-sm"
+            className="flex-1 h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm"
           >
             Excluir
           </button>

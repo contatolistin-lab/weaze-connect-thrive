@@ -79,7 +79,7 @@ function Settings() {
 
           <Link
             to="/"
-            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-white border border-border text-[#000000] font-bold"
+            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#000000] text-white border border-border font-bold"
           >
             <LogOut size={18} /> Sair
           </Link>
