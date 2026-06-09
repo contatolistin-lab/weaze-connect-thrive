@@ -53,24 +53,25 @@ export function useSupportMessages(communityId?: string) {
       setMessages((prev) => [msg, ...prev]);
       return msg;
     },
-    []
+    [],
   );
 
-  const updateStatus = useCallback(
-    async (id: string, status: SupportStatus) => {
-      try {
-        const updated = await apiUpdateStatus({ data: { id, status } });
-        setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
-      } catch (e) {
-        console.error("Failed to update support message status:", e);
-      }
-    },
-    []
-  );
+  const refresh = useCallback(async () => {
+    await fetchMessages();
+  }, [fetchMessages]);
+
+  const updateStatus = useCallback(async (id: string, status: SupportStatus) => {
+    try {
+      const updated = await apiUpdateStatus({ data: { id, status } });
+      setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    } catch (e) {
+      console.error("Failed to update support message status:", e);
+    }
+  }, []);
 
   const getById = useCallback(
     (id: string) => messages.find((m) => m.id === id) ?? null,
-    [messages]
+    [messages],
   );
 
   const stats = {
@@ -80,5 +81,5 @@ export function useSupportMessages(communityId?: string) {
     total: messages.length,
   };
 
-  return { messages, create, updateStatus, getById, stats, loading };
+  return { messages, create, updateStatus, getById, stats, loading, refresh };
 }

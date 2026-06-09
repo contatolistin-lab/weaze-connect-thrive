@@ -36,7 +36,15 @@ function loadFromFile(): SupportMessage[] {
   }
 }
 
-function getSharedMessages(): SupportMessage[] {
+function saveToFile(messages: SupportMessage[]): void {
+  try {
+    fs.writeFileSync(STORAGE_FILE, JSON.stringify(messages), "utf-8");
+  } catch (e) {
+    console.error("Failed to persist support messages to disk:", e);
+  }
+}
+
+function getMessages(): SupportMessage[] {
   const shared = globalThis as SupportGlobal;
   if (!shared[GLOBAL_MESSAGES_KEY]) {
     shared[GLOBAL_MESSAGES_KEY] = loadFromFile();
@@ -44,19 +52,18 @@ function getSharedMessages(): SupportMessage[] {
   return shared[GLOBAL_MESSAGES_KEY];
 }
 
+function saveMessages(messages: SupportMessage[]): void {
+  const shared = globalThis as SupportGlobal;
+  shared[GLOBAL_MESSAGES_KEY] = [...messages];
+  saveToFile(messages);
+}
+
 export function readMessages(): SupportMessage[] {
-  return [...getSharedMessages()].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  return [...getMessages()].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 }
 
 export function writeMessages(messages: SupportMessage[]): void {
-  const shared = globalThis as SupportGlobal;
-  shared[GLOBAL_MESSAGES_KEY] = [...messages];
-
-  try {
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(messages), "utf-8");
-  } catch (e) {
-    console.error("Failed to persist support messages:", e);
-  }
+  saveMessages(messages);
 }

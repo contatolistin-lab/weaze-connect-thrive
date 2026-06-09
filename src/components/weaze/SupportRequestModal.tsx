@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSupportMessages, SupportType } from "@/hooks/useSupportMessages";
+import { type SupportType, type SupportMessage } from "@/hooks/useSupportMessages";
 import { WButton } from "./WButton";
 
 type Props = {
@@ -11,6 +11,15 @@ type Props = {
   userEmail: string;
   defaultType: SupportType;
   onSuccess?: () => void;
+  onCreate: (data: {
+    community_id: string;
+    user_id: string;
+    user_name: string;
+    user_email: string;
+    type: SupportType;
+    subject: string;
+    message: string;
+  }) => Promise<SupportMessage>;
 };
 
 const typeLabels: Record<SupportType, string> = {
@@ -19,33 +28,49 @@ const typeLabels: Record<SupportType, string> = {
   problema: "Reportar Problema",
 };
 
-export function SupportRequestModal({ open, onClose, communityId, userId, userName, userEmail, defaultType, onSuccess }: Props) {
-  const { create } = useSupportMessages();
+export function SupportRequestModal({
+  open,
+  onClose,
+  communityId,
+  userId,
+  userName,
+  userEmail,
+  defaultType,
+  onSuccess,
+  onCreate,
+}: Props) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   if (!open) return null;
 
   const handleSubmit = async () => {
     if (!subject.trim()) return;
     if (!message.trim()) return;
-
+    setError("");
     setSending(true);
-    await create({
-      community_id: communityId,
-      user_id: userId,
-      user_name: userName || "Usuário",
-      user_email: userEmail,
-      type: defaultType,
-      subject: subject.trim(),
-      message: message.trim(),
-    });
-    setSending(false);
-    setSubject("");
-    setMessage("");
-    onClose();
-    onSuccess?.();
+    try {
+      await onCreate({
+        community_id: communityId,
+        user_id: userId,
+        user_name: userName || "Usuário",
+        user_email: userEmail,
+        type: defaultType,
+        subject: subject.trim(),
+        message: message.trim(),
+      });
+      setSubject("");
+      setMessage("");
+      onClose();
+      onSuccess?.();
+    } catch (e) {
+      console.error("SupportRequestModal: failed to create message", e);
+      setError("Erro ao enviar. Tente novamente.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -53,11 +78,18 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
       <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl p-6 pb-8 space-y-4 animate-in slide-in-from-bottom">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-extrabold tracking-tight">{typeLabels[defaultType]}</h2>
-          <button onClick={onClose} className="text-foreground/40 hover:text-foreground text-xl leading-none">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-foreground/40 hover:text-foreground text-xl leading-none"
+          >
+            &times;
+          </button>
         </div>
         <div className="space-y-3">
           <div>
-            <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider mb-1 block">Assunto *</label>
+            <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider mb-1 block">
+              Assunto *
+            </label>
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -67,7 +99,9 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
             />
           </div>
           <div>
-            <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider mb-1 block">Mensagem *</label>
+            <label className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider mb-1 block">
+              Mensagem *
+            </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -76,6 +110,7 @@ export function SupportRequestModal({ open, onClose, communityId, userId, userNa
               className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-ring resize-none bg-white"
             />
           </div>
+          {error && <p className="text-xs font-bold text-red-600 text-center">{error}</p>}
           <WButton variant="gradient" size="md" fullWidth onClick={handleSubmit} disabled={sending}>
             {sending ? "Enviando..." : "Enviar Mensagem"}
           </WButton>

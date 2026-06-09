@@ -5,7 +5,14 @@ import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
 import { useSupportMessages, SupportType, SupportStatus } from "@/hooks/useSupportMessages";
 import {
-  MessageSquare, Lightbulb, Bug, ArrowLeft, Search, Calendar, Mail, Headset,
+  MessageSquare,
+  Lightbulb,
+  Bug,
+  ArrowLeft,
+  Search,
+  Calendar,
+  Mail,
+  Headset,
 } from "lucide-react";
 
 export const Route = createFileRoute("/atendimento")({
@@ -31,9 +38,21 @@ const filterOptions: { value: FilterType; label: string }[] = [
 ];
 
 const typeConfig: Record<SupportType, { label: string; icon: React.ReactNode; color: string }> = {
-  duvida: { label: "Dúvida", icon: <MessageSquare className="w-3.5 h-3.5" />, color: "text-blue-600 bg-blue-100" },
-  sugestao: { label: "Sugestão", icon: <Lightbulb className="w-3.5 h-3.5" />, color: "text-amber-600 bg-amber-100" },
-  problema: { label: "Problema", icon: <Bug className="w-3.5 h-3.5" />, color: "text-red-600 bg-red-100" },
+  duvida: {
+    label: "Dúvida",
+    icon: <MessageSquare className="w-3.5 h-3.5" />,
+    color: "text-blue-600 bg-blue-100",
+  },
+  sugestao: {
+    label: "Sugestão",
+    icon: <Lightbulb className="w-3.5 h-3.5" />,
+    color: "text-amber-600 bg-amber-100",
+  },
+  problema: {
+    label: "Problema",
+    icon: <Bug className="w-3.5 h-3.5" />,
+    color: "text-red-600 bg-red-100",
+  },
 };
 
 const statusLabels: Record<SupportStatus, string> = {
@@ -70,7 +89,7 @@ function Atendimento() {
         (m) =>
           m.subject.toLowerCase().includes(q) ||
           m.user_name.toLowerCase().includes(q) ||
-          m.message.toLowerCase().includes(q)
+          m.message.toLowerCase().includes(q),
       );
     }
     return list;
@@ -105,8 +124,11 @@ function Atendimento() {
   const formatDate = (iso: string) => {
     try {
       return new Intl.DateTimeFormat("pt-BR", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       }).format(new Date(iso));
     } catch {
       return iso;
@@ -134,7 +156,9 @@ function Atendimento() {
         { label: "Total", value: stats.total },
       ].map((item) => (
         <div key={item.label} className="rounded-2xl bg-white border border-border p-4 shadow-soft">
-          <p className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider">{item.label}</p>
+          <p className="text-[11px] font-bold text-foreground/50 uppercase tracking-wider">
+            {item.label}
+          </p>
           <p className="text-2xl font-extrabold mt-1">{item.value}</p>
         </div>
       ))}
@@ -146,33 +170,58 @@ function Atendimento() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {typeConfig[selected.type].icon}
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[selected.type].color}`}>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[selected.type].color}`}
+          >
             {typeConfig[selected.type].label}
           </span>
         </div>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-          selected.status === "pendente" ? "bg-secondary text-secondary-foreground" :
-          selected.status === "em_analise" ? "bg-primary text-primary-foreground" :
-          "bg-transparent text-foreground border-border"
-        }`}>
+        <span
+          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+            selected.status === "pendente"
+              ? "bg-secondary text-secondary-foreground"
+              : selected.status === "em_analise"
+                ? "bg-primary text-primary-foreground"
+                : "bg-transparent text-foreground border-border"
+          }`}
+        >
           {statusLabels[selected.status]}
         </span>
       </div>
       <h2 className="text-base font-bold">{selected.subject}</h2>
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <div><span className="text-foreground/50 text-xs">Nome:</span><p className="font-medium">{selected.user_name}</p></div>
-        <div><span className="text-foreground/50 text-xs">Email:</span><p className="font-medium truncate">{selected.user_email}</p></div>
-        <div><span className="text-foreground/50 text-xs">Tipo:</span><p className="font-medium">{typeConfig[selected.type].label}</p></div>
-        <div><span className="text-foreground/50 text-xs">Data:</span><p className="font-medium text-xs">{formatDate(selected.created_at)}</p></div>
+        <div>
+          <span className="text-foreground/50 text-xs">Nome:</span>
+          <p className="font-medium">{selected.user_name}</p>
+        </div>
+        <div>
+          <span className="text-foreground/50 text-xs">Email:</span>
+          <p className="font-medium truncate">{selected.user_email}</p>
+        </div>
+        <div>
+          <span className="text-foreground/50 text-xs">Tipo:</span>
+          <p className="font-medium">{typeConfig[selected.type].label}</p>
+        </div>
+        <div>
+          <span className="text-foreground/50 text-xs">Data:</span>
+          <p className="font-medium text-xs">{formatDate(selected.created_at)}</p>
+        </div>
       </div>
       <div>
         <span className="text-xs text-foreground/50">Mensagem:</span>
-        <p className="mt-1 text-sm bg-surface-muted rounded-xl p-3 whitespace-pre-wrap">{selected.message}</p>
+        <p className="mt-1 text-sm bg-surface-muted rounded-xl p-3 whitespace-pre-wrap">
+          {selected.message}
+        </p>
       </div>
-      <WButton variant="outline" size="md" fullWidth onClick={async () => {
-        const next = getNextStatus(selected.status);
-        await updateStatus(selected.id, next);
-      }}>
+      <WButton
+        variant="outline"
+        size="md"
+        fullWidth
+        onClick={async () => {
+          const next = getNextStatus(selected.status);
+          await updateStatus(selected.id, next);
+        }}
+      >
         {getNextStatusLabel(selected.status)}
       </WButton>
     </div>
@@ -228,15 +277,21 @@ function Atendimento() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="text-sm font-bold truncate">{msg.user_name}</span>
-                <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${typeConfig[msg.type].color}`}>
+                <span
+                  className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${typeConfig[msg.type].color}`}
+                >
                   {typeConfig[msg.type].label}
                 </span>
               </div>
-              <span className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                msg.status === "pendente" ? "bg-secondary text-secondary-foreground" :
-                msg.status === "em_analise" ? "bg-primary text-primary-foreground" :
-                "bg-transparent text-foreground border-border"
-              }`}>
+              <span
+                className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+                  msg.status === "pendente"
+                    ? "bg-secondary text-secondary-foreground"
+                    : msg.status === "em_analise"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-transparent text-foreground border-border"
+                }`}
+              >
                 {statusLabels[msg.status]}
               </span>
             </div>
@@ -259,7 +314,10 @@ function Atendimento() {
           <div className="px-4 pt-4 pb-24 space-y-5">
             <div className="flex items-center gap-3">
               {selectedId && (
-                <button onClick={() => setSelectedId(null)} className="p-1 -ml-1 hover:bg-muted rounded-lg transition-colors">
+                <button
+                  onClick={() => setSelectedId(null)}
+                  className="p-1 -ml-1 hover:bg-muted rounded-lg transition-colors"
+                >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
               )}

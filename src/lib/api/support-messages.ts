@@ -23,7 +23,7 @@ export const createSupportMessage = createServerFn({ method: "POST" })
       type: z.enum(["duvida", "sugestao", "problema"]),
       subject: z.string(),
       message: z.string(),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const now = new Date().toISOString();
@@ -45,7 +45,7 @@ export const updateSupportStatus = createServerFn({ method: "POST" })
     z.object({
       id: z.string(),
       status: z.enum(["pendente", "em_analise", "respondido"]),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const messages = readMessages();

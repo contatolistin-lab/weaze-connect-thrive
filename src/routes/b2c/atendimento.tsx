@@ -1,29 +1,78 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useCommunity } from "@/lib/community-store";
-import { useSupportMessages, type SupportType, type SupportStatus } from "@/hooks/useSupportMessages";
+import {
+  useSupportMessages,
+  type SupportType,
+  type SupportStatus,
+} from "@/hooks/useSupportMessages";
 import { SupportRequestModal } from "@/components/weaze/SupportRequestModal";
 import { AppShell } from "@/components/weaze/AppShell";
-import { MessageSquare, Lightbulb, Bug, Calendar, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import {
+  MessageSquare,
+  Lightbulb,
+  Bug,
+  Calendar,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 
 export const Route = createFileRoute("/b2c/atendimento")({
   head: () => ({ meta: [{ title: "Atendimento — WEAZE" }] }),
   component: B2CAtendimento,
 });
 
-const typeConfig: Record<SupportType, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
-  duvida: { label: "Dúvida", icon: <MessageSquare className="w-5 h-5" />, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-  sugestao: { label: "Sugestão", icon: <Lightbulb className="w-5 h-5" />, color: "text-amber-600", bg: "bg-amber-50 border-amber-200" },
-  problema: { label: "Problema", icon: <Bug className="w-5 h-5" />, color: "text-red-600", bg: "bg-red-50 border-red-200" },
+const typeConfig: Record<
+  SupportType,
+  { label: string; icon: React.ReactNode; color: string; bg: string }
+> = {
+  duvida: {
+    label: "Dúvida",
+    icon: <MessageSquare className="w-5 h-5" />,
+    color: "text-blue-600",
+    bg: "bg-blue-50 border-blue-200",
+  },
+  sugestao: {
+    label: "Sugestão",
+    icon: <Lightbulb className="w-5 h-5" />,
+    color: "text-amber-600",
+    bg: "bg-amber-50 border-amber-200",
+  },
+  problema: {
+    label: "Problema",
+    icon: <Bug className="w-5 h-5" />,
+    color: "text-red-600",
+    bg: "bg-red-50 border-red-200",
+  },
 };
 
-const statusConfig: Record<SupportStatus, { label: string; icon: React.ReactNode; color: string }> = {
-  pendente: { label: "Pendente", icon: <Clock className="w-3.5 h-3.5" />, color: "text-amber-600 bg-amber-50" },
-  em_analise: { label: "Em análise", icon: <AlertCircle className="w-3.5 h-3.5" />, color: "text-blue-600 bg-blue-50" },
-  respondido: { label: "Respondido", icon: <CheckCircle className="w-3.5 h-3.5" />, color: "text-green-600 bg-green-50" },
-};
+const statusConfig: Record<SupportStatus, { label: string; icon: React.ReactNode; color: string }> =
+  {
+    pendente: {
+      label: "Pendente",
+      icon: <Clock className="w-3.5 h-3.5" />,
+      color: "text-amber-600 bg-amber-50",
+    },
+    em_analise: {
+      label: "Em análise",
+      icon: <AlertCircle className="w-3.5 h-3.5" />,
+      color: "text-blue-600 bg-blue-50",
+    },
+    respondido: {
+      label: "Respondido",
+      icon: <CheckCircle className="w-3.5 h-3.5" />,
+      color: "text-green-600 bg-green-50",
+    },
+  };
 
-const cardOptions: { type: SupportType; title: string; description: string; icon: React.ReactNode; buttonLabel: string }[] = [
+const cardOptions: {
+  type: SupportType;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  buttonLabel: string;
+}[] = [
   {
     type: "duvida",
     title: "Enviar Dúvida",
@@ -49,7 +98,7 @@ const cardOptions: { type: SupportType; title: string; description: string; icon
 
 function B2CAtendimento() {
   const { community, auth } = useCommunity();
-  const { messages, loading } = useSupportMessages(community.name || "default");
+  const { messages, loading, create } = useSupportMessages(community.name || "default");
 
   const [supportOpen, setSupportOpen] = useState(false);
   const [supportType, setSupportType] = useState<SupportType>("duvida");
@@ -148,11 +197,15 @@ function B2CAtendimento() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[msg.type].color} ${typeConfig[msg.type].bg}`}>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${typeConfig[msg.type].color} ${typeConfig[msg.type].bg}`}
+                  >
                     {typeConfig[msg.type].label}
                   </span>
                 </div>
-                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusConfig[msg.status].color}`}>
+                <span
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusConfig[msg.status].color}`}
+                >
                   {statusConfig[msg.status].icon}
                   {statusConfig[msg.status].label}
                 </span>
@@ -184,6 +237,7 @@ function B2CAtendimento() {
               userEmail={auth.user?.email || ""}
               defaultType={supportType}
               onSuccess={handleSuccess}
+              onCreate={create}
             />
             {solicitationsSection}
           </div>
@@ -196,9 +250,7 @@ function B2CAtendimento() {
             {cardsSection}
           </div>
           <div className="flex-1 overflow-y-auto scrollbar-brand pb-4">
-            <div className="max-w-3xl">
-              {solicitationsSection}
-            </div>
+            <div className="max-w-3xl">{solicitationsSection}</div>
           </div>
         </div>
         <SupportRequestModal
@@ -210,6 +262,7 @@ function B2CAtendimento() {
           userEmail={auth.user?.email || ""}
           defaultType={supportType}
           onSuccess={handleSuccess}
+          onCreate={create}
         />
       </div>
     </>
