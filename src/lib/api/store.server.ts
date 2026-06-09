@@ -68,3 +68,5 @@ export function readMessages(): SupportMessage[] {
 export function writeMessages(messages: SupportMessage[]): void {
   saveMessages(messages);
 }
+
+// WE-001: storage híbrido globalThis + fs para dev/prod
