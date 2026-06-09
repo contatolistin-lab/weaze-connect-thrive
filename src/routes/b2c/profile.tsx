@@ -34,60 +34,82 @@ function B2CProfile() {
     reader.readAsDataURL(file);
   };
 
+  const headerSection = (
+    <div className="flex items-center gap-4">
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        className="relative shrink-0 group"
+      >
+        <Avatar name={auth.user?.name || "U"} size={64} src={avatar} />
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Camera size={20} className="text-white" />
+        </span>
+      </button>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
+      <div className="flex-1 min-w-0">
+        <h1 className="text-lg font-extrabold tracking-tight truncate">
+          {auth.user?.name || "Usuário"}
+        </h1>
+        <p className="text-sm text-foreground/60 truncate">{auth.user?.email || ""}</p>
+      </div>
+    </div>
+  );
+
+  const accountDataSection = (
+    <div className="rounded-2xl bg-white border border-border p-5 shadow-soft space-y-4">
+      <h2 className="text-sm font-extrabold tracking-tight">Dados da conta</h2>
+      <div className="flex items-center gap-3">
+        <User size={18} className="text-foreground/40 shrink-0" />
+        <span className="text-sm">{auth.user?.name || "—"}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <Mail size={18} className="text-foreground/40 shrink-0" />
+        <span className="text-sm">{auth.user?.email || "—"}</span>
+      </div>
+    </div>
+  );
+
+  const accountSection = (
+    <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
+      <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
+      <button
+        onClick={() => {
+          auth.logout();
+          userType.setB2B(false);
+          nav({ to: "/" });
+        }}
+        className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#8800aa] text-white border border-border font-bold hover:bg-muted transition-colors"
+      >
+        <LogOut size={18} /> Sair
+      </button>
+    </section>
+  );
+
   return (
     <AppShell title="Meu Perfil">
-      <div className="px-4 pt-4 pb-24 space-y-6">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="relative shrink-0 group"
-          >
-            <Avatar name={auth.user?.name || "U"} size={64} src={avatar} />
-            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera size={20} className="text-white" />
-            </span>
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-lg font-extrabold tracking-tight truncate">
-              {auth.user?.name || "Usuário"}
-            </h1>
-            <p className="text-sm text-foreground/60 truncate">{auth.user?.email || ""}</p>
+      {/* Mobile layout */}
+      <div className="px-4 pt-4 pb-24 space-y-6 md:hidden">
+        {headerSection}
+        {accountDataSection}
+        {accountSection}
+      </div>
+
+      {/* Tablet / Desktop layout */}
+      <div className="hidden md:block max-w-4xl mx-auto px-4 lg:px-6 pt-6 pb-24">
+        <div className="space-y-6">
+          {headerSection}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {accountDataSection}
+            {accountSection}
           </div>
         </div>
-
-        <div className="rounded-2xl bg-white border border-border p-5 shadow-soft space-y-4">
-          <h2 className="text-sm font-extrabold tracking-tight">Dados da conta</h2>
-          <div className="flex items-center gap-3">
-            <User size={18} className="text-foreground/40 shrink-0" />
-            <span className="text-sm">{auth.user?.name || "—"}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail size={18} className="text-foreground/40 shrink-0" />
-            <span className="text-sm">{auth.user?.email || "—"}</span>
-          </div>
-        </div>
-
-        <section className="rounded-2xl bg-white border border-border p-5 shadow-soft">
-          <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
-          <button
-            onClick={() => {
-              auth.logout();
-              userType.setB2B(false);
-              nav({ to: "/" });
-            }}
-            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#8800aa] text-white border border-border font-bold hover:bg-muted transition-colors"
-          >
-            <LogOut size={18} /> Sair
-          </button>
-        </section>
       </div>
     </AppShell>
   );
