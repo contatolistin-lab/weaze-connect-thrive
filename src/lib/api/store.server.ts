@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 
-const STORAGE_FILE = path.join("/tmp", "weaze-support-messages.json");
+const STORAGE_FILE = path.join(os.tmpdir(), "weaze-support-messages.json");
 const GLOBAL_MESSAGES_KEY = "__weaze_support_messages__";
 
 export type SupportType = "duvida" | "sugestao" | "problema";
