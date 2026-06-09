@@ -47,7 +47,8 @@ function Profile() {
     updateCommunity(form);
   };
 
-  const communitySlug = community.name.trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
+  const communitySlug =
+    (community.name || "").trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
 
   const [origin, setOrigin] = useState("");
   useEffect(() => {
@@ -57,7 +58,7 @@ function Profile() {
   }, []);
 
   const communityLink = origin
-    ? `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`
+    ? `${origin}/c/${communitySlug}?name=${encodeURIComponent((community.name || "").trim())}&desc=${encodeURIComponent(community.description || "")}`
     : "";
 
   const [copied, setCopied] = useState(false);
@@ -208,9 +209,7 @@ function Profile() {
         <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 min-h-dvh">
           <div className="flex-1 space-y-6 overflow-y-auto scrollbar-brand pb-6">
             {headerSection}
-            <div className="max-w-3xl">
-              {communityDataForm}
-            </div>
+            <div className="max-w-3xl">{communityDataForm}</div>
           </div>
           <div className="w-80 xl:w-96 shrink-0 overflow-y-auto scrollbar-brand pb-6">
             {sidePanel}

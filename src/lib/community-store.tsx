@@ -89,16 +89,22 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem("weaze_community");
-      if (saved) setCommunity(JSON.parse(saved));
-    } catch { /* silent */ }
+      if (saved) setCommunity((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    } catch {
+      /* silent */
+    }
     try {
       const saved = localStorage.getItem("weaze_user_b2b");
       if (saved) setB2BState(saved === "true");
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     try {
       const session = getStoredSession();
       if (session) setUser(session);
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     try {
       const b2c = localStorage.getItem("weaze_b2c_avatar");
       if (b2c) {
@@ -107,7 +113,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
         const communityData = JSON.parse(localStorage.getItem("weaze_community") || "{}");
         if (communityData.avatar) setProfileAvatarState(communityData.avatar);
       }
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     setHydrated(true);
   }, []);
 
@@ -135,9 +143,17 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   const setProfileAvatar = useCallback((url: string | undefined) => {
     setProfileAvatarState(url);
     if (url) {
-      try { localStorage.setItem("weaze_b2c_avatar", url); } catch { /* silent */ }
+      try {
+        localStorage.setItem("weaze_b2c_avatar", url);
+      } catch {
+        /* silent */
+      }
     } else {
-      try { localStorage.removeItem("weaze_b2c_avatar"); } catch { /* silent */ }
+      try {
+        localStorage.removeItem("weaze_b2c_avatar");
+      } catch {
+        /* silent */
+      }
     }
   }, []);
 
@@ -146,7 +162,9 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
     users[email] = { name, password };
     try {
       localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
     const sessionUser: AuthUser = { name, email };
     storeSession(sessionUser);
     setUser(sessionUser);
@@ -177,7 +195,17 @@ export function CommunityProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunityCtx.Provider value={{ community, updateCommunity, userType, auth, hydrated, profileAvatar, setProfileAvatar }}>
+    <CommunityCtx.Provider
+      value={{
+        community,
+        updateCommunity,
+        userType,
+        auth,
+        hydrated,
+        profileAvatar,
+        setProfileAvatar,
+      }}
+    >
       {children}
     </CommunityCtx.Provider>
   );
