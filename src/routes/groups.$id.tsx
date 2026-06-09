@@ -297,7 +297,7 @@ function GroupChat() {
         <header className="sticky top-0 z-40 bg-white border-b border-border safe-pt">
           <div className="flex items-center gap-2 px-2 h-14">
             <button
-              onClick={() => nav({ to: "/groups" })}
+              onClick={() => nav({ to: "/feed" })}
               className="h-9 w-9 grid place-items-center rounded-full hover:bg-muted shrink-0"
             >
               <ArrowLeft size={20} />
