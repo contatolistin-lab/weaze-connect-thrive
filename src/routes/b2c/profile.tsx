@@ -93,24 +93,30 @@ function B2CProfile() {
   );
 
   return (
-    <AppShell title="Meu Perfil">
+    <>
       {/* Mobile layout */}
-      <div className="px-4 pt-4 pb-24 space-y-6 md:hidden">
-        {headerSection}
-        {accountDataSection}
-        {accountSection}
+      <div className="md:hidden">
+        <AppShell title="Meu Perfil">
+          <div className="px-4 pt-4 pb-24 space-y-6">
+            {headerSection}
+            {accountDataSection}
+            {accountSection}
+          </div>
+        </AppShell>
       </div>
 
       {/* Tablet / Desktop layout */}
-      <div className="hidden md:block max-w-4xl mx-auto px-4 lg:px-6 pt-6 pb-24">
-        <div className="space-y-6">
-          {headerSection}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            {accountDataSection}
+      <div className="hidden md:block min-h-dvh bg-surface-muted">
+        <div className="mx-auto max-w-7xl flex gap-5 p-4 lg:p-6 min-h-dvh">
+          <div className="flex-1 space-y-6 overflow-y-auto scrollbar-brand pb-6">
+            {headerSection}
+            <div className="max-w-3xl">{accountDataSection}</div>
+          </div>
+          <div className="w-80 xl:w-96 shrink-0 overflow-y-auto scrollbar-brand pb-6">
             {accountSection}
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
