@@ -40,20 +40,25 @@ export default function SupportRequestModal({ open, onOpenChange, communityId, u
     }
 
     setSending(true);
-    create({
-      community_id: communityId,
-      user_id: userId,
-      user_name: userName || "Usuário",
-      user_email: userEmail,
-      type: defaultType,
-      subject: subject.trim(),
-      message: message.trim(),
-    });
-    setSending(false);
-    setSubject("");
-    setMessage("");
-    onOpenChange(false);
-    toast.success("Mensagem enviada com sucesso. Nossa equipe responderá em breve.");
+    try {
+      await create({
+        community_id: communityId,
+        user_id: userId,
+        user_name: userName || "Usuário",
+        user_email: userEmail,
+        type: defaultType,
+        subject: subject.trim(),
+        message: message.trim(),
+      });
+      setSubject("");
+      setMessage("");
+      onOpenChange(false);
+      toast.success("Mensagem enviada com sucesso. Nossa equipe responderá em breve.");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar mensagem");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (

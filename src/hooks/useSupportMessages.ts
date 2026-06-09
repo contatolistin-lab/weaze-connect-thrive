@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 export type SupportType = "duvida" | "sugestao" | "problema";
 
@@ -18,38 +20,88 @@ export type SupportMessage = {
   updated_at: string;
 };
 
-const STORAGE_KEY = "weaze_support_messages";
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-}
-
-function loadAll(): SupportMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAll(messages: SupportMessage[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+function mapRow(row: any): SupportMessage {
+  return {
+    id: row.id,
+    community_id: row.tenant_id,
+    user_id: row.user_id,
+    user_name: row.user_name,
+    user_email: row.user_email,
+    type: row.type,
+    subject: row.subject,
+    message: row.message,
+    status: row.status,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
 }
 
 export function useSupportMessages(communityId?: string) {
-  const [messages, setMessages] = useState<SupportMessage[]>(() => loadAll());
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      let query = supabase
+        .from("support_messages")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (communityId) {
+        query = query.eq("tenant_id", communityId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      setMessages((data || []).map(mapRow));
+    } catch (err) {
+      console.error("Erro ao carregar mensagens:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [communityId]);
 
   useEffect(() => {
-    saveAll(messages);
-  }, [messages]);
+    load();
+  }, [load]);
 
-  const filtered = communityId
-    ? messages.filter((m) => m.community_id === communityId)
-    : messages;
+  useEffect(() => {
+    const channel = supabase
+      .channel("support_messages_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "support_messages",
+          ...(communityId ? { filter: `tenant_id=eq.${communityId}` } : {}),
+        },
+        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+          if (payload.eventType === "INSERT") {
+            const row = payload.new as any;
+            if (!communityId || row.tenant_id === communityId) {
+              setMessages((prev) => [mapRow(row), ...prev]);
+            }
+          } else if (payload.eventType === "UPDATE") {
+            const row = payload.new as any;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === row.id ? mapRow(row) : m))
+            );
+          } else if (payload.eventType === "DELETE") {
+            const row = payload.old as any;
+            setMessages((prev) => prev.filter((m) => m.id !== row.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [communityId]);
 
   const create = useCallback(
-    (data: {
+    async (data: {
       community_id: string;
       user_id: string;
       user_name: string;
@@ -58,27 +110,30 @@ export function useSupportMessages(communityId?: string) {
       subject: string;
       message: string;
     }) => {
-      const now = new Date().toISOString();
-      const msg: SupportMessage = {
-        id: generateId(),
-        ...data,
+      const { error } = await supabase.from("support_messages").insert({
+        tenant_id: data.community_id,
+        user_id: data.user_id,
+        user_name: data.user_name,
+        user_email: data.user_email,
+        type: data.type,
+        subject: data.subject,
+        message: data.message,
         status: "pendente",
-        created_at: now,
-        updated_at: now,
-      };
-      setMessages((prev) => [msg, ...prev]);
-      return msg;
+      });
+
+      if (error) throw error;
     },
     []
   );
 
   const updateStatus = useCallback(
-    (id: string, status: SupportStatus) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === id ? { ...m, status, updated_at: new Date().toISOString() } : m
-        )
-      );
+    async (id: string, status: SupportStatus) => {
+      const { error } = await supabase
+        .from("support_messages")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
     },
     []
   );
@@ -88,6 +143,10 @@ export function useSupportMessages(communityId?: string) {
     [messages]
   );
 
+  const filtered = communityId
+    ? messages.filter((m) => m.community_id === communityId)
+    : messages;
+
   const stats = {
     pendentes: filtered.filter((m) => m.status === "pendente").length,
     em_analise: filtered.filter((m) => m.status === "em_analise").length,
@@ -95,5 +154,5 @@ export function useSupportMessages(communityId?: string) {
     total: filtered.length,
   };
 
-  return { messages: filtered, create, updateStatus, getById, stats };
+  return { messages: filtered, create, updateStatus, getById, stats, loading };
 }
