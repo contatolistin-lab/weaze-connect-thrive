@@ -66,14 +66,14 @@ function Feed() {
     : allPosts;
 
   return (
-    <div className="min-h-dvh bg-black">
-      <div className="mx-auto max-w-md min-h-dvh relative bg-black">
+    <div className="min-h-dvh bg-white">
+      <div className="mx-auto max-w-md min-h-dvh relative bg-white">
         <header className="absolute top-0 inset-x-0 z-30 pt-3 px-4 safe-pt">
           <div className="flex items-center justify-between">
             {comunidade ? (
               <Link
                 to="/"
-                className="h-9 w-9 grid place-items-center rounded-full hover:bg-white/10 text-white"
+                className="h-9 w-9 grid place-items-center rounded-full hover:bg-black/10 text-foreground"
               >
                 <ArrowLeft size={20} />
               </Link>
@@ -94,7 +94,7 @@ function Feed() {
             />
           ))}
           {filteredPosts.length === 0 && (
-            <div className="h-dvh grid place-items-center text-white/50 text-sm">
+            <div className="h-dvh grid place-items-center text-foreground/50 text-sm">
               Nenhuma postagem dessa comunidade ainda.
             </div>
           )}
@@ -123,7 +123,7 @@ function FeedBell() {
   return (
     <Link
       to="/notifications"
-      className="h-9 w-9 grid place-items-center rounded-full hover:bg-white/10 relative text-white"
+      className="h-9 w-9 grid place-items-center rounded-full hover:bg-black/10 relative text-foreground"
     >
       <Bell size={20} />
       {unreadCount > 0 && (
