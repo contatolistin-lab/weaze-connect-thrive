@@ -62,11 +62,10 @@ const statusLabels: Record<SupportStatus, string> = {
 };
 
 function Atendimento() {
-  const { community, userType, hydrated } = useCommunity();
+  const { userType, hydrated } = useCommunity();
   const nav = useNavigate();
 
-  const communityId = community.name || "default";
-  const { messages, updateStatus, getById, stats, loading } = useSupportMessages(communityId);
+  const { messages, updateStatus, getById, stats, loading } = useSupportMessages();
 
   const [filter, setFilter] = useState<FilterType>("todos");
   const [selectedId, setSelectedId] = useState<string | null>(null);

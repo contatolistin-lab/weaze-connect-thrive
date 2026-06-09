@@ -7,9 +7,10 @@ export type SupportType = "duvida" | "sugestao" | "problema";
 export type SupportStatus = "pendente" | "em_analise" | "respondido";
 
 export const getSupportMessages = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ communityId: z.string() }))
+  .inputValidator(z.object({ communityId: z.string().optional() }))
   .handler(async ({ data }) => {
     const messages = readMessages();
+    if (!data.communityId) return messages;
     return messages.filter((m) => m.community_id === data.communityId);
   });
 

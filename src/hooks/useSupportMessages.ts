@@ -16,7 +16,6 @@ export function useSupportMessages(communityId?: string) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchMessages = useCallback(async () => {
-    if (!communityId) return;
     try {
       const data = await getSupportMessages({ data: { communityId } });
       setMessages(data);
