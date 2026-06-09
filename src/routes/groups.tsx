@@ -156,9 +156,12 @@ function GroupsIndex() {
         <p className="text-sm opacity-90">Grupos privados que você participa</p>
         {userType.isB2B && (
           <div className="mt-3">
-            <WButton variant="white" size="sm" onClick={() => setModalOpen(true)}>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition-all active:scale-[0.98] h-9 px-4 text-sm bg-white text-[#8800aa] border border-white/30 shadow-soft hover:shadow-brand"
+            >
               <Plus size={14} /> Criar grupo
-            </WButton>
+            </button>
           </div>
         )}
       </div>
