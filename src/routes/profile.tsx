@@ -65,13 +65,14 @@ function Profile() {
 
   const [copied, setCopied] = useState(false);
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
     if (!communityLink) return;
     try {
-      navigator.clipboard.writeText(communityLink);
+      await navigator.clipboard.writeText(communityLink);
     } catch (err) {
       console.error("Falha ao copiar link:", err);
       toast.error("Não foi possível copiar o link. Tente novamente.");
+      return;
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
