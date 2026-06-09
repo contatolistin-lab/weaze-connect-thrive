@@ -1,9 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-import os from "node:os";
-
-const STORAGE_FILE = path.join(os.tmpdir(), "weaze-support-messages.json");
-
 export type SupportType = "duvida" | "sugestao" | "problema";
 export type SupportStatus = "pendente" | "em_analise" | "respondido";
 
@@ -21,20 +15,22 @@ export type SupportMessage = {
   updated_at: string;
 };
 
+// Shared in-memory store. Using globalThis keeps the same array across HMR
+// reloads and across all server function invocations within the same worker
+// instance — so B2C writes and B2B reads consume the SAME source of truth.
+const GLOBAL_KEY = "__weaze_support_messages__";
+
+type GlobalStore = { [GLOBAL_KEY]?: SupportMessage[] };
+const g = globalThis as unknown as GlobalStore;
+
+if (!g[GLOBAL_KEY]) {
+  g[GLOBAL_KEY] = [];
+}
+
 export function readMessages(): SupportMessage[] {
-  try {
-    if (!fs.existsSync(STORAGE_FILE)) return [];
-    const raw = fs.readFileSync(STORAGE_FILE, "utf-8");
-    return JSON.parse(raw) as SupportMessage[];
-  } catch {
-    return [];
-  }
+  return g[GLOBAL_KEY] ?? [];
 }
 
 export function writeMessages(messages: SupportMessage[]): void {
-  try {
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(messages), "utf-8");
-  } catch (e) {
-    console.error("Failed to persist support messages:", e);
-  }
+  g[GLOBAL_KEY] = messages;
 }
