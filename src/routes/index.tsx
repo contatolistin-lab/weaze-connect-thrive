@@ -480,15 +480,10 @@ function LandingPage() {
             <p className="text-sm font-semibold opacity-80">Plano Anual</p>
             <p className="text-xs opacity-70 mt-1">Melhor custo-benefício</p>
             <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-3xl font-extrabold">R$</span>
-              <span className="text-5xl font-extrabold tracking-tight">87</span>
+              <span className="text-3xl font-extrabold">12x de R$</span>
+              <span className="text-5xl font-extrabold tracking-tight">95,25</span>
             </div>
-            <p className="text-sm opacity-80">em 10x</p>
-            <p className="mt-1 text-sm opacity-70">Receba 12 meses de acesso</p>
-            <div className="mt-3 bg-white/15 rounded-2xl px-4 py-3">
-              <p className="text-sm font-bold">Economize R$ 654</p>
-              <p className="text-xs opacity-80">🎁 Ganhe 2 meses grátis</p>
-            </div>
+            <p className="text-sm opacity-80">/mês · Cobrado anualmente</p>
             <ul className="mt-6 space-y-2 text-sm">
               {["Todos os recursos da plataforma", "Comunidade ilimitada", "Feed completo", "Mensagens", "Grupos", "Conteúdos"].map((f) => (
                 <li key={f} className="flex items-center gap-2">
@@ -500,7 +495,10 @@ function LandingPage() {
             <p className="mt-4 text-xs opacity-70">Mesmo acesso completo. Melhor custo-benefício.</p>
             <p className="mt-1 text-xs opacity-60">Ideal para quem quer crescer e construir sua comunidade no longo prazo.</p>
             <div className="mt-6">
-              <WButton variant="white" fullWidth>
+              <WButton
+                fullWidth
+                className="!bg-white !text-[#8800aa] font-extrabold"
+              >
                 Escolher plano anual
               </WButton>
             </div>
