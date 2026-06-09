@@ -5,6 +5,7 @@ import { WButton } from "@/components/weaze/WButton";
 import { Avatar } from "@/components/weaze/Avatar";
 import { useState, useEffect, useRef } from "react";
 import { useCommunity, communityEmail } from "@/lib/community-store";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Painel da Comunidade — WEAZE" }] }),
@@ -47,8 +48,9 @@ function Profile() {
     updateCommunity(form);
   };
 
-  const communitySlug =
-    (community.name || "").trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
+  const communitySlug = encodeURIComponent(
+    (community.name || "").trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade",
+  );
 
   const [origin, setOrigin] = useState("");
   useEffect(() => {
@@ -65,10 +67,14 @@ function Profile() {
 
   const handleCopyLink = () => {
     if (!communityLink) return;
-    navigator.clipboard.writeText(communityLink).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
+    try {
+      navigator.clipboard.writeText(communityLink);
+    } catch (err) {
+      console.error("Falha ao copiar link:", err);
+      toast.error("Não foi possível copiar o link. Tente novamente.");
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   useEffect(() => {
