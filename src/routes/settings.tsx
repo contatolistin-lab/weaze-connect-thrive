@@ -64,7 +64,12 @@ function Settings() {
               <ul className="rounded-2xl bg-white border border-border overflow-hidden divide-y divide-border">
                 {g.items.map((i) => (
                   <li key={i.label}>
-                    <button className="w-full flex items-center gap-3 px-4 py-3.5">
+                    <button
+                      onClick={() => {
+                        if (i.label === "Central de ajuda") nav({ to: "/conversas/cv_pinned" });
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3.5"
+                    >
                       <span className="h-9 w-9 rounded-xl bg-brand-gradient-soft text-[#000000] grid place-items-center">
                         <i.icon size={16} />
                       </span>
