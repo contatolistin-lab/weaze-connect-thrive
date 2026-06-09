@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getSupportMessages,
+  getAllMessages,
   createSupportMessage as apiCreate,
   updateSupportStatus as apiUpdateStatus,
   type SupportType,
@@ -17,7 +18,9 @@ export function useSupportMessages(communityId?: string) {
 
   const fetchMessages = useCallback(async () => {
     try {
-      const data = await getSupportMessages({ data: { communityId } });
+      const data = communityId
+        ? await getSupportMessages({ data: { communityId } })
+        : await getAllMessages({});
       setMessages(data);
     } catch (e) {
       console.error("Failed to fetch support messages:", e);

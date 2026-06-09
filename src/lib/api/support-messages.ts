@@ -36,10 +36,19 @@ export const createSupportMessage = createServerFn({ method: "POST" })
       updated_at: now,
     };
     const messages = readMessages();
+    console.log(
+      `[createSupportMessage] storing msg=${msg.id} community=${msg.community_id} user=${msg.user_id} total=${messages.length + 1}`,
+    );
     messages.unshift(msg);
     writeMessages(messages);
     return msg;
   });
+
+export const getAllMessages = createServerFn({ method: "POST" }).handler(async () => {
+  const messages = readMessages();
+  console.log(`[getAllMessages] returning ${messages.length} messages`);
+  return messages;
+});
 
 export const updateSupportStatus = createServerFn({ method: "POST" })
   .inputValidator(
