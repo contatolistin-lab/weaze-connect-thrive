@@ -48,12 +48,22 @@ function Profile() {
   };
 
   const communitySlug = community.name.trim().toLowerCase().replace(/\s+/g, "-") || "minha-comunidade";
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const communityLink = `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`;
+
+  const [origin, setOrigin] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const communityLink = origin
+    ? `${origin}/c/${communitySlug}?name=${encodeURIComponent(community.name.trim())}&desc=${encodeURIComponent(community.description)}`
+    : "";
 
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
+    if (!communityLink) return;
     navigator.clipboard.writeText(communityLink).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
