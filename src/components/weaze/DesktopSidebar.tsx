@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, MessageSquare, Users, Plus, BarChart3, User, Headset } from "lucide-react";
+import { Home, MessageSquare, Users, Plus, BarChart3, User } from "lucide-react";
 import { WeazeLogo } from "./WeazeLogo";
 import { useCommunity } from "@/lib/community-store";
 
@@ -31,13 +31,11 @@ export function DesktopSidebar() {
 
   const isB2B = hydrated && userType.isB2B;
   const profileTo = isB2B ? "/profile" : "/b2c/profile";
-  const atendimentoTo = isB2B ? "/atendimento" : "/b2c/atendimento";
   const items: Item[] = [
     ...baseItems.filter((it) => {
       if (isB2B) return true;
       return it.to !== "/create" && it.to !== "/metricas";
     }),
-    { to: atendimentoTo, icon: Headset, label: "Atendimento" },
     { to: profileTo, icon: User, label: "Perfil" },
   ];
 
@@ -55,9 +53,7 @@ export function DesktopSidebar() {
           const active =
             path === to ||
             (to !== "/feed" && to !== "/" && path.startsWith(to)) ||
-            (to === profileTo && (path.startsWith("/profile") || path.startsWith("/b2c/profile"))) ||
-            (to === "/atendimento" && path.startsWith("/b2c/atendimento")) ||
-            (to === "/b2c/atendimento" && path.startsWith("/atendimento"));
+            (to === profileTo && (path.startsWith("/profile") || path.startsWith("/b2c/profile")));
           const isCreate = to === "/create";
           return (
             <Link
@@ -70,15 +66,9 @@ export function DesktopSidebar() {
             >
               <span
                 className={`h-10 w-10 grid place-items-center rounded-xl shrink-0 ${
-                  isCreate
-                    ? "bg-brand-gradient text-white shadow-brand"
-                    : ""
+                  isCreate ? "bg-brand-gradient text-white shadow-brand" : ""
                 }`}
-                style={
-                  !isCreate
-                    ? { color: "#000000", opacity: active ? 1 : 0.7 }
-                    : undefined
-                }
+                style={!isCreate ? { color: "#000000", opacity: active ? 1 : 0.7 } : undefined}
               >
                 <Icon size={isCreate ? 22 : 22} strokeWidth={active ? 2.6 : 2} />
               </span>

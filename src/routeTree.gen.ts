@@ -18,7 +18,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as CreateRouteImport } from './routes/create'
-import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as ConversasIndexRouteImport } from './routes/conversas.index'
@@ -29,7 +28,6 @@ import { Route as ConversasIdRouteImport } from './routes/conversas.$id'
 import { Route as CommunitiesIdRouteImport } from './routes/communities.$id'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as B2cProfileRouteImport } from './routes/b2c/profile'
-import { Route as B2cAtendimentoRouteImport } from './routes/b2c/atendimento'
 import { Route as B2bSignupRouteImport } from './routes/b2b/signup'
 import { Route as B2bLoginRouteImport } from './routes/b2b/login'
 import { Route as B2bDashboardRouteImport } from './routes/b2b/dashboard'
@@ -78,11 +76,6 @@ const FeedRoute = FeedRouteImport.update({
 const CreateRoute = CreateRouteImport.update({
   id: '/create',
   path: '/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AtendimentoRoute = AtendimentoRouteImport.update({
-  id: '/atendimento',
-  path: '/atendimento',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -135,11 +128,6 @@ const B2cProfileRoute = B2cProfileRouteImport.update({
   path: '/b2c/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const B2cAtendimentoRoute = B2cAtendimentoRouteImport.update({
-  id: '/b2c/atendimento',
-  path: '/b2c/atendimento',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const B2bSignupRoute = B2bSignupRouteImport.update({
   id: '/b2b/signup',
   path: '/b2b/signup',
@@ -163,7 +151,6 @@ const GroupsInviteCodeRoute = GroupsInviteCodeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/atendimento': typeof AtendimentoRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -176,7 +163,6 @@ export interface FileRoutesByFullPath {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
-  '/b2c/atendimento': typeof B2cAtendimentoRoute
   '/b2c/profile': typeof B2cProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
@@ -190,7 +176,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/atendimento': typeof AtendimentoRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -203,7 +188,6 @@ export interface FileRoutesByTo {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
-  '/b2c/atendimento': typeof B2cAtendimentoRoute
   '/b2c/profile': typeof B2cProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
@@ -218,7 +202,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/atendimento': typeof AtendimentoRoute
   '/create': typeof CreateRoute
   '/feed': typeof FeedRoute
   '/groups': typeof GroupsRouteWithChildren
@@ -231,7 +214,6 @@ export interface FileRoutesById {
   '/b2b/dashboard': typeof B2bDashboardRoute
   '/b2b/login': typeof B2bLoginRoute
   '/b2b/signup': typeof B2bSignupRoute
-  '/b2c/atendimento': typeof B2cAtendimentoRoute
   '/b2c/profile': typeof B2cProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/communities/$id': typeof CommunitiesIdRoute
@@ -247,7 +229,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/atendimento'
     | '/create'
     | '/feed'
     | '/groups'
@@ -260,7 +241,6 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
-    | '/b2c/atendimento'
     | '/b2c/profile'
     | '/c/$slug'
     | '/communities/$id'
@@ -274,7 +254,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/atendimento'
     | '/create'
     | '/feed'
     | '/groups'
@@ -287,7 +266,6 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
-    | '/b2c/atendimento'
     | '/b2c/profile'
     | '/c/$slug'
     | '/communities/$id'
@@ -301,7 +279,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/atendimento'
     | '/create'
     | '/feed'
     | '/groups'
@@ -314,7 +291,6 @@ export interface FileRouteTypes {
     | '/b2b/dashboard'
     | '/b2b/login'
     | '/b2b/signup'
-    | '/b2c/atendimento'
     | '/b2c/profile'
     | '/c/$slug'
     | '/communities/$id'
@@ -329,7 +305,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AtendimentoRoute: typeof AtendimentoRoute
   CreateRoute: typeof CreateRoute
   FeedRoute: typeof FeedRoute
   GroupsRoute: typeof GroupsRouteWithChildren
@@ -342,7 +317,6 @@ export interface RootRouteChildren {
   B2bDashboardRoute: typeof B2bDashboardRoute
   B2bLoginRoute: typeof B2bLoginRoute
   B2bSignupRoute: typeof B2bSignupRoute
-  B2cAtendimentoRoute: typeof B2cAtendimentoRoute
   B2cProfileRoute: typeof B2cProfileRoute
   CSlugRoute: typeof CSlugRoute
   CommunitiesIdRoute: typeof CommunitiesIdRoute
@@ -418,13 +392,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/atendimento': {
-      id: '/atendimento'
-      path: '/atendimento'
-      fullPath: '/atendimento'
-      preLoaderRoute: typeof AtendimentoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -495,13 +462,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof B2cProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/b2c/atendimento': {
-      id: '/b2c/atendimento'
-      path: '/b2c/atendimento'
-      fullPath: '/b2c/atendimento'
-      preLoaderRoute: typeof B2cAtendimentoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/b2b/signup': {
       id: '/b2b/signup'
       path: '/b2b/signup'
@@ -548,7 +508,6 @@ const GroupsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AtendimentoRoute: AtendimentoRoute,
   CreateRoute: CreateRoute,
   FeedRoute: FeedRoute,
   GroupsRoute: GroupsRouteWithChildren,
@@ -561,7 +520,6 @@ const rootRouteChildren: RootRouteChildren = {
   B2bDashboardRoute: B2bDashboardRoute,
   B2bLoginRoute: B2bLoginRoute,
   B2bSignupRoute: B2bSignupRoute,
-  B2cAtendimentoRoute: B2cAtendimentoRoute,
   B2cProfileRoute: B2cProfileRoute,
   CSlugRoute: CSlugRoute,
   CommunitiesIdRoute: CommunitiesIdRoute,

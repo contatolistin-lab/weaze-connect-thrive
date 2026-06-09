@@ -657,6 +657,22 @@ export interface MockConversation {
 
 export const conversations: MockConversation[] = [
   {
+    id: "cv_pinned",
+    title: "📌 Dúvidas e Sugestões",
+    description: "Espaço oficial para dúvidas, sugestões, feedbacks e suporte da comunidade.",
+    category: "Geral",
+    author: "WEAZE",
+    authorAvatar: "W",
+    replies: 0,
+    likes: 0,
+    views: 0,
+    pinned: true,
+    trending: false,
+    createdAt: new Date(0).toISOString(),
+    lastActivity: new Date(0).toISOString(),
+    tags: ["suporte"],
+  },
+  {
     id: "cv1",
     title: "Qual tênis você recomenda para meia-maratona?",
     description:
@@ -1165,7 +1181,9 @@ export const userConversations: MockConversation[] = [];
 let fallbackIdCounter = 0;
 
 function toRecord(value: unknown): Partial<MockConversation> & { id?: string } {
-  return value && typeof value === "object" ? (value as Partial<MockConversation> & { id?: string }) : {};
+  return value && typeof value === "object"
+    ? (value as Partial<MockConversation> & { id?: string })
+    : {};
 }
 
 function toCount(value: unknown): number {
@@ -1175,9 +1193,7 @@ function toCount(value: unknown): number {
 
 function normalizeTags(value: unknown): string[] {
   const items = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
-  return items
-    .map((tag) => (typeof tag === "string" ? tag.trim() : ""))
-    .filter(Boolean);
+  return items.map((tag) => (typeof tag === "string" ? tag.trim() : "")).filter(Boolean);
 }
 
 function ensureValidId(input: unknown): string {
@@ -1189,8 +1205,10 @@ function ensureValidId(input: unknown): string {
 
 function normalizeConversation(input: unknown): MockConversation {
   const conv = toRecord(input);
-  const title = typeof conv.title === "string" && conv.title.trim() ? conv.title.trim() : "Nova conversa";
-  const author = typeof conv.author === "string" && conv.author.trim() ? conv.author.trim() : "Você";
+  const title =
+    typeof conv.title === "string" && conv.title.trim() ? conv.title.trim() : "Nova conversa";
+  const author =
+    typeof conv.author === "string" && conv.author.trim() ? conv.author.trim() : "Você";
 
   return {
     id: ensureValidId(input),
@@ -1207,9 +1225,12 @@ function normalizeConversation(input: unknown): MockConversation {
     views: toCount(conv.views),
     pinned: Boolean(conv.pinned),
     trending: Boolean(conv.trending),
-    createdAt: typeof conv.createdAt === "string" && conv.createdAt.trim() ? conv.createdAt : "agora",
+    createdAt:
+      typeof conv.createdAt === "string" && conv.createdAt.trim() ? conv.createdAt : "agora",
     lastActivity:
-      typeof conv.lastActivity === "string" && conv.lastActivity.trim() ? conv.lastActivity : "agora",
+      typeof conv.lastActivity === "string" && conv.lastActivity.trim()
+        ? conv.lastActivity
+        : "agora",
     tags: normalizeTags(conv.tags),
   };
 }
