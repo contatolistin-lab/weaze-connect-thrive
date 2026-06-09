@@ -1372,14 +1372,6 @@ function restoreGroups() {
 
 restoreGroups();
 
-// Seed userGroupIds from mock groupMembers on first run (no localStorage data yet)
-if (userGroupIds.length === 0) {
-  const defaultMemberIds = groupMembers
-    .filter((m) => m.userId === currentUserId)
-    .map((m) => m.groupId);
-  userGroupIds.push(...defaultMemberIds);
-}
-
 export function isGroupMember(groupId: string): boolean {
   return userGroupIds.includes(groupId);
 }

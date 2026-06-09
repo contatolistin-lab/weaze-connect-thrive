@@ -59,9 +59,13 @@ function GroupsIndex() {
 
   const myGroups = userType.isB2B
     ? getMyGroups()
-    : getMyGroups().filter((g) =>
-        getGroupMembers(g.id).some((m) => m.userId === currentUserId)
-      );
+    : getMyGroups().filter((g) => getGroupMembers(g.id).some((m) => m.userId === currentUserId));
+
+  // B2C users with exactly one group go directly to it
+  if (!userType.isB2B && myGroups.length === 1) {
+    nav({ to: "/groups/$id", params: { id: myGroups[0].id }, replace: true });
+    return null;
+  }
 
   const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -161,71 +165,72 @@ function GroupsIndex() {
     </div>
   );
 
-  const groupList = myGroups.length === 0 ? (
-    <div className="text-center py-16 text-foreground/50">
-      <Users size={40} className="mx-auto mb-3 opacity-40" />
-      <p className="text-sm font-semibold">Você ainda não participa de nenhum grupo.</p>
-      <p className="text-xs mt-1">
-        {userType.isB2B
-          ? "Crie um grupo privado ou aceite um convite para participar."
-          : "Aceite um convite para participar de um grupo."}
-      </p>
-    </div>
-  ) : (
-    <div className="space-y-2">
-      {myGroups.map((g) => {
-        const members = getGroupMembers(g.id);
-        const admins = members.filter((m) => m.role === "admin");
-        return (
-          <button
-            key={g.id}
-            onClick={() => nav({ to: "/groups/$id", params: { id: g.id } })}
-            className="w-full text-left flex items-center gap-3 p-3 rounded-2xl border bg-white border-border shadow-soft"
-          >
-            <GroupImage src={g.image} className="h-11 w-11 shrink-0 rounded-full" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <p className="font-bold text-sm">{g.name}</p>
-                <Lock size={11} className="text-foreground/40 shrink-0" />
-              </div>
-              <p className="text-[11px] text-foreground/60 line-clamp-1">{g.description}</p>
-              <div className="flex items-center gap-2 mt-1 text-[10px] text-foreground/40">
-                <span>{g.memberCount} membros</span>
-                {g.lastActivity && (
-                  <>
-                    <span>·</span>
-                    <span>{g.lastActivity}</span>
-                  </>
-                )}
-                {admins.length > 0 && (
-                  <>
-                    <span>·</span>
-                    <span className="text-brand-purple font-semibold">{admins[0].name}</span>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-1 shrink-0">
-{g.inviteCode && userType.isB2B && (
-                <button
-                  onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!)}
-                  className="h-7 w-7 rounded-full bg-muted grid place-items-center hover:bg-foreground/10 transition-colors"
-                  title="Copiar link de convite"
-                >
-                  {copiedCardId === g.id ? (
-                    <Check size={12} className="text-green-600" />
-                  ) : (
-                    <Share2 size={12} className="text-foreground/50" />
+  const groupList =
+    myGroups.length === 0 ? (
+      <div className="text-center py-16 text-foreground/50">
+        <Users size={40} className="mx-auto mb-3 opacity-40" />
+        <p className="text-sm font-semibold">Você ainda não participa de nenhum grupo.</p>
+        <p className="text-xs mt-1">
+          {userType.isB2B
+            ? "Crie um grupo privado ou aceite um convite para participar."
+            : "Aceite um convite para participar de um grupo."}
+        </p>
+      </div>
+    ) : (
+      <div className="space-y-2">
+        {myGroups.map((g) => {
+          const members = getGroupMembers(g.id);
+          const admins = members.filter((m) => m.role === "admin");
+          return (
+            <button
+              key={g.id}
+              onClick={() => nav({ to: "/groups/$id", params: { id: g.id } })}
+              className="w-full text-left flex items-center gap-3 p-3 rounded-2xl border bg-white border-border shadow-soft"
+            >
+              <GroupImage src={g.image} className="h-11 w-11 shrink-0 rounded-full" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="font-bold text-sm">{g.name}</p>
+                  <Lock size={11} className="text-foreground/40 shrink-0" />
+                </div>
+                <p className="text-[11px] text-foreground/60 line-clamp-1">{g.description}</p>
+                <div className="flex items-center gap-2 mt-1 text-[10px] text-foreground/40">
+                  <span>{g.memberCount} membros</span>
+                  {g.lastActivity && (
+                    <>
+                      <span>·</span>
+                      <span>{g.lastActivity}</span>
+                    </>
                   )}
-                </button>
-              )}
-              <span className="text-xs font-bold text-[#000000]">Abrir</span>
-            </div>
-          </button>
-        );
-      })}
-    </div>
-  );
+                  {admins.length > 0 && (
+                    <>
+                      <span>·</span>
+                      <span className="text-brand-purple font-semibold">{admins[0].name}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {g.inviteCode && userType.isB2B && (
+                  <button
+                    onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!)}
+                    className="h-7 w-7 rounded-full bg-muted grid place-items-center hover:bg-foreground/10 transition-colors"
+                    title="Copiar link de convite"
+                  >
+                    {copiedCardId === g.id ? (
+                      <Check size={12} className="text-green-600" />
+                    ) : (
+                      <Share2 size={12} className="text-foreground/50" />
+                    )}
+                  </button>
+                )}
+                <span className="text-xs font-bold text-[#000000]">Abrir</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    );
 
   return (
     <>
@@ -244,9 +249,7 @@ function GroupsIndex() {
             {toolbar}
           </div>
           <div className="flex-1 overflow-y-auto scrollbar-brand pb-4">
-            <div className="max-w-3xl">
-              {groupList}
-            </div>
+            <div className="max-w-3xl">{groupList}</div>
           </div>
         </div>
       </div>
