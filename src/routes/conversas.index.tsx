@@ -45,7 +45,7 @@ function ConversasError({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="h-10 px-4 rounded-xl bg-[#000000] text-white text-sm font-bold shadow-brand"
+            className="h-10 px-4 rounded-xl bg-[#8800aa] text-white text-sm font-bold shadow-brand"
           >
             Tentar novamente
           </button>
@@ -277,7 +277,7 @@ function CriarConversaButton({
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
-        className="w-full h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
+        className="w-full h-11 rounded-2xl bg-[#8800aa] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-brand active:scale-[0.98] transition-transform"
       >
         {aberto ? <X size={18} /> : <Plus size={18} />}
         {aberto ? "Cancelar" : "Criar conversa"}
@@ -289,26 +289,26 @@ function CriarConversaButton({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título da conversa"
-            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
           />
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Descrição (opcional)"
             rows={3}
-            className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] resize-none"
+            className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] resize-none"
           />
           <input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             placeholder="Tags: separadas por vírgula"
-            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
           />
           <button
             type="button"
             onClick={handleSubmit}
             disabled={!title.trim()}
-            className="w-full h-10 rounded-xl bg-[#000000] text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
+            className="w-full h-10 rounded-xl bg-[#8800aa] text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-brand disabled:opacity-50 active:scale-[0.98] transition-transform"
           >
             <Check size={16} /> Publicar conversa
           </button>
@@ -350,7 +350,7 @@ function ConversationCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              {conv.pinned && <Pin size={12} className="text-[#000000]" />}
+              {conv.pinned && <Pin size={12} className="text-[#8800aa]" />}
               {conv.trending && <Sparkles size={12} className="text-amber-500" />}
             </div>
             <h3 className="mt-1 font-bold text-sm leading-snug">{title}</h3>
@@ -380,7 +380,7 @@ function ConversationCard({
           {tags.slice(0, 3).map((t, i) => (
             <span
               key={t + i}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#000000] font-semibold"
+              className="text-[10px] px-2 py-0.5 rounded-full bg-brand-gradient-soft text-[#8800aa] font-semibold"
             >
               #{t}
             </span>

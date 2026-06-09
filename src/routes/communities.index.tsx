@@ -22,7 +22,7 @@ function CommunitiesRedirect() {
           <div className="mt-6">
             <Link
               to="/conversas"
-              className="inline-flex items-center justify-center h-12 px-8 rounded-2xl bg-[#000000] text-white font-bold shadow-soft"
+              className="inline-flex items-center justify-center h-12 px-8 rounded-2xl bg-[#8800aa] text-white font-bold shadow-soft"
             >
               Ir para Conversas
             </Link>

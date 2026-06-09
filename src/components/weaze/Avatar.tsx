@@ -9,7 +9,7 @@ interface AvatarProps {
 function colorFromName(name: string) {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  const palette = ["#000000", "#000000", "#8a2be2", "#ff4d8d", "#5b21b6", "#be185d"];
+  const palette = ["#8800aa", "#8800aa", "#8a2be2", "#ff4d8d", "#5b21b6", "#be185d"];
   return palette[h % palette.length];
 }
 
@@ -20,9 +20,9 @@ export function Avatar({ name = "?", src, size = 40, ring, brand }: AvatarProps)
     .slice(0, 2)
     .join("")
     .toUpperCase();
-  const bg = brand ? "linear-gradient(135deg,#000000,#000000)" : colorFromName(name);
+  const bg = brand ? "linear-gradient(135deg,#8800aa,#8800aa)" : colorFromName(name);
   const wrapperStyle: React.CSSProperties = ring
-    ? { padding: 2, background: "linear-gradient(135deg,#000000,#000000)", borderRadius: "9999px" }
+    ? { padding: 2, background: "linear-gradient(135deg,#8800aa,#8800aa)", borderRadius: "9999px" }
     : {};
   const inner = (
     <span

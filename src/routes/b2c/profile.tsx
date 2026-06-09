@@ -83,7 +83,7 @@ function B2CProfile() {
               userType.setB2B(false);
               nav({ to: "/" });
             }}
-            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#000000] text-white border border-border font-bold hover:bg-muted transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#8800aa] text-white border border-border font-bold hover:bg-muted transition-colors"
           >
             <LogOut size={18} /> Sair
           </button>

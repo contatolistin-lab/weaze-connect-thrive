@@ -64,7 +64,7 @@ function Metricas() {
         return (
           <div key={m.id} className="rounded-2xl bg-white border border-border p-4 shadow-soft">
             <div className="flex items-center justify-between">
-              <span className="h-10 w-10 rounded-xl bg-brand-gradient-soft text-[#000000] grid place-items-center text-lg">
+              <span className="h-10 w-10 rounded-xl bg-brand-gradient-soft text-[#8800aa] grid place-items-center text-lg">
                 {m.icon}
               </span>
               <span className="text-[10px] font-bold text-emerald-600">{m.trend}</span>
@@ -127,7 +127,7 @@ function Metricas() {
                 <p className="font-bold text-sm truncate">{u.name}</p>
                 <p className="text-[10px] text-foreground/50">{u.score} pontos</p>
               </div>
-              <span className="flex items-center gap-1 text-[11px] font-semibold text-[#000000]">
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-[#8800aa]">
                 <BadgeIcon size={12} />
                 {u.badge}
               </span>
@@ -141,7 +141,7 @@ function Metricas() {
   const badgesSection = (
     <div className="rounded-3xl bg-white border border-border p-5 shadow-soft">
       <div className="flex items-center gap-2">
-        <Award size={20} className="text-[#000000]" />
+        <Award size={20} className="text-[#8800aa]" />
         <div>
           <p className="font-bold text-sm">Medalhas e conquistas</p>
           <p className="text-[11px] text-foreground/60">Badges disponíveis na plataforma</p>
@@ -154,8 +154,8 @@ function Metricas() {
           { icon: Star, label: "Destaque", desc: "Post mais curtido", color: "text-yellow-500" },
           { icon: Crown, label: "Rainha/Rey", desc: "Top engajamento", color: "text-purple-500" },
           { icon: Trophy, label: "Campeão", desc: "Primeiro lugar", color: "text-amber-500" },
-          { icon: Heart, label: "Coração", desc: "Mais comentários", color: "text-[#000000]" },
-          { icon: MessageSquare, label: "Conversador", desc: "Mais respostas", color: "text-[#000000]" },
+          { icon: Heart, label: "Coração", desc: "Mais comentários", color: "text-[#8800aa]" },
+          { icon: MessageSquare, label: "Conversador", desc: "Mais respostas", color: "text-[#8800aa]" },
           { icon: Zap, label: "Raio", desc: "Crescimento rápido", color: "text-blue-500" },
           { icon: Award, label: "Veterano", desc: "Desde o início", color: "text-emerald-500" },
         ].map((b) => (

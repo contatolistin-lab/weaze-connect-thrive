@@ -36,7 +36,7 @@ function CreateGuard() {
   if (!hydrated || !userType.isB2B) {
     return (
       <div className="min-h-dvh grid place-items-center bg-background">
-        <div className="h-8 w-8 rounded-full border-2 border-[#000000] border-t-transparent animate-spin" />
+        <div className="h-8 w-8 rounded-full border-2 border-[#8800aa] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -223,7 +223,7 @@ function Create() {
           ) : (
             <button
               onClick={() => fileRef.current?.click()}
-              className="w-full aspect-[9/14] rounded-3xl bg-brand-gradient-soft border-2 border-dashed border-[#000000]/40 grid place-items-center text-center p-6 hover:border-[#000000]/80 transition-colors"
+              className="w-full aspect-[9/14] rounded-3xl bg-brand-gradient-soft border-2 border-dashed border-[#8800aa]/40 grid place-items-center text-center p-6 hover:border-[#8800aa]/80 transition-colors"
             >
               <div>
                 <span className="inline-grid h-16 w-16 place-items-center rounded-2xl bg-brand-gradient text-white shadow-brand">
@@ -249,7 +249,7 @@ function Create() {
 
       {mediaTab === "link" && (
         <div>
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
             <Link2 size={18} className="text-foreground/40 shrink-0" />
             <input
               value={externalLink}
@@ -290,7 +290,7 @@ function Create() {
           )}
 
           {!externalPreview && externalLink && (
-            <div className="mt-3 aspect-video rounded-2xl bg-brand-gradient-soft border border-dashed border-[#000000]/30 grid place-items-center text-center p-4">
+            <div className="mt-3 aspect-video rounded-2xl bg-brand-gradient-soft border border-dashed border-[#8800aa]/30 grid place-items-center text-center p-4">
               <div>
                 <span className="inline-grid h-12 w-12 place-items-center rounded-xl bg-brand-gradient text-white">
                   <Link2 size={20} />
@@ -304,7 +304,7 @@ function Create() {
           )}
 
           {!externalLink && (
-            <div className="mt-3 rounded-2xl bg-brand-gradient-soft border border-dashed border-[#000000]/30 p-5 text-center">
+            <div className="mt-3 rounded-2xl bg-brand-gradient-soft border border-dashed border-[#8800aa]/30 p-5 text-center">
               <span className="inline-grid h-12 w-12 place-items-center rounded-xl bg-brand-gradient text-white">
                 <Youtube size={20} />
               </span>
@@ -330,7 +330,7 @@ function Create() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Escreva a descrição da postagem..."
           rows={3}
-          className="w-full rounded-2xl border border-border bg-white p-4 text-sm outline-none focus:ring-2 focus:ring-[#000000] resize-none"
+          className="w-full rounded-2xl border border-border bg-white p-4 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] resize-none"
         />
       </div>
 
@@ -343,7 +343,7 @@ function Create() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Digite o título da postagem..."
-            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+            className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
           />
         </div>
 
@@ -356,7 +356,7 @@ function Create() {
               <button
                 type="button"
                 onClick={() => setCtaOpen(!ctaOpen)}
-                className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] flex items-center justify-between bg-white"
+                className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] flex items-center justify-between bg-white"
               >
                 <span className={ctaName ? "text-foreground" : "text-foreground/40"}>
                   {ctaName || "Selecionar CTA"}
@@ -396,7 +396,7 @@ function Create() {
                         }}
                         className={`w-full px-4 h-10 text-sm text-left transition-colors font-semibold ${
                           ctaName === name
-                            ? "bg-brand-gradient-soft text-[#000000]"
+                            ? "bg-brand-gradient-soft text-[#8800aa]"
                             : "text-foreground/80 hover:bg-muted hover:text-foreground"
                         }`}
                       >
@@ -407,7 +407,7 @@ function Create() {
                 </>
               )}
             </div>
-            <div className="flex items-center gap-2 rounded-xl border border-border px-3 h-10 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+            <div className="flex items-center gap-2 rounded-xl border border-border px-3 h-10 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
               <Link2 size={16} className="text-foreground/40 shrink-0" />
               <input
                 value={ctaLink}
@@ -473,7 +473,7 @@ function Create() {
             href={ctaLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center justify-center bg-white text-[#000000] font-bold rounded-2xl px-5 h-10 text-sm w-full"
+            className="mt-3 inline-flex items-center justify-center bg-white text-[#8800aa] font-bold rounded-2xl px-5 h-10 text-sm w-full"
           >
             {ctaName}
           </a>

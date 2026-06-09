@@ -53,7 +53,7 @@ function Signup() {
 
         <p className="mt-auto text-center text-sm text-foreground/60">
           Já tem conta?{" "}
-          <Link to="/login" className="text-[#000000] font-semibold">
+          <Link to="/login" className="text-[#8800aa] font-semibold">
             Entrar
           </Link>
         </p>

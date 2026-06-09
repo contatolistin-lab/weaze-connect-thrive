@@ -22,7 +22,7 @@ function CommunityDetail() {
           <p className="text-sm text-foreground/60">Essa comunidade não existe ou foi removida.</p>
           <button
             onClick={() => nav({ to: "/communities" })}
-            className="h-10 px-4 rounded-xl bg-[#000000] text-white text-sm font-bold shadow-brand"
+            className="h-10 px-4 rounded-xl bg-[#8800aa] text-white text-sm font-bold shadow-brand"
           >
             Voltar
           </button>
@@ -62,7 +62,7 @@ function CommunityDetail() {
               <h1 className="text-xl font-extrabold tracking-tight flex items-center gap-1">
                 {c.name}
                 {c.verified && (
-                  <span className="h-4 w-4 rounded-full bg-[#000000] grid place-items-center text-[10px] text-white">
+                  <span className="h-4 w-4 rounded-full bg-[#8800aa] grid place-items-center text-[10px] text-white">
                     ✓
                   </span>
                 )}

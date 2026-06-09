@@ -68,13 +68,13 @@ export function DesktopSidebar() {
                 className={`h-10 w-10 grid place-items-center rounded-xl shrink-0 ${
                   isCreate ? "bg-brand-gradient text-white shadow-brand" : ""
                 }`}
-                style={!isCreate ? { color: "#000000", opacity: active ? 1 : 0.7 } : undefined}
+                style={!isCreate ? { color: "#8800aa", opacity: active ? 1 : 0.7 } : undefined}
               >
                 <Icon size={isCreate ? 22 : 22} strokeWidth={active ? 2.6 : 2} />
               </span>
               <span
                 className="hidden lg:inline text-sm font-semibold"
-                style={{ color: "#000000", opacity: active ? 1 : 0.75 }}
+                style={{ color: "#8800aa", opacity: active ? 1 : 0.75 }}
               >
                 {label}
               </span>

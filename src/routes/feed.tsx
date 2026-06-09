@@ -282,7 +282,7 @@ function PostCard({
         <span className="inline-flex items-center gap-2">
           <span className="font-bold">{post.community.name}</span>
           {post.community.verified && (
-            <span className="h-4 w-4 rounded-full bg-[#000000] grid place-items-center text-[10px]">
+            <span className="h-4 w-4 rounded-full bg-[#8800aa] grid place-items-center text-[10px]">
               ✓
             </span>
           )}
@@ -297,7 +297,7 @@ function PostCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="mt-3 flex items-center justify-center bg-white text-[#000000] font-bold rounded-2xl px-6 h-12 text-sm shadow-brand w-full max-w-[220px]"
+            className="mt-3 flex items-center justify-center bg-white text-[#8800aa] font-bold rounded-2xl px-6 h-12 text-sm shadow-brand w-full max-w-[220px]"
           >
             {post.cta}
           </a>
@@ -341,7 +341,7 @@ function PostCard({
                 setMenuOpen(false);
                 setDeleteConfirm(true);
               }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#000000] hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#8800aa] hover:bg-muted transition-colors"
             >
               <Trash2 size={16} /> Excluir
             </button>
@@ -416,7 +416,7 @@ function EditModal({
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+              className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
             />
           </div>
           <div>
@@ -427,7 +427,7 @@ function EditModal({
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               rows={3}
-              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] resize-none"
+              className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] resize-none"
             />
           </div>
           <button
@@ -435,7 +435,7 @@ function EditModal({
               updatePost(post.id, { title, caption });
               onSave();
             }}
-            className="w-full h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm shadow-brand"
+            className="w-full h-11 rounded-2xl bg-[#8800aa] text-white font-bold text-sm shadow-brand"
           >
             Salvar
           </button>
@@ -471,7 +471,7 @@ function DeleteConfirm({ onCancel, onConfirm }: { onCancel: () => void; onConfir
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 h-11 rounded-2xl bg-[#000000] text-white font-bold text-sm"
+            className="flex-1 h-11 rounded-2xl bg-[#8800aa] text-white font-bold text-sm"
           >
             Excluir
           </button>
@@ -593,7 +593,7 @@ function CommentsModal({
                     setEditText("");
                   }
                 }}
-                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
                 autoFocus
               />
               <button
@@ -621,7 +621,7 @@ function CommentsModal({
                   if (e.key === "Enter") handleSend();
                 }}
                 placeholder="Escreva um comentário..."
-                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+                className="flex-1 h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
               />
               <button
                 onClick={handleSend}
@@ -688,7 +688,7 @@ function CommentItem({
                 if (e.key === "Enter") onSaveEdit();
                 if (e.key === "Escape") onCancelEdit();
               }}
-              className="flex-1 h-8 rounded-lg border border-border px-2 text-sm outline-none focus:ring-2 focus:ring-[#000000]"
+              className="flex-1 h-8 rounded-lg border border-border px-2 text-sm outline-none focus:ring-2 focus:ring-[#8800aa]"
               autoFocus
             />
             <button
@@ -731,7 +731,7 @@ function CommentItem({
                       setMenuOpen(false);
                       onDelete();
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#000000] hover:bg-muted"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[#8800aa] hover:bg-muted"
                   >
                     <Trash2 size={13} /> Excluir
                   </button>
@@ -759,9 +759,9 @@ function ActionBtn({
   return (
     <button onClick={onClick} className="flex flex-col items-center gap-1">
       <span
-        className={`h-12 w-12 grid place-items-center rounded-full bg-white/15 backdrop-blur ${active ? "text-[#000000] bg-white" : "text-white"}`}
+        className={`h-12 w-12 grid place-items-center rounded-full bg-white/15 backdrop-blur ${active ? "text-[#8800aa] bg-white" : "text-white"}`}
       >
-        <Icon size={24} fill={active ? "#000000" : "none"} />
+        <Icon size={24} fill={active ? "#8800aa" : "none"} />
       </span>
       <span className="text-[11px] font-semibold text-white">{label}</span>
     </button>

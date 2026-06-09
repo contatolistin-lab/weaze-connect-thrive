@@ -57,12 +57,12 @@ export function BottomNav() {
                   <Icon
                     size={20}
                     strokeWidth={active ? 2.6 : 2}
-                    style={{ color: "#000000", opacity: active ? 1 : 0.55 }}
+                    style={{ color: "#8800aa", opacity: active ? 1 : 0.55 }}
                   />
                 )}
                 <span
                   className="text-[9px] font-semibold leading-tight"
-                  style={{ color: "#000000", opacity: active || isCreate ? 1 : 0.55 }}
+                  style={{ color: "#8800aa", opacity: active || isCreate ? 1 : 0.55 }}
                 >
                   {label}
                 </span>

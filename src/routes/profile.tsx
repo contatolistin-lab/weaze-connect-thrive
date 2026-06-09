@@ -191,7 +191,7 @@ function Profile() {
         <h2 className="text-sm font-extrabold tracking-tight mb-4">Conta</h2>
         <button
           onClick={() => nav({ to: "/" })}
-          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#000000] text-white border border-border font-bold hover:bg-muted transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 h-12 rounded-2xl bg-[#8800aa] text-white border border-border font-bold hover:bg-muted transition-colors"
         >
           <LogOut size={18} /> Sair
         </button>
@@ -246,7 +246,7 @@ function InputField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] bg-white"
+        className="w-full h-10 rounded-xl border border-border px-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] bg-white"
       />
     </div>
   );
@@ -270,7 +270,7 @@ function TextareaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#000000] resize-none bg-white"
+        className="w-full rounded-xl border border-border p-3 text-sm outline-none focus:ring-2 focus:ring-[#8800aa] resize-none bg-white"
       />
     </div>
   );

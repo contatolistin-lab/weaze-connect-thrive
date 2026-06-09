@@ -174,7 +174,7 @@ function CommunitySignup({
           <p className="mt-6 text-sm font-semibold text-foreground/70">Faça login para entrar</p>
 
           <form onSubmit={handleLogin} className="mt-4 space-y-3">
-            <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+            <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
               <Mail size={18} className="text-foreground/40 shrink-0" />
               <input
                 value={email}
@@ -184,7 +184,7 @@ function CommunitySignup({
                 className="flex-1 bg-transparent outline-none text-sm"
               />
             </div>
-            <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+            <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
               <Lock size={18} className="text-foreground/40 shrink-0" />
               <input
                 value={password}
@@ -201,7 +201,7 @@ function CommunitySignup({
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {error && <p className="text-xs text-[#000000] font-semibold">{error}</p>}
+            {error && <p className="text-xs text-[#8800aa] font-semibold">{error}</p>}
             <WButton type="submit" variant="gradient" size="lg" fullWidth loading={loading}>
               Entrar na Comunidade
             </WButton>
@@ -212,7 +212,7 @@ function CommunitySignup({
             <button
               type="button"
               onClick={() => { setMode("signup"); setError(""); }}
-              className="text-[#000000] font-semibold underline"
+              className="text-[#8800aa] font-semibold underline"
             >
               Criar conta
             </button>
@@ -235,7 +235,7 @@ function CommunitySignup({
         <p className="mt-6 text-sm font-semibold text-foreground/70">Entre na comunidade</p>
 
         <form onSubmit={handleSignup} className="mt-4 space-y-3">
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
             <User size={18} className="text-foreground/40 shrink-0" />
             <input
               value={name}
@@ -244,7 +244,7 @@ function CommunitySignup({
               className="flex-1 bg-transparent outline-none text-sm"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
             <Mail size={18} className="text-foreground/40 shrink-0" />
             <input
               value={email}
@@ -254,7 +254,7 @@ function CommunitySignup({
               className="flex-1 bg-transparent outline-none text-sm"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#000000] transition-shadow">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 h-12 focus-within:ring-2 focus-within:ring-[#8800aa] transition-shadow">
             <Lock size={18} className="text-foreground/40 shrink-0" />
             <input
               value={password}
@@ -284,7 +284,7 @@ function CommunitySignup({
           <button
             type="button"
             onClick={() => { setMode("login"); setError(""); }}
-            className="text-[#000000] font-semibold underline"
+            className="text-[#8800aa] font-semibold underline"
           >
             Entrar
           </button>
