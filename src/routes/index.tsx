@@ -479,9 +479,9 @@ function LandingPage() {
             </span>
             <p className="text-sm font-semibold opacity-80">Plano Anual</p>
             <p className="text-xs opacity-70 mt-1">Melhor custo-benefício</p>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="text-3xl font-extrabold">12x de R$</span>
-              <span className="text-5xl font-extrabold tracking-tight">95,25</span>
+            <div className="mt-4 flex items-baseline justify-center gap-1">
+              <span className="text-lg font-semibold opacity-70">12x de</span>
+              <span className="text-5xl font-extrabold tracking-tight">R$ 95,25</span>
             </div>
             <p className="text-sm opacity-80">/mês · Cobrado anualmente</p>
             <ul className="mt-6 space-y-2 text-sm">
