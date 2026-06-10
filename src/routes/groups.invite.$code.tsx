@@ -15,7 +15,17 @@ function GroupInvite() {
   const { code } = Route.useParams();
   const nav = useNavigate();
   const { hydrated } = useCommunity();
-  const group = getGroupByInviteCode(code);
+  const raw = getGroupByInviteCode(code);
+  const group =
+    !raw || typeof window === "undefined"
+      ? raw
+      : (() => {
+          const p = new URLSearchParams(window.location.search);
+          const n = p.get("name");
+          return n
+            ? { ...raw, name: n, description: p.get("desc") || raw.description }
+            : raw;
+        })();
 
   useEffect(() => {
     if (!hydrated || !group) return;

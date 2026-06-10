@@ -99,15 +99,21 @@ function GroupsIndex() {
     setStep("invite");
   };
 
+  function inviteUrl(code: string, name: string, desc?: string) {
+    const params = new URLSearchParams({ name });
+    if (desc) params.set("desc", desc);
+    return `${window.location.origin}/groups/invite/${code}?${params}`;
+  }
+
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/groups/invite/${created!.code}`;
+    const link = inviteUrl(created!.code, created!.name);
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = async () => {
-    const link = `${window.location.origin}/groups/invite/${created!.code}`;
+    const link = inviteUrl(created!.code, created!.name);
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
@@ -125,9 +131,9 @@ function GroupsIndex() {
     nav({ to: "/groups/$id", params: { id: created!.id } });
   };
 
-  const handleCopyCardInvite = (e: React.MouseEvent, groupId: string, code: string) => {
+  const handleCopyCardInvite = (e: React.MouseEvent, groupId: string, code: string, name: string, desc?: string) => {
     e.stopPropagation();
-    const link = `${window.location.origin}/groups/invite/${code}`;
+    const link = inviteUrl(code, name, desc);
     navigator.clipboard.writeText(link);
     setCopiedCardId(groupId);
     setTimeout(() => setCopiedCardId(null), 2000);
@@ -144,7 +150,7 @@ function GroupsIndex() {
     }, 200);
   };
 
-  const inviteLink = created ? `${window.location.origin}/groups/invite/${created.code}` : "";
+  const inviteLink = created ? inviteUrl(created.code, created.name) : "";
 
   const toolbar = (
     <div className="space-y-3">
@@ -214,7 +220,7 @@ function GroupsIndex() {
               <div className="flex items-center gap-1 shrink-0">
                 {g.inviteCode && userType.isB2B && (
                   <button
-                    onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!)}
+                    onClick={(e) => handleCopyCardInvite(e, g.id, g.inviteCode!, g.name, g.description)}
                     className="h-7 w-7 rounded-full bg-muted grid place-items-center hover:bg-foreground/10 transition-colors"
                     title="Copiar link de convite"
                   >
