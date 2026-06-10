@@ -110,6 +110,9 @@ function GroupsIndex() {
       description: form.description.trim(),
       image: form.image || "👥",
     });
+    if (form.image && result.inviteCode) {
+      localStorage.setItem("invite_img_" + result.inviteCode, form.image);
+    }
     setCreated({
       id: result.id,
       code: result.inviteCode!,
@@ -120,22 +123,21 @@ function GroupsIndex() {
     setStep("invite");
   };
 
-  function inviteUrl(code: string, name: string, desc?: string, img?: string) {
+  function inviteUrl(code: string, name: string, desc?: string) {
     const params = new URLSearchParams({ name });
     if (desc) params.set("desc", desc);
-    if (img) params.set("img", img);
     return `${window.location.origin}/groups/invite/${code}?${params}`;
   }
 
   const handleCopyLink = () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
+    const link = inviteUrl(created!.code, created!.name, created!.description);
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = async () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
+    const link = inviteUrl(created!.code, created!.name, created!.description);
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
@@ -155,7 +157,10 @@ function GroupsIndex() {
 
   const handleCopyCardInvite = (e: React.MouseEvent, groupId: string, code: string, name: string, desc?: string, img?: string) => {
     e.stopPropagation();
-    const link = inviteUrl(code, name, desc, img);
+    if (img && img.startsWith("data:")) {
+      localStorage.setItem("invite_img_" + code, img);
+    }
+    const link = inviteUrl(code, name, desc);
     navigator.clipboard.writeText(link);
     setCopiedCardId(groupId);
     setTimeout(() => setCopiedCardId(null), 2000);
@@ -172,7 +177,7 @@ function GroupsIndex() {
     }, 200);
   };
 
-  const inviteLink = created ? inviteUrl(created.code, created.name, created.description, created.image) : "";
+  const inviteLink = created ? inviteUrl(created.code, created.name, created.description) : "";
 
   const toolbar = (
     <div className="space-y-3">

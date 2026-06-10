@@ -22,9 +22,9 @@ function GroupInvite() {
     if (n) {
       group.name = n;
       group.description = p.get("desc") || group.description;
-      const img = p.get("img");
-      if (img) group.image = img;
     }
+    const storedImg = localStorage.getItem("invite_img_" + code);
+    if (storedImg) group.image = storedImg;
   }
 
   useEffect(() => {
