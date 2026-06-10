@@ -23,16 +23,35 @@ function Profile() {
     }
   }, [hydrated, userType.isB2B, nav]);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function compressImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        const maxSize = 64;
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        c.width = width;
+        c.height = height;
+        const ctx = c.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL("image/jpeg", 0.4));
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      updateCommunity({ avatar: url });
-      setProfileAvatar(url);
-    };
-    reader.readAsDataURL(file);
+    const url = await compressImage(file);
+    updateCommunity({ avatar: url });
+    setProfileAvatar(url);
   };
 
   const [form, setForm] = useState({
