@@ -66,16 +66,34 @@ function GroupsIndex() {
     return null;
   }
 
-  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function compressImage(file: File, maxSize = 256): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        c.width = width;
+        c.height = height;
+        const ctx = c.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL("image/jpeg", 0.7));
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setImagePreview(dataUrl);
-      setForm((prev) => ({ ...prev, image: dataUrl }));
-    };
-    reader.readAsDataURL(file);
+    const dataUrl = await compressImage(file);
+    setImagePreview(dataUrl);
+    setForm((prev) => ({ ...prev, image: dataUrl }));
   };
 
   const handleClearImage = () => {
@@ -104,13 +122,7 @@ function GroupsIndex() {
   function inviteUrl(code: string, name: string, desc?: string, img?: string) {
     const params = new URLSearchParams({ name });
     if (desc) params.set("desc", desc);
-    if (img) {
-      if (img.startsWith("data:image/")) {
-        try { localStorage.setItem(`weaze_invite_img_${code}`, img); } catch {}
-      } else {
-        params.set("img", img);
-      }
-    }
+    if (img) params.set("img", img);
     return `${window.location.origin}/groups/invite/${code}?${params}`;
   }
 

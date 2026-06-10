@@ -113,13 +113,7 @@ function GroupChat() {
     if (!group?.inviteCode) return;
     const params = new URLSearchParams({ name: group.name });
     if (group.description) params.set("desc", group.description);
-    if (group.image) {
-      if (group.image.startsWith("data:image/")) {
-        try { localStorage.setItem(`weaze_invite_img_${group.inviteCode}`, group.image); } catch {}
-      } else {
-        params.set("img", group.image);
-      }
-    }
+    if (group.image) params.set("img", group.image);
     const link = `${window.location.origin}/groups/invite/${group.inviteCode}?${params}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
