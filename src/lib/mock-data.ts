@@ -304,6 +304,18 @@ export const groups: MockGroup[] = [
     lastActivity: "3h",
     inviteCode: "MENTORIA",
   },
+  {
+    id: "g5",
+    name: "Meu Grupo",
+    description: "Grupo criado por você.",
+    image: "👥",
+    memberCount: 1,
+    createdAt: "agora",
+    createdBy: "u_você",
+    createdByName: "Você",
+    lastActivity: "agora",
+    inviteCode: "R1LPT4",
+  },
 ];
 
 export const groupMembers: MockGroupMember[] = [
@@ -459,6 +471,15 @@ export const groupMembers: MockGroupMember[] = [
     avatar: "P",
     role: "member",
     joinedAt: "2 mar",
+  },
+  {
+    id: "gm18",
+    groupId: "g5",
+    userId: "u_você",
+    name: "Você",
+    avatar: "V",
+    role: "admin",
+    joinedAt: "agora",
   },
 ];
 
@@ -1331,6 +1352,7 @@ export const groupInviteCodes: Record<string, string> = {
   g2: "DEVS123",
   g3: "SKINVIP",
   g4: "MENTORIA",
+  g5: "R1LPT4",
 };
 
 const STORAGE_KEY = "weaze_groups_persist";
