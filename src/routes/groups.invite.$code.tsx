@@ -22,7 +22,7 @@ function GroupInvite() {
     if (n) {
       group.name = n;
       group.description = p.get("desc") || group.description;
-      const img = p.get("img");
+      const img = p.get("img") || localStorage.getItem(`weaze_invite_img_${code}`);
       if (img) group.image = img;
     }
   }

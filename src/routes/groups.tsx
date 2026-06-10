@@ -104,7 +104,13 @@ function GroupsIndex() {
   function inviteUrl(code: string, name: string, desc?: string, img?: string) {
     const params = new URLSearchParams({ name });
     if (desc) params.set("desc", desc);
-    if (img) params.set("img", img);
+    if (img) {
+      if (img.startsWith("data:image/")) {
+        try { localStorage.setItem(`weaze_invite_img_${code}`, img); } catch {}
+      } else {
+        params.set("img", img);
+      }
+    }
     return `${window.location.origin}/groups/invite/${code}?${params}`;
   }
 
