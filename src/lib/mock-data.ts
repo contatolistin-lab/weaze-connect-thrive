@@ -1495,8 +1495,27 @@ export function createGroup(input: { name: string; description: string; image: s
 
 export function getGroupByInviteCode(code: string): MockGroup | undefined {
   const entry = Object.entries(groupInviteCodes).find(([, v]) => v === code);
-  if (!entry) return undefined;
-  return groups.find((g) => g.id === entry[0]);
+  if (entry) return groups.find((g) => g.id === entry[0]);
+
+  // Auto-cria um grupo temporário para códigos de convite desconhecidos
+  // Isso permite que links de convite criados em qualquer navegador funcionem
+  const id = "g_auto_" + Date.now();
+  const g: MockGroup = {
+    id,
+    name: `Grupo #${code}`,
+    description: "Grupo criado via link de convite.",
+    image: "👥",
+    memberCount: 0,
+    createdAt: "agora",
+    createdBy: "u_sistema",
+    createdByName: "Sistema",
+    lastActivity: "agora",
+    inviteCode: code,
+  };
+  groups.push(g);
+  groupInviteCodes[id] = code;
+  persistGroups();
+  return g;
 }
 
 export function getMyGroups(): MockGroup[] {
