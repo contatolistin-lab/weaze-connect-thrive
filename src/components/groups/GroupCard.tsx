@@ -1,14 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import { Group } from "@/services/groupsService";
-import { Users, Lock, Building2, ArrowRight } from "lucide-react";
+import { Users, Lock, Building2, ArrowRight, Share2 } from "lucide-react";
 
 type GroupCardProps = {
   group: Group;
   onDelete: (groupId: string) => void;
   canDelete: boolean;
+  imageUrl?: string | null;
+  onCopyInvite?: (groupId: string) => void;
 };
 
-export function GroupCard({ group, onDelete, canDelete }: GroupCardProps) {
+export function GroupCard({ group, onDelete, canDelete, imageUrl, onCopyInvite }: GroupCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -18,17 +20,23 @@ export function GroupCard({ group, onDelete, canDelete }: GroupCardProps) {
           onClick={() => navigate(`/groups/${group.id}`)}
           className="flex items-center gap-3 flex-1 text-left"
         >
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              group.type === "private" ? "bg-purple-100" : "bg-blue-100"
-            }`}
-          >
-            {group.type === "private" ? (
-              <Lock className="h-5 w-5 text-purple-600" />
-            ) : (
-              <Building2 className="h-5 w-5 text-blue-600" />
-            )}
-          </div>
+          {imageUrl ? (
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+              <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                group.type === "private" ? "bg-purple-100" : "bg-blue-100"
+              }`}
+            >
+              {group.type === "private" ? (
+                <Lock className="h-5 w-5 text-purple-600" />
+              ) : (
+                <Building2 className="h-5 w-5 text-blue-600" />
+              )}
+            </div>
+          )}
           <div>
             <p className="font-semibold text-gray-900">{group.name}</p>
             <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
@@ -44,6 +52,18 @@ export function GroupCard({ group, onDelete, canDelete }: GroupCardProps) {
           </div>
         </button>
         <div className="flex items-center gap-1">
+          {onCopyInvite && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopyInvite(group.id);
+              }}
+              className="p-2 text-gray-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors"
+              title="Compartilhar convite"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={() => navigate(`/groups/${group.id}`)}
             className="p-2 text-gray-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors"

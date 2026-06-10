@@ -104,6 +104,7 @@ const GroupsPage = lazy(() => import("./pages/GroupsPage"));
 const GroupDetail = lazy(() => import("./pages/GroupDetail"));
 const GroupsPageB2C = lazy(() => import("./pages/b2c/GroupsPageB2C"));
 const GroupDetailB2C = lazy(() => import("./pages/b2c/GroupDetailB2C"));
+const GroupInviteLanding = lazy(() => import("./pages/GroupInviteLanding"));
 const AdminTenants = lazy(() => import("./pages/admin/Tenants"));
 const AdminGlobal = lazy(() => import("./pages/admin/AdminGlobal"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -250,6 +251,7 @@ const App = () => (
                     <Route path="/requests" element={<Protected><Requests /></Protected>} />
                     <Route path="/members" element={<Protected><Members /></Protected>} />
                     <Route path="/groups" element={<Protected><GroupsPage /></Protected>} />
+                    <Route path="/groups/invite" element={<GroupInviteLanding />} />
                     <Route path="/groups/b2c" element={<Protected><GroupsPageB2C /></Protected>} />
                     <Route path="/groups/member/:groupId" element={<Protected><GroupDetailB2C /></Protected>} />
                     <Route path="/groups/:groupId" element={<Protected><GroupDetail /></Protected>} />

@@ -34,7 +34,7 @@ export function useGroups(tenantId: string | null) {
       userId: string,
       name: string,
       type: "private" | "internal"
-    ): Promise<{ success: boolean; error?: string }> => {
+    ): Promise<{ success: boolean; groupId?: string; error?: string }> => {
       if (!tenantId) return { success: false, error: "Tenant não definido" };
 
       const result = await groupsService.create(tenantId, userId, name, type);
@@ -47,7 +47,7 @@ export function useGroups(tenantId: string | null) {
         setGroups((prev) => [result.data!, ...prev]);
       }
 
-      return { success: true };
+      return { success: true, groupId: result.data?.id };
     },
     [tenantId]
   );

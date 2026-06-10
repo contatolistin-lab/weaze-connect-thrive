@@ -22,6 +22,7 @@ export default function GroupsPage() {
   );
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [groupImages, setGroupImages] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!user || !canManage || !tenant) {
@@ -31,13 +32,36 @@ export default function GroupsPage() {
     loadGroups();
   }, [user, canManage, tenant, loadGroups, navigate]);
 
-  const handleCreateGroup = async (name: string, type: "private" | "internal") => {
+  const handleCreateGroup = async (name: string, type: "private" | "internal", image?: string | null) => {
     if (!user) return;
     const result = await createGroup(user.id, name, type);
     if (!result.success) {
       toast.error(result.error || "Erro ao criar grupo");
     } else {
+      if (image && result.groupId) {
+        setGroupImages(prev => ({ ...prev, [result.groupId!]: image }));
+      }
       toast.success("Grupo criado!");
+    }
+  };
+
+  const handleCopyInvite = async (groupId: string) => {
+    if (!tenant) return;
+    const group = groups.find(g => g.id === groupId);
+    if (!group) return;
+    const img = groupImages[groupId] || "";
+    const params = new URLSearchParams({
+      groupId: group.id,
+      name: group.name,
+      desc: group.type === "private" ? "Grupo Privado" : "Grupo Interno",
+    });
+    if (img) params.set("img", img);
+    const link = `${window.location.origin}/groups/invite?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      toast.success("Link de convite copiado!");
+    } catch {
+      toast.error("Erro ao copiar link");
     }
   };
 
@@ -124,6 +148,8 @@ export default function GroupsPage() {
                 group={group}
                 onDelete={handleDeleteGroup}
                 canDelete={canManage}
+                imageUrl={groupImages[group.id]}
+                onCopyInvite={handleCopyInvite}
               />
             ))}
           </div>
