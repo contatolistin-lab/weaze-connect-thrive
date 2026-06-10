@@ -1,12 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Lock, UserPlus } from "lucide-react";
-import {
-  getGroupByInviteCode,
-  joinGroup,
-  joinGroupExclusive,
-  isGroupMember,
-} from "@/lib/mock-data";
+import { getGroupByInviteCode, joinGroup, isGroupMember } from "@/lib/mock-data";
 import { GroupImage } from "@/lib/group-utils";
 import { WButton } from "@/components/weaze/WButton";
 import { useCommunity } from "@/lib/community-store";
@@ -19,8 +14,7 @@ export const Route = createFileRoute("/groups/invite/$code")({
 function GroupInvite() {
   const { code } = Route.useParams();
   const nav = useNavigate();
-  const [joining, setJoining] = useState(false);
-  const { userType, hydrated } = useCommunity();
+  const { hydrated } = useCommunity();
   const group = getGroupByInviteCode(code);
 
   useEffect(() => {
@@ -46,12 +40,7 @@ function GroupInvite() {
   }
 
   const handleAccept = () => {
-    setJoining(true);
-    if (hydrated && !userType.isB2B) {
-      joinGroupExclusive(group.id);
-    } else {
-      joinGroup(group.id);
-    }
+    joinGroup(group.id);
     nav({ to: "/groups/$id", params: { id: group.id }, replace: true });
   };
 

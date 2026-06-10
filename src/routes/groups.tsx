@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Lock, Users, Plus, Copy, Check, Share2, ImageUp, ArrowRight, X } from "lucide-react";
 import { AppShell } from "@/components/weaze/AppShell";
 import { WButton } from "@/components/weaze/WButton";
-import { getMyGroups, getGroupMembers, createGroup, currentUserId } from "@/lib/mock-data";
+import { getMyGroups, getGroupMembers, createGroup } from "@/lib/mock-data";
 import { GroupImage } from "@/lib/group-utils";
 import { useCommunity } from "@/lib/community-store";
 import {
@@ -57,9 +57,7 @@ function GroupsIndex() {
     );
   }
 
-  const myGroups = userType.isB2B
-    ? getMyGroups()
-    : getMyGroups().filter((g) => getGroupMembers(g.id).some((m) => m.userId === currentUserId));
+  const myGroups = getMyGroups();
 
   // B2C users with exactly one group go directly to it
   if (!userType.isB2B && myGroups.length === 1) {
