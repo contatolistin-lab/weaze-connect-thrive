@@ -89,6 +89,29 @@ function GroupsIndex() {
     });
   }
 
+  function compressDataUrl(dataUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        const maxSize = 64;
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const ratio = Math.min(maxSize / width, maxSize / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        c.width = width;
+        c.height = height;
+        const ctx = c.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL("image/jpeg", 0.4));
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
   const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -130,15 +153,27 @@ function GroupsIndex() {
     return `${window.location.origin}/groups/invite/${code}?${params}`;
   }
 
-  const handleCopyLink = () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
+  const handleCopyLink = async () => {
+    let img = created!.image;
+    if (img && img.startsWith("data:") && !img.startsWith("data:image/jpeg")) {
+      try {
+        img = await compressDataUrl(img);
+      } catch {}
+    }
+    const link = inviteUrl(created!.code, created!.name, created!.description, img);
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = async () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
+    let img = created!.image;
+    if (img && img.startsWith("data:") && !img.startsWith("data:image/jpeg")) {
+      try {
+        img = await compressDataUrl(img);
+      } catch {}
+    }
+    const link = inviteUrl(created!.code, created!.name, created!.description, img);
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
@@ -156,12 +191,18 @@ function GroupsIndex() {
     nav({ to: "/groups/$id", params: { id: created!.id } });
   };
 
-  const handleCopyCardInvite = (e: React.MouseEvent, groupId: string, code: string, name: string, desc?: string, img?: string) => {
+  const handleCopyCardInvite = async (e: React.MouseEvent, groupId: string, code: string, name: string, desc?: string, img?: string) => {
     e.stopPropagation();
-    if (img && img.startsWith("data:")) {
-      localStorage.setItem("invite_img_" + code, img);
+    let finalImg = img;
+    if (img && img.startsWith("data:") && !img.startsWith("data:image/jpeg")) {
+      try {
+        finalImg = await compressDataUrl(img);
+      } catch {}
     }
-    const link = inviteUrl(code, name, desc, img);
+    if (finalImg && finalImg.startsWith("data:")) {
+      localStorage.setItem("invite_img_" + code, finalImg);
+    }
+    const link = inviteUrl(code, name, desc, finalImg);
     navigator.clipboard.writeText(link);
     setCopiedCardId(groupId);
     setTimeout(() => setCopiedCardId(null), 2000);
