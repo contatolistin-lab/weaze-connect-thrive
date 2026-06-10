@@ -65,17 +65,20 @@ function Profile() {
 
   const [copied, setCopied] = useState(false);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = () => {
     if (!communityLink) return;
-    try {
-      await navigator.clipboard.writeText(communityLink);
-    } catch (err) {
-      console.error("Falha ao copiar link:", err);
-      toast.error("Não foi possível copiar o link. Tente novamente.");
+    if (!navigator?.clipboard?.writeText) {
+      toast.error("Seu navegador não permite copiar links automaticamente. Copie manualmente.");
       return;
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(communityLink)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {
+        toast.error("Não foi possível copiar o link. Tente novamente.");
+      });
   };
 
   useEffect(() => {
