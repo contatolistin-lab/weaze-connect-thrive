@@ -66,11 +66,12 @@ function GroupsIndex() {
     return null;
   }
 
-  function compressImage(file: File, maxSize = 256): Promise<string> {
+  function compressImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const c = document.createElement("canvas");
+        const maxSize = 64;
         let { width, height } = img;
         if (width > maxSize || height > maxSize) {
           const ratio = Math.min(maxSize / width, maxSize / height);
@@ -81,7 +82,7 @@ function GroupsIndex() {
         c.height = height;
         const ctx = c.getContext("2d")!;
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(c.toDataURL("image/jpeg", 0.7));
+        resolve(c.toDataURL("image/jpeg", 0.4));
       };
       img.onerror = reject;
       img.src = URL.createObjectURL(file);
