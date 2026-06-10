@@ -35,8 +35,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white border-t border-border safe-pb"
-      style={{ boxShadow: "0 -6px 24px -16px rgba(11,11,18,0.12)" }}
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#8800aa] safe-pb"
     >
       <ul className={`mx-auto max-w-md grid ${isB2B ? "grid-cols-6" : "grid-cols-4"}`}>
         {navItems.map(({ to, icon: Icon, label }) => {
@@ -50,19 +49,19 @@ export function BottomNav() {
                 aria-label={label}
               >
                 {isCreate ? (
-                  <span className="h-10 w-10 rounded-xl bg-brand-gradient text-white grid place-items-center shadow-brand -mt-2">
+                  <span className="h-10 w-10 rounded-xl bg-white text-[#8800aa] grid place-items-center -mt-2">
                     <Plus size={22} strokeWidth={3} />
                   </span>
                 ) : (
                   <Icon
                     size={20}
                     strokeWidth={active ? 2.6 : 2}
-                    style={{ color: "#8800aa", opacity: active ? 1 : 0.55 }}
+                    style={{ color: "white", opacity: active ? 1 : 0.55 }}
                   />
                 )}
                 <span
                   className="text-[9px] font-semibold leading-tight"
-                  style={{ color: "#8800aa", opacity: active || isCreate ? 1 : 0.55 }}
+                  style={{ color: "white", opacity: active || isCreate ? 1 : 0.55 }}
                 >
                   {label}
                 </span>
