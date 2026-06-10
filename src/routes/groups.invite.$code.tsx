@@ -23,8 +23,14 @@ function GroupInvite() {
       group.name = n;
       group.description = p.get("desc") || group.description;
     }
-    const storedImg = localStorage.getItem("invite_img_" + code);
-    if (storedImg) group.image = storedImg;
+    const urlImg = p.get("img");
+    if (urlImg) {
+      group.image = urlImg;
+      localStorage.setItem("invite_img_" + code, urlImg);
+    } else {
+      const storedImg = localStorage.getItem("invite_img_" + code);
+      if (storedImg) group.image = storedImg;
+    }
   }
 
   useEffect(() => {

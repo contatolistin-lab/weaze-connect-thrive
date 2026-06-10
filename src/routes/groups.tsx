@@ -123,21 +123,22 @@ function GroupsIndex() {
     setStep("invite");
   };
 
-  function inviteUrl(code: string, name: string, desc?: string) {
+  function inviteUrl(code: string, name: string, desc?: string, img?: string) {
     const params = new URLSearchParams({ name });
     if (desc) params.set("desc", desc);
+    if (img) params.set("img", img);
     return `${window.location.origin}/groups/invite/${code}?${params}`;
   }
 
   const handleCopyLink = () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description);
+    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = async () => {
-    const link = inviteUrl(created!.code, created!.name, created!.description);
+    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
@@ -160,7 +161,7 @@ function GroupsIndex() {
     if (img && img.startsWith("data:")) {
       localStorage.setItem("invite_img_" + code, img);
     }
-    const link = inviteUrl(code, name, desc);
+    const link = inviteUrl(code, name, desc, img);
     navigator.clipboard.writeText(link);
     setCopiedCardId(groupId);
     setTimeout(() => setCopiedCardId(null), 2000);
@@ -177,7 +178,7 @@ function GroupsIndex() {
     }, 200);
   };
 
-  const inviteLink = created ? inviteUrl(created.code, created.name, created.description) : "";
+  const inviteLink = created ? inviteUrl(created.code, created.name, created.description, created.image) : "";
 
   const toolbar = (
     <div className="space-y-3">
