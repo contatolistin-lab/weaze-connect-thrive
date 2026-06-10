@@ -111,7 +111,10 @@ function GroupChat() {
 
   const handleCopyInvite = () => {
     if (!group?.inviteCode) return;
-    const link = `${window.location.origin}/groups/invite/${group.inviteCode}`;
+    const params = new URLSearchParams({ name: group.name });
+    if (group.description) params.set("desc", group.description);
+    if (group.image) params.set("img", group.image);
+    const link = `${window.location.origin}/groups/invite/${group.inviteCode}?${params}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);

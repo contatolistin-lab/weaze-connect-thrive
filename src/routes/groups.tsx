@@ -42,6 +42,7 @@ function GroupsIndex() {
     code: string;
     image: string;
     name: string;
+    description: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
@@ -95,6 +96,7 @@ function GroupsIndex() {
       code: result.inviteCode!,
       image: form.image || "👥",
       name: form.name.trim(),
+      description: form.description.trim(),
     });
     setStep("invite");
   };
@@ -107,14 +109,14 @@ function GroupsIndex() {
   }
 
   const handleCopyLink = () => {
-    const link = inviteUrl(created!.code, created!.name, undefined, created!.image);
+    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleShareLink = async () => {
-    const link = inviteUrl(created!.code, created!.name, undefined, created!.image);
+    const link = inviteUrl(created!.code, created!.name, created!.description, created!.image);
     if (navigator.share) {
       try {
         await navigator.share({ title: created!.name, url: link });
@@ -151,7 +153,7 @@ function GroupsIndex() {
     }, 200);
   };
 
-  const inviteLink = created ? inviteUrl(created.code, created.name, undefined, created.image) : "";
+  const inviteLink = created ? inviteUrl(created.code, created.name, created.description, created.image) : "";
 
   const toolbar = (
     <div className="space-y-3">
