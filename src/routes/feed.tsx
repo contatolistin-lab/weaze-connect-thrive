@@ -66,8 +66,8 @@ function Feed() {
     : allPosts;
 
   return (
-    <div className="min-h-dvh bg-white">
-      <div className="mx-auto max-w-md min-h-dvh relative bg-white">
+    <div className="min-h-dvh bg-background md:bg-surface-muted">
+      <div className="mx-auto max-w-md min-h-dvh relative bg-background md:shadow-soft md:border-x md:border-border">
         <header className="absolute top-0 inset-x-0 z-30 pt-3 px-4 safe-pt">
           <div className="flex items-center justify-between">
             {comunidade ? (
