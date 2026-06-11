@@ -44,7 +44,7 @@ export function DesktopSidebar() {
       className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col bg-[#8800aa] w-20 lg:w-60 px-3 lg:px-4 py-5 gap-2"
     >
       <div className="flex items-center justify-center lg:justify-start px-1 lg:px-2 mb-4">
-        <WeazeLogo size="sm" />
+        <WeazeLogo size="sm" variant="white" />
       </div>
 
       <nav className="flex flex-col gap-1">

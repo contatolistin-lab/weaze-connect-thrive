@@ -78,7 +78,7 @@ function Feed() {
                 <ArrowLeft size={20} />
               </Link>
             ) : (
-              <WeazeLogo size="sm" />
+              <WeazeLogo size="sm" variant="white" />
             )}
             <FeedBell />
           </div>

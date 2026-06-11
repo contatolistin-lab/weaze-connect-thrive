@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   to?: string;
+  variant?: "default" | "white";
 }
 
 const sizeMap = {
@@ -12,12 +13,12 @@ const sizeMap = {
   xl: { h: 140 },
 };
 
-export function WeazeLogo({ size = "md", to = "/" }: LogoProps) {
+export function WeazeLogo({ size = "md", to = "/", variant = "default" }: LogoProps) {
   const s = sizeMap[size];
 
   const content = (
     <img
-      src="/logo-weaze.png"
+      src={variant === "white" ? "/logo-weaze-branco.png" : "/logo-weaze.png"}
       alt="WEAZE"
       height={s.h}
       className="w-auto object-contain"
