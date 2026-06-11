@@ -41,8 +41,7 @@ export function DesktopSidebar() {
 
   return (
     <aside
-      className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col bg-white border-r border-border w-20 lg:w-60 px-3 lg:px-4 py-5 gap-2"
-      style={{ boxShadow: "6px 0 24px -16px rgba(11,11,18,0.08)" }}
+      className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col bg-[#8800aa] w-20 lg:w-60 px-3 lg:px-4 py-5 gap-2"
     >
       <div className="flex items-center justify-center lg:justify-start px-1 lg:px-2 mb-4">
         <WeazeLogo size="sm" />
@@ -61,20 +60,20 @@ export function DesktopSidebar() {
               to={to as any}
               aria-label={label}
               className={`group flex items-center gap-3 rounded-xl px-2.5 lg:px-3 py-2.5 transition-colors ${
-                active ? "bg-secondary" : "hover:bg-muted"
+                active ? "bg-white/15" : "hover:bg-white/10"
               }`}
             >
               <span
                 className={`h-10 w-10 grid place-items-center rounded-xl shrink-0 ${
-                  isCreate ? "bg-brand-gradient text-white shadow-brand" : ""
+                  isCreate ? "bg-white text-[#8800aa]" : ""
                 }`}
-                style={!isCreate ? { color: "#8800aa", opacity: active ? 1 : 0.7 } : undefined}
+                style={!isCreate ? { color: "white", opacity: active ? 1 : 0.55 } : undefined}
               >
                 <Icon size={isCreate ? 22 : 22} strokeWidth={active ? 2.6 : 2} />
               </span>
               <span
                 className="hidden lg:inline text-sm font-semibold"
-                style={{ color: "#8800aa", opacity: active ? 1 : 0.75 }}
+                style={{ color: "white", opacity: active || isCreate ? 1 : 0.55 }}
               >
                 {label}
               </span>
